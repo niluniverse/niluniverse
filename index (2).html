@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="amber">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nilesh Mohite — AI-Native Software Architect | niluniverse.com</title>
+<meta name="description" content="Nilesh Mohite — Lead Consultant at Xebia. AI-native software architect with 18+ years across .NET, Azure, Anthropic Claude, Kubernetes and microservices, serving e-commerce, healthcare, banking and insurance." />
+<meta property="og:title" content="Nilesh Mohite — AI-Native Software Architect" />
+<meta property="og:description" content="Terminal Atelier: 18+ years of enterprise architecture across .NET, Azure, AI agents, Databricks and cloud-native systems." />
+<meta property="og:url" content="https://niluniverse.com" />
+<meta property="og:type" content="website" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ============ THEMES ============ */
+  :root, [data-theme="amber"] {
+    --bg: #0F0D0A;
+    --panel: #17130E;
+    --panel-2: #1C1710;
+    --line: #2A2318;
+    --accent: #E8A33D;
+    --accent-hi: #FFC46B;
+    --on-accent: #0F0D0A;
+    --text: #CFC5B4;
+    --dim: #8E8475;
+    --head: #F2EADB;
+    --ok: #9BC77E;
+    --shadow: rgba(0,0,0,0.45);
+    --display-font: var(--serif);
+    --display-weight: 500;
+    --radius-btn: 4px;
+    --radius-chip: 4px;
+  }
+  [data-theme="slate"] {
+    --bg: #0E1116;
+    --panel: #141A22;
+    --panel-2: #182029;
+    --line: #242E3A;
+    --accent: #5B9DD9;
+    --accent-hi: #8FC1EE;
+    --on-accent: #0A0E13;
+    --text: #C4CCD6;
+    --dim: #7D8794;
+    --head: #EEF2F6;
+    --ok: #7FBF8E;
+    --shadow: rgba(0,0,0,0.5);
+  }
+  [data-theme="paper"] {
+    --bg: #F6F2EA;
+    --panel: #FDFBF6;
+    --panel-2: #F0EADF;
+    --line: #DDD4C2;
+    --accent: #A24E1E;
+    --accent-hi: #7E3A12;
+    --on-accent: #FFFFFF;
+    --text: #4A4438;
+    --dim: #857C6B;
+    --head: #1E1913;
+    --ok: #4C7A3F;
+    --shadow: rgba(90,70,40,0.14);
+  }
+  [data-theme="linkedin"] {
+    --bg: #F4F2EE;
+    --panel: #FFFFFF;
+    --panel-2: #F8F8F7;
+    --line: #E0DFDC;
+    --accent: #0A66C2;
+    --accent-hi: #004182;
+    --on-accent: #FFFFFF;
+    --text: #3F3F3F;
+    --dim: #666666;
+    --head: #191919;
+    --ok: #44712E;
+    --shadow: rgba(0,0,0,0.08);
+    --display-font: var(--sans);
+    --display-weight: 600;
+    --radius-btn: 999px;
+    --radius-chip: 999px;
+  }
+  :root {
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+    --serif: 'Fraunces', Georgia, serif;
+  }
+
+  /* ============ BASE ============ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 16px; line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    transition: background .25s, color .25s;
+  }
+  ::selection { background: var(--accent); color: var(--on-accent); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-hi); }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-hi); outline-offset: 3px; border-radius: 2px;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* ============ HEADER / NAV ============ */
+  header {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav { display: flex; align-items: center; justify-content: space-between; height: 62px; gap: 16px; }
+  .brand { font-family: var(--mono); font-size: 14px; color: var(--head); letter-spacing: 0.02em; white-space: nowrap; }
+  .brand .tilde { color: var(--accent); }
+  .nav-links { display: flex; gap: 24px; font-family: var(--mono); font-size: 13px; }
+  .nav-links a { color: var(--dim); }
+  .nav-links a:hover { color: var(--accent-hi); }
+
+  /* Theme switcher */
+  .theme-switch {
+    display: flex; align-items: center; gap: 4px;
+    border: 1px solid var(--line); border-radius: 6px; padding: 3px;
+    background: var(--panel);
+  }
+  .theme-switch button {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em;
+    background: transparent; border: none; color: var(--dim);
+    padding: 5px 10px; border-radius: 4px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: background .18s, color .18s;
+  }
+  .theme-switch button .sw {
+    width: 9px; height: 9px; border-radius: 50%; display: inline-block;
+    border: 1px solid rgba(0,0,0,0.2);
+  }
+  .theme-switch button[data-set="amber"] .sw { background: #E8A33D; }
+  .theme-switch button[data-set="slate"] .sw { background: #5B9DD9; }
+  .theme-switch button[data-set="paper"] .sw { background: #F6F2EA; }
+  .theme-switch button[data-set="linkedin"] .sw { background: #0A66C2; }
+  .theme-switch button:hover { color: var(--text); }
+  .theme-switch button.active { background: var(--accent); color: var(--on-accent); }
+
+  /* ============ HERO ============ */
+  .hero { padding: 88px 0 48px; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--accent);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .eyebrow::before { content: ""; width: 34px; height: 1px; background: var(--accent); }
+  h1 {
+    font-family: var(--display-font); font-weight: var(--display-weight);
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    line-height: 1.08; color: var(--head);
+    margin: 22px 0 20px; letter-spacing: -0.01em;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  .lede { max-width: 640px; font-size: 1.06rem; }
+  .hero-meta {
+    margin-top: 28px; display: flex; flex-wrap: wrap; gap: 10px 26px;
+    font-family: var(--mono); font-size: 12.5px; color: var(--dim);
+  }
+  .hero-meta span b { color: var(--text); font-weight: 500; }
+  .cta-row { margin-top: 32px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn {
+    font-family: var(--mono); font-size: 13.5px; padding: 12px 22px;
+    border: 1px solid var(--accent); color: var(--accent); border-radius: var(--radius-btn);
+    display: inline-block; transition: background .18s, color .18s, border-color .18s;
+    background: transparent; cursor: pointer;
+  }
+  .btn:hover { background: var(--accent); color: var(--on-accent); }
+  .btn.solid { background: var(--accent); color: var(--on-accent); }
+  .btn.solid:hover { background: var(--accent-hi); border-color: var(--accent-hi); }
+
+  /* ============ TERMINAL ============ */
+  .term-section { padding: 26px 0 76px; }
+  .terminal {
+    background: #17130E; border: 1px solid #2A2318; border-radius: 10px;
+    overflow: hidden; box-shadow: 0 24px 60px var(--shadow);
+  }
+  .term-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 16px; border-bottom: 1px solid #2A2318;
+    font-family: var(--mono); font-size: 12px; color: #8E8475;
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot.a { background: #5a4a2e; } .dot.b { background: #6b5a38; } .dot.c { background: #E8A33D; }
+  .term-title { margin-left: 10px; }
+  .term-body {
+    font-family: var(--mono); font-size: 13.5px; line-height: 1.85;
+    padding: 22px 24px 26px; min-height: 300px; white-space: pre-wrap;
+    color: #CFC5B4;
+  }
+  .term-body .p { color: #E8A33D; }
+  .term-body .c { color: #8E8475; }
+  .term-body .ok { color: #9BC77E; }
+  .term-body .hi { color: #FFC46B; }
+  .cursor {
+    display: inline-block; width: 8px; height: 16px;
+    background: #E8A33D; vertical-align: text-bottom;
+    animation: blink 1s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  .term-caption { margin-top: 14px; font-family: var(--mono); font-size: 12px; color: var(--dim); }
+
+  /* ============ SECTIONS ============ */
+  section { padding: 76px 0; border-top: 1px solid var(--line); }
+  .sec-head { display: flex; align-items: baseline; gap: 18px; margin-bottom: 40px; flex-wrap: wrap; }
+  .sec-head h2 { font-family: var(--display-font); font-weight: var(--display-weight); font-size: 1.9rem; color: var(--head); }
+  .sec-head .tag {
+    font-family: var(--mono); font-size: 12px; color: var(--accent);
+    letter-spacing: 0.14em; text-transform: uppercase;
+  }
+  .sec-note { max-width: 680px; margin: -26px 0 36px; color: var(--dim); font-size: 14.5px; }
+
+  /* ============ EXPERTISE (categorized) ============ */
+  .exp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  .exp-card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 24px 24px 22px;
+  }
+  .exp-card.full { grid-column: 1 / -1; }
+  .exp-card h3 {
+    font-family: var(--mono); font-size: 13px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 6px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .exp-card h3::before { content: "//"; color: var(--dim); font-weight: 400; }
+  .exp-card p.sub { font-size: 13.5px; color: var(--dim); margin-bottom: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font-family: var(--mono); font-size: 12px; color: var(--text);
+    border: 1px solid var(--line); background: var(--bg);
+    padding: 4px 11px; border-radius: var(--radius-chip);
+  }
+
+  /* ============ WORK ============ */
+  .work-item {
+    display: grid; grid-template-columns: 190px 1fr; gap: 30px;
+    padding: 32px 0; border-bottom: 1px solid var(--line);
+  }
+  .work-item:last-child { border-bottom: none; }
+  .work-kind {
+    font-family: var(--mono); font-size: 12px; color: var(--accent);
+    letter-spacing: 0.1em; text-transform: uppercase; padding-top: 5px;
+  }
+  .work-item h3 { font-family: var(--display-font); font-weight: var(--display-weight); font-size: 1.4rem; color: var(--head); margin-bottom: 10px; }
+  .work-item p { max-width: 660px; font-size: 15px; }
+  .work-item .chips { margin-top: 14px; }
+  .work-link { font-family: var(--mono); font-size: 13px; display: inline-block; margin-top: 14px; }
+  .work-link::after { content: " ->"; }
+
+  /* ============ EXPERIENCE TIMELINE ============ */
+  .timeline { border-left: 1px solid var(--line); margin-left: 6px; padding-left: 32px; }
+  .t-item { position: relative; padding-bottom: 34px; }
+  .t-item:last-child { padding-bottom: 0; }
+  .t-item::before {
+    content: ""; position: absolute; left: -37px; top: 7px;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--bg); border: 2px solid var(--accent);
+  }
+  .t-when { font-family: var(--mono); font-size: 12px; color: var(--dim); }
+  .t-item h3 { font-family: var(--sans); font-weight: 600; font-size: 1.05rem; color: var(--head); margin: 4px 0 2px; }
+  .t-item .org { font-family: var(--mono); font-size: 13px; color: var(--accent); margin-bottom: 8px; }
+  .t-item p { font-size: 14.5px; max-width: 700px; }
+
+  /* ============ APPROACH ============ */
+  .approach-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .approach-card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 26px;
+  }
+  .approach-card .k { font-family: var(--mono); color: var(--accent); font-size: 12px; display: block; margin-bottom: 14px; }
+  .approach-card h3 { font-family: var(--display-font); font-weight: var(--display-weight); font-size: 1.12rem; color: var(--head); margin-bottom: 10px; }
+  .approach-card p { font-size: 14px; color: var(--dim); }
+
+  /* ============ ABOUT ============ */
+  .about-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 48px; align-items: start; }
+  .about-grid p + p { margin-top: 16px; }
+  .cred-box { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 26px; }
+  .cred-box + .cred-box { margin-top: 18px; }
+  .cred-box h3 {
+    font-family: var(--mono); font-size: 12.5px; color: var(--accent);
+    letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 14px;
+  }
+  .cred-box ul { list-style: none; }
+  .cred-box li {
+    font-family: var(--mono); font-size: 13px; padding: 9px 0;
+    border-bottom: 1px solid var(--line); color: var(--text);
+  }
+  .cred-box li:last-child { border-bottom: none; }
+  .cred-box li span { color: var(--dim); }
+
+  /* ============ CONTACT / FOOTER ============ */
+  .contact h2 {
+    font-family: var(--display-font); font-weight: var(--display-weight);
+    font-size: clamp(1.8rem, 4.2vw, 2.8rem); color: var(--head); max-width: 720px;
+  }
+  .contact h2 em { font-style: italic; color: var(--accent); }
+  footer { border-top: 1px solid var(--line); padding: 26px 0 34px; }
+  .foot-inner {
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    font-family: var(--mono); font-size: 12px; color: var(--dim);
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 860px) {
+    .exp-grid, .approach-grid { grid-template-columns: 1fr; }
+    .work-item { grid-template-columns: 1fr; gap: 8px; }
+    .about-grid { grid-template-columns: 1fr; gap: 30px; }
+    .nav-links { display: none; }
+    section { padding: 58px 0; }
+    .hero { padding: 60px 0 36px; }
+    .theme-switch button { padding: 5px 8px; }
+    .theme-switch button .label { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .cursor { animation: none; }
+    body { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="#top"><span class="tilde">~/</span>niluniverse</a>
+      <div class="nav-links">
+        <a href="#expertise">expertise</a>
+        <a href="#work">work</a>
+        <a href="#experience">experience</a>
+        <a href="#about">about</a>
+        <a href="#contact">contact</a>
+      </div>
+      <div class="theme-switch" role="group" aria-label="Theme selection">
+        <button data-set="amber" class="active" aria-pressed="true"><span class="sw"></span><span class="label">Amber</span></button>
+        <button data-set="slate" aria-pressed="false"><span class="sw"></span><span class="label">Slate</span></button>
+        <button data-set="paper" aria-pressed="false"><span class="sw"></span><span class="label">Paper</span></button>
+        <button data-set="linkedin" aria-pressed="false"><span class="sw"></span><span class="label">LinkedIn</span></button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ============ HERO ============ -->
+  <div class="wrap hero">
+    <div class="eyebrow">Terminal Atelier</div>
+    <h1>Software architecture,<br /><em>rebuilt for the agentic era.</em></h1>
+    <p class="lede">
+      I'm Nilesh Mohite — Lead Consultant at Xebia and an AI-native software architect with
+      18+ years across .NET, Azure, and cloud-native systems. I design platforms where
+      microservices and AI agents work as one architecture — proven in e-commerce,
+      healthcare, banking, and insurance.
+    </p>
+    <div class="hero-meta">
+      <span><b>Lead Consultant</b> · Xebia</span>
+      <span><b>18+ yrs</b> enterprise engineering</span>
+      <span><b>AZ-204</b> Azure Certified Developer</span>
+    </div>
+    <div class="cta-row">
+      <a class="btn solid" href="#work">View selected work</a>
+      <a class="btn" href="#contact">Get in touch</a>
+    </div>
+  </div>
+
+  <!-- ============ SIGNATURE TERMINAL ============ -->
+  <div class="wrap term-section">
+    <div class="terminal" aria-label="Animated replay of an autonomous coding agent run">
+      <div class="term-bar">
+        <span class="dot a"></span><span class="dot b"></span><span class="dot c"></span>
+        <span class="term-title">agent — jira-github-automation — replay</span>
+      </div>
+      <div class="term-body" id="term"><noscript><span class="p">$</span> agent run --story PROJ-142
+<span class="c"># reading Jira story… planning… generating code… tests passing…</span>
+<span class="ok">✓ Pull request opened:</span> <span class="hi">github.com/…/pull/87</span></noscript></div>
+    </div>
+    <p class="term-caption">// live replay: an autonomous .NET agent reads a Jira story, writes the code, and opens the PR. I built it. <a href="https://github.com/" rel="noopener">Source on GitHub -></a></p>
+  </div>
+
+  <!-- ============ EXPERTISE ============ -->
+  <section id="expertise">
+    <div class="wrap">
+      <div class="sec-head"><span class="tag">01 — Expertise</span><h2>Skills, organised the way I use them</h2></div>
+
+      <div class="exp-grid">
+        <div class="exp-card">
+          <h3>Languages &amp; Frameworks</h3>
+          <p class="sub">The core toolset for building enterprise services and front ends.</p>
+          <div class="chips">
+            <span class="chip">C#</span><span class="chip">.NET 8 / .NET Core</span><span class="chip">ASP.NET MVC</span>
+            <span class="chip">EF Core</span><span class="chip">LINQ</span><span class="chip">JavaScript</span>
+            <span class="chip">Angular</span><span class="chip">Node.js</span>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <h3>AI Engineering</h3>
+          <p class="sub">Agentic systems built for production, not demos.</p>
+          <div class="chips">
+            <span class="chip">Claude API</span><span class="chip">BMAD Multi-Agent</span><span class="chip">MCP</span>
+            <span class="chip">AI Developer Automation</span><span class="chip">Azure AI Foundry</span><span class="chip">Databricks</span>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <h3>Cloud — Microsoft Azure</h3>
+          <p class="sub">My home cloud: compute, messaging, identity, and data services.</p>
+          <div class="chips">
+            <span class="chip">AKS</span><span class="chip">App Services</span><span class="chip">Azure Functions</span>
+            <span class="chip">API Management</span><span class="chip">Service Bus</span><span class="chip">Key Vault</span>
+            <span class="chip">Entra ID</span><span class="chip">SignalR</span><span class="chip">App Configuration</span>
+            <span class="chip">Application Insights</span>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <h3>Architecture &amp; Patterns</h3>
+          <p class="sub">Structural decisions that keep large systems maintainable.</p>
+          <div class="chips">
+            <span class="chip">Microservices</span><span class="chip">CQRS</span><span class="chip">Mediator</span>
+            <span class="chip">Domain-Driven Design</span><span class="chip">Event-Based Architecture</span>
+            <span class="chip">REST APIs</span><span class="chip">SOA</span><span class="chip">Dependency Injection</span>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <h3>Databases</h3>
+          <p class="sub">Relational, document, cache, and search — chosen per workload.</p>
+          <div class="chips">
+            <span class="chip">SQL Server</span><span class="chip">Azure SQL Managed Instance</span>
+            <span class="chip">PostgreSQL</span><span class="chip">Cosmos DB</span>
+            <span class="chip">Elasticsearch</span><span class="chip">Redis Cache</span>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <h3>DevOps &amp; Tools</h3>
+          <p class="sub">The delivery pipeline and quality tooling behind every release.</p>
+          <div class="chips">
+            <span class="chip">Docker</span><span class="chip">Kubernetes</span><span class="chip">Terraform</span>
+            <span class="chip">Azure DevOps</span><span class="chip">Git</span><span class="chip">Bitbucket</span>
+            <span class="chip">SonarQube</span><span class="chip">xUnit</span><span class="chip">Postman</span>
+            <span class="chip">Swagger / OpenAPI</span>
+          </div>
+        </div>
+
+        <div class="exp-card full">
+          <h3>Software &amp; Platform Integrations</h3>
+          <p class="sub">Third-party ecosystems I've integrated into production platforms.</p>
+          <div class="chips">
+            <span class="chip">Commerce Tools</span><span class="chip">Talon.one</span><span class="chip">Optimove</span>
+            <span class="chip">Contentful</span><span class="chip">BazaarVoice</span><span class="chip">Zendesk</span>
+            <span class="chip">Okta</span><span class="chip">SAP Hybris</span><span class="chip">Jira</span>
+            <span class="chip">Confluence</span><span class="chip">Crystal Reports</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ WORK ============ -->
+  <section id="work">
+    <div class="wrap">
+      <div class="sec-head"><span class="tag">02 — Selected work</span><h2>Systems I've built</h2></div>
+
+      <div class="work-item">
+        <div class="work-kind">Open source · AI agent</div>
+        <div>
+          <h3>Autonomous AI Coding Agent</h3>
+          <p>
+            An autonomous .NET agent built on the Claude API that reads Jira stories, generates
+            production-ready code, and raises GitHub pull requests end to end — no manual
+            intervention. Interchangeable execution strategies (single-shot, MCP tool-use loop,
+            mock mode), with the orchestration library open-sourced. Now extended with the BMAD
+            framework to coordinate planning, coding, and review agents across the delivery lifecycle.
+          </p>
+          <div class="chips">
+            <span class="chip">.NET</span><span class="chip">Claude API</span><span class="chip">BMAD</span>
+            <span class="chip">Multi-agent</span><span class="chip">GitHub API</span><span class="chip">Jira</span>
+          </div>
+          <a class="work-link" href="https://github.com/" rel="noopener">Explore the architecture</a>
+        </div>
+      </div>
+
+      <div class="work-item">
+        <div class="work-kind">E-commerce · Xebia</div>
+        <div>
+          <h3>Event-Driven Commerce Platform</h3>
+          <p>
+            Leading development of a microservices-driven, event-based e-commerce platform serving
+            a 40+ member program: .NET 8 domain APIs for Payment, Checkout, Loyalty, Review, and
+            Consumer Engagement on Azure AKS, integrating Commerce Tools, Talon.one, Optimove,
+            Contentful, Zendesk, and BazaarVoice — provisioned with Terraform and Azure DevOps CI/CD.
+          </p>
+          <div class="chips">
+            <span class="chip">.NET 8</span><span class="chip">AKS</span><span class="chip">Service Bus</span>
+            <span class="chip">Commerce Tools</span><span class="chip">Terraform</span><span class="chip">Entra ID</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="work-item">
+        <div class="work-kind">Healthcare · FHIR</div>
+        <div>
+          <h3>FHIR Healthcare API Platform</h3>
+          <p>
+            Designed a highly scalable, standards-compliant healthcare REST API system on FHIR,
+            built with .NET Core and Azure — Functions, Key Vault, SQL Database, and Storage —
+            secured with Azure AD, OAuth 2.0, and RSA asymmetric encryption. Also led a real-time
+            QA analytics platform with an Angular / D3.js front end on AKS and SignalR.
+          </p>
+          <div class="chips">
+            <span class="chip">FHIR</span><span class="chip">.NET Core</span><span class="chip">Azure Functions</span>
+            <span class="chip">OAuth 2.0</span><span class="chip">Key Vault</span><span class="chip">SignalR</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="work-item">
+        <div class="work-kind">Media · Fox Entertainment</div>
+        <div>
+          <h3>Global Film-Pricing Platform</h3>
+          <p>
+            Delivered a VOD/EST pricing tool for Fox Entertainment supporting channel partners
+            including Google, Amazon, Apple, and Sony — ASP.NET Core and Angular on Azure PaaS
+            with Okta authentication. Also built microservices for Ingram Micro serving Fortune 50
+            clients.
+          </p>
+          <div class="chips">
+            <span class="chip">ASP.NET Core</span><span class="chip">Angular</span><span class="chip">Azure PaaS</span>
+            <span class="chip">Okta</span><span class="chip">Logic Apps</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="work-item">
+        <div class="work-kind">Banking · Insurance</div>
+        <div>
+          <h3>Financial Systems at Scale</h3>
+          <p>
+            Delivered a Centralized Accounting System for ICICI Bank Treasury, a risk-assessment
+            and cost-benefit reporting platform, and SOA services for Birla Sun Life Insurance
+            across Dev, UAT, and Production — the regulated-industry foundation behind how I
+            design auditable systems today.
+          </p>
+          <div class="chips">
+            <span class="chip">SOA</span><span class="chip">WCF</span><span class="chip">MVC</span>
+            <span class="chip">SQL Server</span><span class="chip">AngularJS</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ EXPERIENCE ============ -->
+  <section id="experience">
+    <div class="wrap">
+      <div class="sec-head"><span class="tag">03 — Experience</span><h2>Eighteen years in production</h2></div>
+      <div class="timeline">
+        <div class="t-item">
+          <div class="t-when">Mar 2024 — Present</div>
+          <h3>Lead Consultant</h3>
+          <div class="org">Xebia · Pune</div>
+          <p>Leading a microservices, event-based e-commerce platform for a 40+ member program on Azure — and building autonomous AI agents with the Claude API and BMAD multi-agent framework.</p>
+        </div>
+        <div class="t-item">
+          <div class="t-when">Dec 2022 — Nov 2023</div>
+          <h3>Technical Consultant</h3>
+          <div class="org">Kaara · Hyderabad</div>
+          <p>Designed .NET 6 microservices for the Nation Benefits Catalog Portal using CQRS with per-service PostgreSQL schemas, on Azure with API Management, Service Bus, Redis, and SignalR.</p>
+        </div>
+        <div class="t-item">
+          <div class="t-when">Feb 2022 — Jun 2022</div>
+          <h3>Lead Developer</h3>
+          <div class="org">Sumeru Solutions (Publicis Sapient)</div>
+          <p>Led support for Medtronic's globally distributed microservices systems — .NET Core, NServiceBus, Elasticsearch, SAP Hybris, OpenID.</p>
+        </div>
+        <div class="t-item">
+          <div class="t-when">Jun 2018 — Nov 2021</div>
+          <h3>Lead Developer / Senior Software Engineer</h3>
+          <div class="org">Periscope Technologies · Mumbai</div>
+          <p>Designed a FHIR-standards healthcare API system and a real-time QA analytics platform on Azure — with security via Azure AD, OAuth 2.0, and RSA encryption.</p>
+        </div>
+        <div class="t-item">
+          <div class="t-when">Nov 2016 — Jun 2018</div>
+          <h3>Senior Software Engineer</h3>
+          <div class="org">Larsen &amp; Toubro Infotech (LTI) · Mumbai</div>
+          <p>Built microservices for Ingram Micro and the Stargate film-pricing tool for Fox Entertainment on Azure PaaS, serving Fortune 50 clients with Okta authentication.</p>
+        </div>
+        <div class="t-item">
+          <div class="t-when">May 2014 — Oct 2016</div>
+          <h3>Senior Software Engineer / Team Lead</h3>
+          <div class="org">Clover Infotech · Thane</div>
+          <p>Delivered ICICI Bank Treasury's Centralized Accounting System and SOA services for Birla Sun Life Insurance.</p>
+        </div>
+        <div class="t-item">
+          <div class="t-when">2008 — 2014</div>
+          <h3>Software Developer &amp; Engineer</h3>
+          <div class="org">Duce Software · Dreams Softtech · Flexcel</div>
+          <p>ERP, financial accounting, and inventory systems on .NET, WPF, and SQL Server — where the foundations were laid.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ APPROACH ============ -->
+  <section id="approach">
+    <div class="wrap">
+      <div class="sec-head"><span class="tag">04 — Approach</span><h2>How I think about architecture</h2></div>
+      <div class="approach-grid">
+        <div class="approach-card">
+          <span class="k">primitives &gt; products</span>
+          <h3>Platform-agnostic by design</h3>
+          <p>Compute/storage separation, identity federation, messaging, orchestration — the primitives outlive any vendor. I architect on primitives so clouds become deployment details.</p>
+        </div>
+        <div class="approach-card">
+          <span class="k">guardrails &gt; vibes</span>
+          <h3>AI you can put in production</h3>
+          <p>Agents are only as trustworthy as their constraints. I treat guardrails, tool-permission design, and multi-agent orchestration as first-class architecture, not afterthoughts.</p>
+        </div>
+        <div class="approach-card">
+          <span class="k">compliance as code</span>
+          <h3>Built for regulated reality</h3>
+          <p>FHIR standards, OAuth 2.0, RSA encryption, auditable treasury systems — in healthcare, banking and insurance, compliance is a design constraint from day one. I've shipped under it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ABOUT ============ -->
+  <section id="about">
+    <div class="wrap">
+      <div class="sec-head"><span class="tag">05 — About</span><h2>One throughline: production software</h2></div>
+      <div class="about-grid">
+        <div>
+          <p>
+            I started in .NET in 2008, when service-oriented architecture was the frontier, and
+            I've carried enterprise systems through every shift since — into the cloud, into
+            containers, into event-driven microservices, and now into the agentic era.
+          </p>
+          <p>
+            Along the way I've shipped for ICICI Bank and Birla Sun Life Insurance, built
+            FHIR-compliant healthcare platforms, delivered a global film-pricing tool for Fox
+            Entertainment, and supported Medtronic's production microservices. Today, as a Lead
+            Consultant at Xebia, I lead a large event-driven commerce platform on Azure — and
+            build AI agents where Claude acts as a reliable component inside well-governed
+            systems. Not demos: production software.
+          </p>
+          <p>
+            Outside client work I build in public — open-source agents, multi-agent experiments
+            with BMAD, and writing about what actually works when AI meets enterprise constraints.
+          </p>
+        </div>
+        <div>
+          <div class="cred-box">
+            <h3>Certifications</h3>
+            <ul>
+              <li>AZ-204 — Azure Developer Associate <span>· Microsoft</span></li>
+              <li>Databricks Fundamentals <span>· Databricks Academy</span></li>
+            </ul>
+          </div>
+          <div class="cred-box">
+            <h3>Education</h3>
+            <ul>
+              <li>M.Sc. Computer Science <span>· University of Mumbai, 2007</span></li>
+              <li>B.Sc. Physics <span>· University of Mumbai, 2005</span></li>
+            </ul>
+          </div>
+          <div class="cred-box">
+            <h3>Languages</h3>
+            <ul>
+              <li>English <span>· Professional</span></li>
+              <li>Hindi <span>· Professional</span></li>
+              <li>Marathi <span>· Native</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section id="contact" class="contact">
+    <div class="wrap">
+      <div class="sec-head"><span class="tag">06 — Contact</span></div>
+      <h2>Building something where enterprise rigor meets AI? <em>Let's talk.</em></h2>
+      <div class="cta-row" style="margin-top: 36px;">
+        <a class="btn solid" href="mailto:niluniverse@gmail.com">niluniverse@gmail.com</a>
+        <a class="btn" href="https://www.linkedin.com/in/nileshmohite" rel="noopener">LinkedIn</a>
+        <a class="btn" href="https://github.com/" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap foot-inner">
+    <span>© 2026 Nilesh Mohite — niluniverse.com · Terminal Atelier</span>
+    <span>built with plain HTML · hosted on Azure Static Web Apps</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  /* ---------- Theme switcher ---------- */
+  var buttons = document.querySelectorAll('.theme-switch button');
+  buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.documentElement.setAttribute('data-theme', btn.getAttribute('data-set'));
+      buttons.forEach(function (b) {
+        b.classList.toggle('active', b === btn);
+        b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+      });
+    });
+  });
+
+  /* ---------- Terminal replay ---------- */
+  var el = document.getElementById('term');
+  if (!el) return;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var lines = [
+    ['<span class="p">nilesh@atelier:~$</span> agent run --story PROJ-142', 700],
+    ['<span class="c"># fetching story from Jira…</span>', 500],
+    ['  <span class="hi">PROJ-142</span> — "Add partial-capture support to payment service"', 650],
+    ['<span class="c"># planning with Claude · strategy: mcp-tool-loop</span>', 800],
+    ['  -> read  src/Payments/CaptureHandler.cs', 350],
+    ['  -> edit  src/Payments/CaptureHandler.cs  <span class="c">(+41 −6)</span>', 350],
+    ['  -> write tests/Payments/PartialCaptureTests.cs', 500],
+    ['<span class="c"># running test suite…</span>', 700],
+    ['  <span class="ok">✓ 128 passed</span>  · 0 failed · 3.2s', 600],
+    ['<span class="c"># opening pull request…</span>', 700],
+    ['<span class="ok">✓ PR #87 opened:</span> <span class="hi">feat: partial capture with idempotency guard</span>', 900],
+    ['<span class="p">nilesh@atelier:~$</span> <span class="c"># from Jira story to reviewed PR — no human keystrokes.</span>', 400]
+  ];
+
+  function render(upTo, withCursor) {
+    var html = '';
+    for (var i = 0; i < upTo; i++) html += lines[i][0] + '\n';
+    if (withCursor) html += '<span class="cursor"></span>';
+    el.innerHTML = html;
+  }
+
+  if (reduce) { render(lines.length, false); return; }
+
+  var idx = 0;
+  function step() {
+    idx++;
+    render(idx, idx < lines.length);
+    if (idx < lines.length) {
+      setTimeout(step, lines[idx - 1][1]);
+    } else {
+      setTimeout(function () { idx = 0; render(0, true); setTimeout(step, 600); }, 6000);
+    }
+  }
+  render(0, true);
+  setTimeout(step, 800);
+})();
+</script>
+
+</body>
+</html>
