@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <!-- niluniverse — favicon (bolder for small sizes) -->
+  <rect x="2" y="2" width="116" height="116" rx="30" fill="#0A66C2"/>
+  <polyline points="28,40 56,62 28,84" stroke="#FFFFFF" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="62" y="72" width="32" height="16" rx="5" fill="#FFFFFF"/>
+</svg>
