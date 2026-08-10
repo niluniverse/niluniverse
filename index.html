@@ -371,7 +371,58 @@
     .cursor { animation: none; }
     body { transition: none; }
   }
-</style>
+
+  /* ===== 07 Writing ===== */
+  .writing-head { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:28px; }
+  .view-switch { display:flex; border:1px solid var(--line); border-radius:var(--radius-btn); overflow:hidden; background:var(--panel); flex:none; }
+  .view-switch button { display:flex; align-items:center; gap:7px; font-family:var(--mono); font-size:.72rem; letter-spacing:.04em;
+    background:none; border:none; color:var(--dim); padding:9px 14px; cursor:pointer; transition:color .2s, background .2s; }
+  .view-switch button.on { background:var(--panel-2); color:var(--accent); }
+  .view-switch button:not(.on):hover { color:var(--head); }
+  .view-switch svg { width:13px; height:13px; fill:currentColor; }
+
+  .posts { display:grid; gap:18px; }
+  .posts.tiles { grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); }
+  .posts.list  { grid-template-columns:1fr; }
+
+  .post { --pc:var(--accent); display:flex; flex-direction:column; border:1px solid var(--line);
+    border-radius:6px; background:var(--panel); overflow:hidden; text-decoration:none;
+    transition:transform .25s cubic-bezier(.2,.7,.2,1), border-color .25s, box-shadow .25s;
+    animation:postIn .35s ease both; }
+  .post:hover { transform:translateY(-3px); border-color:var(--pc); box-shadow:0 18px 40px -22px var(--shadow); }
+  @keyframes postIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+
+  .post-banner { height:104px; flex:none; display:flex; align-items:center; justify-content:center;
+    border-bottom:1px solid var(--line); position:relative; overflow:hidden; }
+  .post-banner span { font-size:2rem; transition:transform .3s; }
+  .post:hover .post-banner span { transform:scale(1.12); }
+  .pb-outbox { background:radial-gradient(80% 120% at 50% 0%, #1B2C4E 0%, #0E1526 70%); }
+  .pb-noir   { background:radial-gradient(80% 120% at 50% 0%, #15272C 0%, #0B1315 70%); }
+  .pb-stage  { background:radial-gradient(80% 120% at 50% 110%, #4E1723 0%, #1B0E13 70%); }
+
+  .post-body { padding:16px 18px 18px; display:flex; flex-direction:column; gap:8px; flex:1; }
+  .post-kicker { font-family:var(--mono); font-size:.62rem; letter-spacing:.2em; text-transform:uppercase; color:var(--pc); }
+  .post h3 { font-size:1.02rem; line-height:1.36; color:var(--head); }
+  .post:hover h3 { color:var(--pc); }
+  .post p { font-size:.87rem; color:var(--dim); flex:1; line-height:1.6; }
+  .post-meta { display:flex; align-items:center; gap:12px; flex-wrap:wrap; font-family:var(--mono);
+    font-size:.66rem; color:var(--dim); padding-top:9px; border-top:1px dashed var(--line); }
+  .post-meta .rt { margin-left:auto; color:var(--pc); }
+
+  .post[data-p="outbox"] { --pc:#E8A33D; }
+  .post[data-p="noir"]   { --pc:#3FD0C9; }
+  .post[data-p="stage"]  { --pc:#FFCF5C; }
+
+  .posts.list .post { flex-direction:row; align-items:stretch; }
+  .posts.list .post-banner { width:140px; height:auto; min-height:108px; border-bottom:none; border-right:1px solid var(--line); }
+  .posts.list .post-banner span { font-size:1.6rem; }
+  .posts.list .post p { flex:initial; }
+  @media (max-width:560px){
+    .posts.list .post-banner { width:78px; }
+    .posts.list .post-banner span { font-size:1.35rem; }
+  }
+
+  </style>
 </head>
 <body>
 
@@ -386,6 +437,7 @@
         <a href="#technologies">technologies</a>
         <a href="#work">work</a>
         <a href="#experience">experience</a>
+        <a href="https://blog.niluniverse.com" target="_blank" rel="noopener">blog</a>
         <a href="#about">about</a>
         <a href="#contact">contact</a>
       </div>
@@ -558,14 +610,14 @@
   <!-- ============ WORK ============ -->
   <section id="work" class="alt">
     <div class="wrap">
-      <div class="sec-head"><span class="tag">02 — Selected work</span><h2>Systems I've built</h2></div>
+      <div class="sec-head"><span class="tag">02 — Selected work</span><h2>Systems I've helped build</h2></div>
 
       <div class="work-item">
         <div class="work-kind">Open source · AI agent</div>
         <div>
           <h3>Autonomous AI Coding Agent</h3>
           <p>
-            An autonomous .NET agent built on the Claude API that reads Jira stories, generates
+            A personal open-source project: an autonomous .NET agent built on the Claude API that reads Jira stories, generates
             production-ready code, and raises GitHub pull requests end to end — no manual
             intervention. Interchangeable execution strategies (single-shot, MCP tool-use loop,
             mock mode), with the orchestration library open-sourced. Now extended with the BMAD
@@ -584,10 +636,11 @@
         <div>
           <h3>Event-Driven Commerce Platform</h3>
           <p>
-            Leading development of a microservices-driven, event-based e-commerce platform serving
-            a 40+ member program: .NET 8 domain APIs for Payment, Checkout, Loyalty, Review, and
-            Consumer Engagement on Azure AKS, integrating Commerce Tools, Talon.one, Optimove,
-            Contentful, Zendesk, and BazaarVoice — provisioned with Terraform and Azure DevOps CI/CD.
+            Part of a 40+ member program delivering a microservices-driven, event-based e-commerce
+            platform, where I lead development across .NET 8 domain APIs for Payment, Checkout,
+            Loyalty, Review, and Consumer Engagement on Azure AKS. The platform integrates Commerce
+            Tools, Talon.one, Optimove, Contentful, Zendesk, and BazaarVoice — provisioned with
+            Terraform and Azure DevOps CI/CD.
           </p>
           <div class="chips">
             <span class="chip">.NET 8</span><span class="chip">AKS</span><span class="chip">Service Bus</span>
@@ -601,10 +654,11 @@
         <div>
           <h3>FHIR Healthcare API Platform</h3>
           <p>
-            Designed a highly scalable, standards-compliant healthcare REST API system on FHIR,
-            built with .NET Core and Azure — Functions, Key Vault, SQL Database, and Storage —
-            secured with Azure AD, OAuth 2.0, and RSA asymmetric encryption. Also led a real-time
-            QA analytics platform with an Angular / D3.js front end on AKS and SignalR.
+            Contributed to the design of a highly scalable, standards-compliant healthcare REST API
+            system on FHIR, built with .NET Core and Azure — Functions, Key Vault, SQL Database,
+            and Storage — secured with Azure AD, OAuth 2.0, and RSA asymmetric encryption. Within
+            the same team I led the real-time QA analytics workstream, with an Angular / D3.js
+            front end on AKS and SignalR.
           </p>
           <div class="chips">
             <span class="chip">FHIR</span><span class="chip">.NET Core</span><span class="chip">Azure Functions</span>
@@ -618,10 +672,10 @@
         <div>
           <h3>Global Film-Pricing Platform</h3>
           <p>
-            Delivered a VOD/EST pricing tool for a global film &amp; entertainment studio,
-            supporting major digital channel partners worldwide — ASP.NET Core and Angular on
-            Azure PaaS with Okta authentication. Also built microservices for a Fortune 500
-            technology distributor.
+            Worked within the team that delivered a VOD/EST pricing tool for a global film &amp;
+            entertainment studio, supporting major digital channel partners worldwide — ASP.NET
+            Core and Angular on Azure PaaS with Okta authentication. Also contributed
+            microservices for a Fortune 500 technology distributor.
           </p>
           <div class="chips">
             <span class="chip">ASP.NET Core</span><span class="chip">Angular</span><span class="chip">Azure PaaS</span>
@@ -635,9 +689,9 @@
         <div>
           <h3>Financial Systems at Scale</h3>
           <p>
-            Delivered a Centralized Accounting System for the treasury division of a leading
-            private-sector bank, a risk-assessment and cost-benefit reporting platform, and SOA
-            services for a major life-insurance provider across Dev, UAT, and Production — the
+            Part of the teams behind a Centralized Accounting System for the treasury division of a
+            leading private-sector bank, a risk-assessment and cost-benefit reporting platform, and
+            SOA services for a major life-insurance provider across Dev, UAT, and Production — the
             regulated-industry foundation behind how I design auditable systems today.
           </p>
           <div class="chips">
@@ -778,9 +832,67 @@
   </section>
 
   <!-- ============ ABOUT ============ -->
+  <!-- ============ WRITING ============ -->
+  <section id="writing" class="alt">
+    <div class="wrap">
+      <div class="writing-head">
+        <div class="sec-head" style="margin-bottom:0">
+          <span class="tag">07 — Writing</span>
+          <h2>Engineering, told cinematically</h2>
+        </div>
+        <div class="view-switch" role="group" aria-label="Switch between tile and list view">
+          <button type="button" id="vTiles" class="on" aria-pressed="true">
+            <svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+            tiles
+          </button>
+          <button type="button" id="vList" aria-pressed="false">
+            <svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/></svg>
+            list
+          </button>
+        </div>
+      </div>
+
+      <p style="margin:-12px 0 22px;font-family:var(--mono);font-size:.75rem;color:var(--dim)">
+        All stories live at <a href="https://blog.niluniverse.com" target="_blank" rel="noopener" style="color:var(--accent)">blog.niluniverse.com</a> &nearr;
+      </p>
+
+      <div class="posts tiles" id="postGrid">
+        <a class="post" target="_blank" rel="noopener" data-p="outbox" href="https://blog.niluniverse.com/outbox-pattern.html">
+          <div class="post-banner pb-outbox"><span>&#129464;</span></div>
+          <div class="post-body">
+            <div class="post-kicker">Distributed Systems &middot; Hero Story</div>
+            <h3>The Outbox Pattern: The Silent Hero of Distributed Services</h3>
+            <p>How one table and one transaction absorb broker outages, retries, and traffic spikes so your microservices don't have to &mdash; the pattern that never trends, yet quietly holds up production.</p>
+            <div class="post-meta"><span>Aug 2026</span><span>.NET &middot; Azure &middot; K8s</span><span class="rt">9 min &rarr;</span></div>
+          </div>
+        </a>
+
+        <a class="post" target="_blank" rel="noopener" data-p="noir" href="https://blog.niluniverse.com/observability-detective.html">
+          <div class="post-banner pb-noir"><span>&#128373;&#65039;</span></div>
+          <div class="post-body">
+            <div class="post-kicker">Observability &middot; Detective Noir</div>
+            <h3>The Case of the Vanishing Request: Distributed Tracing</h3>
+            <p>A request died somewhere across forty services &mdash; no body, no witness. Three witnesses (logs, metrics, traces), one thread (the trace ID), and the waterfall exhibit that cracks the case in one screen.</p>
+            <div class="post-meta"><span>Aug 2026</span><span>OpenTelemetry &middot; Azure Monitor</span><span class="rt">10 min &rarr;</span></div>
+          </div>
+        </a>
+
+        <a class="post" target="_blank" rel="noopener" data-p="stage" href="https://blog.niluniverse.com/deterministic-ai-systems.html">
+          <div class="post-banner pb-stage"><span>&#127917;</span></div>
+          <div class="post-body">
+            <div class="post-kicker">AI Engineering &middot; Comedy in Five Acts</div>
+            <h3>Same Show Every Night: Deterministic Systems from Non-Deterministic AI</h3>
+            <p>You've hired a brilliant improv actor for a role that must be identical eight shows a week. Schemas, validators, a deterministic orchestration sandwich, and evals &mdash; with a live interactive demo.</p>
+            <div class="post-meta"><span>Aug 2026</span><span>LLM &middot; Evals &middot; Guardrails</span><span class="rt">11 min &rarr;</span></div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
   <section id="about">
     <div class="wrap">
-      <div class="sec-head"><span class="tag">07 — About</span><h2>One throughline: production software</h2></div>
+      <div class="sec-head"><span class="tag">08 — About</span><h2>One throughline: production software</h2></div>
       <div class="about-grid">
         <div>
           <p>
@@ -789,13 +901,13 @@
             containers, into event-driven microservices, and now into the agentic era.
           </p>
           <p>
-            Along the way I've shipped treasury and insurance systems for leading Indian financial
-            institutions, built FHIR-compliant healthcare platforms, delivered a global
-            film-pricing tool for a major entertainment studio, and supported a global
-            medical-device manufacturer's production microservices. Today, as a Lead
-            Consultant at Xebia, I lead a large event-driven commerce platform on Azure — and
-            build AI agents where Claude acts as a reliable component inside well-governed
-            systems. Not demos: production software.
+            Along the way I've worked on teams that shipped treasury and insurance systems for leading
+            Indian financial institutions, FHIR-compliant healthcare platforms, a global
+            film-pricing tool for a major entertainment studio, and a global medical-device
+            manufacturer's production microservices. Today, as a Lead Consultant at Xebia, I lead
+            development on a large event-driven commerce platform on Azure — and build AI agents
+            where Claude acts as a reliable component inside well-governed systems. Not demos:
+            production software.
           </p>
           <p>
             Outside client work I build in public — open-source agents, multi-agent experiments
@@ -826,7 +938,7 @@
   <!-- ============ CONTACT ============ -->
   <section id="contact" class="contact">
     <div class="wrap">
-      <div class="sec-head"><span class="tag">08 — Contact</span></div>
+      <div class="sec-head"><span class="tag">09 — Contact</span></div>
       <h2>Building something where enterprise rigor meets AI? <em>Let's talk.</em></h2>
       <div class="cta-row" style="margin-top: 36px;">
         <a class="btn solid" href="mailto:niluniverse@gmail.com"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>niluniverse@gmail.com</a>
@@ -840,8 +952,8 @@
 
 <footer>
   <div class="wrap foot-inner">
-    <span>© 2026 Nilesh Mohite — niluniverse.com</span>
-    <span>Azure Static Web Apps · always shipping</span>
+    <span>© 2026 Nilesh Mohite — niluniverse.com &nbsp;|&nbsp; <a href="https://blog.niluniverse.com" target="_blank" rel="noopener" style="color:var(--accent)">Blog</a></span>
+    <span>Written between deployments &middot; Amalner, India</span>
   </div>
 </footer>
 
@@ -903,5 +1015,20 @@
 })();
 </script>
 
+<script>
+(function(){
+  var g=document.getElementById('postGrid'), t=document.getElementById('vTiles'), l=document.getElementById('vList');
+  if(!g||!t||!l) return;
+  function set(tiles){
+    g.classList.toggle('tiles',tiles); g.classList.toggle('list',!tiles);
+    t.classList.toggle('on',tiles); l.classList.toggle('on',!tiles);
+    t.setAttribute('aria-pressed',tiles); l.setAttribute('aria-pressed',!tiles);
+    var c=g.querySelectorAll('.post');
+    for(var i=0;i<c.length;i++){ c[i].style.animation='none'; void c[i].offsetHeight; c[i].style.animation=''; c[i].style.animationDelay=(i*60)+'ms'; }
+  }
+  t.addEventListener('click',function(){set(true)});
+  l.addEventListener('click',function(){set(false)});
+})();
+</script>
 </body>
 </html>

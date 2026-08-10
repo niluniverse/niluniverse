@@ -1,0 +1,8 @@
+{
+  "trailingSlash": "auto",
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["*.png", "*.svg", "*.js", "*.css", "*.json"]
+  },
+  "globalHeaders": { "X-Content-Type-Options": "nosniff" }
+}
