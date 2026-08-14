@@ -1,0 +1,2138 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cinema">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Magician of Mahadata — How Apache Spark Got Its Superpowers</title>
+<meta name="description" content="A cinematic story of Apache Spark, the magician who processes mountains of data, and Databricks, the gurukul that trained him. Told simply, with living diagrams.">
+<meta name="author" content="Nilesh Mohite">
+<meta property="og:title" content="The Magician of Mahadata — How Apache Spark Got Its Superpowers">
+<meta property="og:description" content="A cinematic story of Apache Spark, the magician who processes mountains of data, and Databricks, the gurukul that trained him.">
+<meta property="og:url" content="https://blog.niluniverse.com/spark-magician.html">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="The Magician of Mahadata — How Apache Spark Got Its Superpowers">
+<meta name="twitter:description" content="A cinematic story of Apache Spark, the magician who processes mountains of data, and Databricks, the gurukul that trained him.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="favicon-180.png">
+<style>
+/* ============================================================
+   THE MAGICIAN OF MAHADATA — blog.niluniverse.com
+   Single-file cinematic story. No external dependencies.
+   ============================================================ */
+
+:root{
+  --night:#0b0a14;
+  --night2:#100e1c;
+  --sp-panel:#16132279;
+  --panel-solid:#171426;
+  --sp-line:#2b2540;
+  --ink:#ece7dc;
+  --muted:#a49bb8;
+  --saffron:#ff9a2e;
+  --ember:#ff5f3d;
+  --gold:#f6c65b;
+  --water:#4ec5ff;
+  --leaf:#5fd6a4;
+  --brick:#ff3621;
+  --violet:#a986ff;
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",-apple-system,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --maxw:760px;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--night);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:18px;
+  line-height:1.75;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(900px 600px at 15% -5%, #2a1b4d55, transparent 60%),
+    radial-gradient(800px 500px at 90% 10%, #4a1f2255, transparent 60%),
+    radial-gradient(1000px 700px at 50% 110%, #12283d55, transparent 60%);
+}
+.wrap{position:relative;z-index:1}
+
+/* ---------- typography ---------- */
+h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;letter-spacing:-.01em}
+p{margin:0 0 1.15em}
+a{color:var(--gold)}
+.container{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.wide{max-width:1000px;margin:0 auto;padding:0 22px}
+
+/* ---------- hero ---------- */
+.hero{
+  position:relative;min-height:100svh;display:flex;align-items:center;justify-content:center;
+  text-align:center;overflow:hidden;
+}
+#heroCanvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hero-inner{position:relative;z-index:2;padding:40px 22px;max-width:820px}
+.kicker{
+  font-family:var(--mono);font-size:12px;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--saffron);margin-bottom:26px;opacity:.95;
+}
+.hero h1{
+  font-size:clamp(40px,8.5vw,86px);margin:0 0 6px;
+  background:linear-gradient(180deg,#fff5e6 0%,var(--gold) 55%,var(--ember) 130%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 80px rgba(255,154,46,.18);
+}
+.hero h2{
+  font-size:clamp(17px,3.2vw,26px);font-weight:400;color:var(--muted);
+  margin:16px auto 0;max-width:620px;font-style:italic;
+}
+.hero .byline{margin-top:34px;font-family:var(--mono);font-size:12px;color:#6f6785;letter-spacing:.14em}
+.scroll-cue{
+  position:absolute;bottom:28px;left:50%;transform:translateX(-50%);z-index:2;
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:#6f6785;
+  animation:bob 2.4s ease-in-out infinite;
+}
+@keyframes bob{0%,100%{transform:translate(-50%,0);opacity:.5}50%{transform:translate(-50%,9px);opacity:1}}
+
+/* ---------- chapter framing ---------- */
+.chapter{padding:80px 0 30px}
+.ch-num{
+  font-family:var(--mono);font-size:11px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--saffron);display:flex;align-items:center;gap:14px;margin-bottom:14px;
+}
+.ch-num::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--saffron),transparent)}
+.chapter h2{font-size:clamp(28px,5.4vw,44px);margin:0 0 22px}
+.lede{font-size:1.12em;color:#d8d0e4}
+
+.drop::first-letter{
+  float:left;font-family:var(--serif);font-size:4.1em;line-height:.82;
+  padding:.06em .12em 0 0;color:var(--saffron);
+}
+
+blockquote{
+  margin:34px 0;padding:20px 26px;border-left:3px solid var(--saffron);
+  background:linear-gradient(90deg,rgba(255,154,46,.09),transparent);
+  font-family:var(--serif);font-size:1.16em;font-style:italic;color:#f4ecdd;
+}
+blockquote .who{display:block;margin-top:10px;font-size:.7em;font-style:normal;font-family:var(--mono);color:var(--muted);letter-spacing:.1em}
+
+.aside{
+  margin:30px 0;padding:18px 22px;border:1px solid var(--sp-line);border-radius:14px;
+  background:var(--sp-panel);font-size:.94em;color:#c9c1d8;
+}
+.aside b{color:var(--gold)}
+
+.term{color:var(--gold);font-weight:600}
+code{font-family:var(--mono);font-size:.86em;background:#241f38;padding:2px 7px;border-radius:5px;color:#ffd79a}
+
+/* ---------- figure shell ---------- */
+figure.fig{
+  margin:46px 0;padding:20px;border:1px solid var(--sp-line);border-radius:20px;
+  background:linear-gradient(180deg,#151223,#100e1b);
+  box-shadow:0 30px 80px -50px #000;
+}
+figure.fig .fig-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
+figure.fig .fig-tag{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--saffron);border:1px solid #3a2f22;padding:3px 8px;border-radius:999px}
+figure.fig h4{margin:0;font-size:19px}
+figure.fig figcaption{margin-top:14px;font-size:14px;color:var(--muted);line-height:1.6}
+.fig-stage{position:relative;margin-top:16px;border-radius:14px;overflow:hidden;background:#0c0a15;border:1px solid #221d35}
+
+/* ---------- controls ---------- */
+.ctrls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+button.btn{
+  font-family:var(--sans);font-size:14px;font-weight:600;
+  background:linear-gradient(180deg,#2a2340,#1d1830);color:var(--ink);
+  border:1px solid #3d3357;border-radius:10px;padding:9px 16px;cursor:pointer;
+  transition:.18s;
+}
+button.btn:hover{border-color:var(--saffron);color:#fff;transform:translateY(-1px)}
+button.btn:active{transform:translateY(0)}
+button.btn.primary{background:linear-gradient(180deg,var(--saffron),#e0761a);border-color:#ffb45e;color:#2a1500}
+button.btn.primary:hover{color:#1a0c00}
+button.btn.ghost{background:transparent}
+button.btn[disabled]{opacity:.4;cursor:not-allowed;transform:none}
+.slider-row{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:12px;color:var(--muted);flex:1;min-width:230px}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;height:4px;border-radius:99px;flex:1;
+  background:linear-gradient(90deg,var(--saffron),#3a3352);outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:17px;height:17px;border-radius:50%;
+  background:var(--gold);border:2px solid #2a2340;cursor:pointer;box-shadow:0 0 12px #f6c65b88;
+}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--gold);border:2px solid #2a2340;cursor:pointer}
+.pill{font-family:var(--mono);font-size:11px;color:var(--gold);border:1px solid #3d3357;border-radius:999px;padding:4px 10px;white-space:nowrap}
+
+/* ---------- misc ---------- */
+.hr-orn{display:flex;align-items:center;justify-content:center;gap:14px;margin:70px 0;color:#3f3757}
+.hr-orn::before,.hr-orn::after{content:"";height:1px;width:80px;background:linear-gradient(90deg,transparent,#3f3757,transparent)}
+
+table.tbl{width:100%;border-collapse:collapse;margin:30px 0;font-size:15px}
+table.tbl th,table.tbl td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--sp-line);vertical-align:top}
+table.tbl th{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--saffron)}
+table.tbl td:first-child{color:var(--gold);font-weight:600;white-space:nowrap}
+
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.7,.3,1)}
+.reveal.in{opacity:1;transform:none}
+
+footer.end{padding:70px 0 100px;border-top:1px solid var(--sp-line);margin-top:70px;text-align:center;color:var(--muted);font-size:14px}
+footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-style:italic;margin-bottom:8px}
+
+::selection{background:var(--saffron);color:#1a0c00}
+
+@media (max-width:640px){
+  body{font-size:17px}
+  figure.fig{padding:14px;border-radius:16px}
+  .chapter{padding:60px 0 20px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001s !important;transition-duration:.001s !important}
+  .reveal{opacity:1;transform:none}
+}
+
+  /* ==== Cinema theme (new default) + toggle button — shared with niluniverse.com ==== */
+  [data-theme="cinema"] {
+    --bg: #14171D; --panel: #1B1F27; --panel-2: #212630; --line: #2E3440;
+    --accent: #C9A24B; --accent-hi: #E6C06E; --on-accent: #14171D;
+    --text: #CBD1DA; --dim: #8891A0; --head: #F3F5F8; --ok: #7FBF8E;
+    --shadow: rgba(0,0,0,0.5);
+    --display-font: var(--serif); --display-weight: 500;
+    --radius-btn: 4px; --radius-chip: 4px; --ls-label: 0.14em;
+  }
+  .theme-toggle {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; flex: none;
+    border: 1px solid var(--line); border-radius: 50%;
+    background: var(--panel); color: var(--accent); cursor: pointer;
+    transition: background .18s, border-color .18s, transform .18s;
+  }
+  .theme-toggle:hover { background: var(--panel-2); border-color: var(--accent); transform: rotate(-8deg); }
+  .theme-toggle svg { width: 18px; height: 18px; }
+  .theme-toggle .icon-sun, .theme-toggle .icon-moon { display: none; }
+  html[data-theme="cinema"] .theme-toggle .icon-moon { display: block; }
+  html[data-theme="linkedin"] .theme-toggle .icon-sun { display: block; }
+  .back-bar { padding: 18px 24px 0; }
+  .back-link {
+    font-family: var(--mono); font-size: .76rem; letter-spacing: .03em;
+    color: var(--dim); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: color .2s, gap .2s;
+  }
+  .back-link:hover { color: var(--accent); gap: 10px; }
+  .end-back { padding: 6px 24px 60px; text-align: center; }
+  .end-back .back-link { justify-content: center; font-size: .82rem; }
+  .share-row { display: flex; align-items: center; gap: 8px; }
+  .share-label {
+    font-family: var(--mono); font-size: .68rem; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--dim); margin-right: 2px;
+  }
+  .share-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 50%; flex: none;
+    border: 1px solid var(--line); background: var(--panel);
+    color: var(--dim); cursor: pointer; text-decoration: none;
+    transition: color .18s, border-color .18s, background .18s, transform .18s;
+  }
+  .share-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--panel-2); transform: translateY(-1px); }
+  .share-btn svg { width: 14px; height: 14px; }
+  .share-btn.copied { color: var(--ok); border-color: var(--ok); }
+  .back-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .end-back { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  header.site { border-bottom: 1px solid var(--line); background: var(--bg); position: relative; z-index: 20; }
+  header.site .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+  header.site nav { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 64px; }
+  header.site .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--head); font-family: var(--mono); font-weight: 600; font-size: 15px; }
+  header.site .brand-mark { width: 28px; height: 28px; flex: none; }
+  header.site .b-nil { color: var(--accent); }
+
+  /* ==== Reading progress rail — shared with niluniverse.com ==== */
+  .rp-bar { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: transparent; z-index: 9999; pointer-events: none; }
+  .rp-fill { height: 100%; width: 0%; background: var(--accent); transition: width .1s linear; }
+  .rp-toc { position: fixed; right: 20px; bottom: 20px; z-index: 9998; font-family: var(--mono); }
+  .rp-toggle {
+    width: 52px; height: 52px; border-radius: 50%; flex: none;
+    background: var(--panel); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center; position: relative;
+    cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.35); padding: 0;
+  }
+  .rp-ring { position: absolute; inset: 0; width: 52px; height: 52px; transform: rotate(-90deg); }
+  .rp-ring-bg { fill: none; stroke: var(--line); stroke-width: 2.5; }
+  .rp-ring-fg { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 97.4; stroke-dashoffset: 97.4; transition: stroke-dashoffset .15s linear; }
+  .rp-pct { font-size: 10.5px; color: var(--head); font-weight: 600; position: relative; z-index: 1; }
+  .rp-panel {
+    position: absolute; right: 0; bottom: 64px; width: 260px; max-height: 60vh; overflow-y: auto;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px; box-shadow: 0 20px 50px rgba(0,0,0,.4);
+    opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .18s, transform .18s;
+  }
+  .rp-toc.open .rp-panel { opacity: 1; transform: none; pointer-events: auto; }
+  .rp-panel-head { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed var(--line); }
+  .rp-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+  .rp-list li a {
+    display: block; padding: 7px 8px; border-radius: 6px; font-size: 12.5px; line-height: 1.4;
+    color: var(--dim); text-decoration: none; transition: background .15s, color .15s;
+  }
+  .rp-list li a:hover { background: var(--bg); color: var(--head); }
+  .rp-list li.active a { color: var(--accent); background: var(--bg); font-weight: 600; }
+  @media (max-width: 640px) {
+    .rp-toc { right: 14px; bottom: 14px; }
+    .rp-toggle { width: 46px; height: 46px; }
+    .rp-ring { width: 46px; height: 46px; }
+    .rp-panel { width: min(78vw, 280px); }
+  }
+</style>
+</head>
+<body>
+<div class="rp-bar" id="rpBar"><div class="rp-fill" id="rpFill"></div></div>
+<div class="rp-toc" id="rpToc">
+  <button class="rp-toggle" id="rpToggle" type="button" aria-expanded="false" aria-label="Reading progress and section list">
+    <svg class="rp-ring" viewBox="0 0 36 36"><circle class="rp-ring-bg" cx="18" cy="18" r="15.5"/><circle class="rp-ring-fg" id="rpRing" cx="18" cy="18" r="15.5"/></svg>
+    <span class="rp-pct" id="rpPct">0%</span>
+  </button>
+  <div class="rp-panel" id="rpPanel">
+    <div class="rp-panel-head" id="rpStatus">0% read</div>
+    <ol class="rp-list" id="rpList"></ol>
+  </div>
+</div>
+<div class="wrap">
+
+<header class="site">
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="https://niluniverse.com">
+        <svg class="brand-mark" viewBox="0 0 120 120" fill="none" aria-hidden="true"><rect x="4" y="4" width="112" height="112" rx="26" fill="var(--accent)"/><polyline points="30,42 54,62 30,82" stroke="var(--on-accent)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><rect x="62" y="74" width="30" height="14" rx="4" fill="var(--on-accent)"/></svg>
+        <span><span class="b-nil">nil</span>universe</span>
+      </a>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" title="Switch to light theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.79"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.79" y2="4.22"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap back-bar">
+  <a class="back-link" href="index.html">&larr; All stories</a>
+  <div class="share-row"><a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.niluniverse.com%2Fspark-magician.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a><a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fblog.niluniverse.com%2Fspark-magician.html&text=The%20Magician%20of%20Mahadata%3A%20How%20Apache%20Spark%20Got%20Its%20Superpowers" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a><a class="share-btn" href="mailto:?subject=The%20Magician%20of%20Mahadata&body=https%3A%2F%2Fblog.niluniverse.com%2Fspark-magician.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a><button class="share-btn" type="button" data-copy-url="https://blog.niluniverse.com/spark-magician.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button></div>
+</div>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <canvas id="heroCanvas"></canvas>
+  <div class="hero-inner">
+    <div class="kicker">A Story for Data Engineers &nbsp;·&nbsp; blog.niluniverse.com</div>
+    <h1>The Magician of Mahadata</h1>
+    <h2>How a magician named Apache Spark learned to move mountains of data — and how a gurukul called Databricks made him unstoppable.</h2>
+    <div class="byline">Scroll slowly. The diagrams are alive.</div>
+  </div>
+  <div class="scroll-cue">↓ &nbsp; B E G I N</div>
+</section>
+
+<!-- ============ CHAPTER 1 ============ -->
+<section class="chapter">
+<div class="container reveal">
+  <div class="ch-num">Chapter One</div>
+  <h2>The Village That Drowned in Its Own Ledgers</h2>
+
+  <p class="lede drop">There was once a village called Mahadata. It was a happy village. Every shop, every bullock cart, every phone call, every click — all of it was written down in big fat ledgers and kept safely in the village godown.</p>
+
+  <p>In the beginning, one accountant was enough. His name was Single Machine. He was a good man, very sincere. Every night he would sit with one lamp, open one ledger, and add up the day's numbers. By morning, the report was ready. The village was happy.</p>
+
+  <p>But the village grew. Then it grew again. Then it grew in a way nobody had planned for. Ledgers became a hundred. A hundred became a lakh. Soon the godown was so full that the doors would not close.</p>
+
+  <p>Poor Single Machine kept sitting with his one lamp. He was not lazy — he was simply <em>one</em>. He could read only one page at a time. By the time he finished the morning report, it was already evening, and one more day of data was waiting outside the door, tapping its foot.</p>
+
+  <blockquote>
+    "Give me a bigger table, a bigger lamp, a bigger chair," Single Machine begged.<br>
+    The village elders gave him all three. He was still one man.
+    <span class="who">— The problem nobody could buy their way out of</span>
+  </blockquote>
+
+  <p>This is the first truth of our story, and please remember it, because everything else grows from here: <span class="term">when data grows faster than one machine can grow, you cannot go bigger. You have to go wider.</span></p>
+
+  <p>Not one accountant with a bigger table. <strong>Many accountants, each with a small table, all working at the same time.</strong></p>
+
+  <p>Try it yourself. Below is the village godown. Move the slider and give Single Machine some company.</p>
+</div>
+
+<div class="wide reveal">
+<figure class="fig">
+  <div class="fig-head">
+    <span class="fig-tag">Living Diagram 01</span>
+    <h4>One lamp, or many hands?</h4>
+  </div>
+  <div class="fig-stage"><canvas id="handsCanvas" height="330"></canvas></div>
+  <div class="ctrls">
+    <div class="slider-row">
+      <span>HANDS</span>
+      <input type="range" id="handsSlider" min="1" max="12" value="1">
+      <span class="pill" id="handsVal">1 worker</span>
+    </div>
+    <span class="pill" id="handsTime">— </span>
+    <button class="btn primary" id="handsRun">Run the night's work</button>
+  </div>
+  <figcaption><b>What you are seeing:</b> 96 ledgers (data blocks) must be totalled. Each worker picks up one ledger at a time. Add workers and the same mountain finishes sooner — not because anyone became faster, but because the work got <em>divided</em>. This one idea is the foundation of every big data engine ever built. In Spark's language, each ledger is a <span style="color:#f6c65b">partition</span> and each worker is a <span style="color:#f6c65b">core inside an executor</span>.</figcaption>
+</figure>
+</div>
+</section>
+
+<div class="hr-orn">✦</div>
+
+<!-- ============ CHAPTER 2 ============ -->
+<section class="chapter">
+<div class="container reveal">
+  <div class="ch-num">Chapter Two</div>
+  <h2>The Old Sage Who Wrote Everything Down</h2>
+
+  <p class="lede drop">The village found its first saviour in an old sage named MapReduce. He was, let me say clearly, a great man. He was the first person who taught Mahadata how to divide work across many hands. Whatever came after him stands on his shoulders. Never forget that.</p>
+
+  <p>The sage's method was simple and very disciplined. He would take the mountain of ledgers, split them among many workers — this he called <span class="term">Map</span>. Then he would collect all the small answers and add them into one big answer — this he called <span class="term">Reduce</span>.</p>
+
+  <p>It worked. The village was saved. But the sage had one habit, born of an old fear.</p>
+
+  <p><strong>After every single step, he wrote the answer back into the godown.</strong></p>
+
+  <p>Finished the Map? Write it to disk. Starting the Reduce? Read it back from disk. Second round of work? Write to disk again, read again. Every step, a trip to the godown and back.</p>
+
+  <p>Why? Because the sage had seen workers fall sick and die in the middle of a job. If everything is written down on paper, nothing is ever lost. It was a very wise fear. It was also a very expensive habit.</p>
+
+  <div class="aside">
+    <b>Why disk hurts so much:</b> reading from memory (RAM) is like taking a book from the table in front of you. Reading from disk is like sending a boy on a cycle to the godown, two kilometres away. Even a fast cycle is no match for your own hand. In real numbers, memory is roughly a hundred times quicker than disk — and machine learning or interactive queries want the same data ten, twenty, fifty times in a row.
+  </div>
+
+  <p>So a job that needed ten steps made twenty trips to the godown. The workers spent more time cycling than counting. And the village — which now wanted answers in seconds, not overnight — began to grow restless again.</p>
+
+  <p>Watch the two methods run the same ten-step job.</p>
+</div>
+
+<div class="wide reveal">
+<figure class="fig">
+  <div class="fig-head">
+    <span class="fig-tag">Living Diagram 02</span>
+    <h4>The godown trip: disk at every step vs. keep it in hand</h4>
+  </div>
+  <div class="fig-stage"><canvas id="raceCanvas" height="290"></canvas></div>
+  <div class="ctrls">
+    <button class="btn primary" id="raceRun">Start the race</button>
+    <span class="pill" id="raceMR">Sage MapReduce: ready</span>
+    <span class="pill" id="raceSP">Magician Spark: ready</span>
+  </div>
+  <figcaption><b>What you are seeing:</b> the same ten-stage job. The sage completes a stage, then makes the long trip to disk and back before the next stage may begin. The magician keeps the working data in memory and simply carries on. Nothing about the <em>counting</em> got faster — only the fetching. For iterative work like training a model, this single change was worth <strong>10x to 100x</strong>.</figcaption>
+</figure>
+</div>
+</section>
+
+<div class="hr-orn">✦ ✦ ✦</div>
+
+<!-- ============ CHAPTER 3 ============ -->
+<section class="chapter">
+<div class="container reveal">
+  <div class="ch-num">Chapter Three</div>
+  <h2>Entry of the Magician</h2>
+
+  <p class="lede drop">He did not arrive on a chariot. He arrived from a university laboratory in Berkeley, in the year 2009, as a small research project with a strange promise: <em>let the data stay in memory, and let the machines remember how it was made.</em></p>
+
+  <p>The village called him <span class="term">Apache Spark</span>.</p>
+
+  <p>He was not a bigger accountant. He was not a faster cycle. He was something the village had not seen before — a magician who could stand in one place and command a thousand hands at once, and who never, ever forgot the steps of his own spell.</p>
+
+  <p>The elders tested him, of course. They gave him the sage's hardest job and asked him to sort a mountain of records. He finished it in a fraction of the time, using a fraction of the machines. The village stopped arguing.</p>
+
+  <p>But the elders asked the correct question, the question you should always ask when someone claims magic:</p>
+
+  <blockquote>
+    "Bhai, where exactly does the superpower come from?"
+    <span class="who">— The only question that matters</span>
+  </blockquote>
+
+  <p>The magician smiled and said: "I have four powers. Let me show you each one, one by one. There is no magic. There is only good design."</p>
+</div>
+
+<div class="container reveal">
+  <h3 style="font-size:26px;margin:60px 0 10px;color:var(--gold)">Power One — I break the mountain before I lift it</h3>
+
+  <p>The magician never looks at a mountain and thinks "mountain". He looks at it and immediately sees <span class="term">partitions</span> — hundreds of small, bite-sized pieces, each one small enough to fit comfortably in a worker's hands.</p>
+
+  <p>Then he sends those pieces out to his workers, who are called <span class="term">executors</span>. Each executor is a separate machine (or a separate slice of one) with its own memory and its own hands, sitting in a big hall called the <span class="term">cluster</span>.</p>
+
+  <p>The magician himself does not do the counting. He sits in the middle as the <span class="term">driver</span> — the one who holds the plan, decides who does what, and collects the final answer. A good general does not fight; he directs.</p>
+
+  <div class="aside">
+    <b>Remember the shape:</b> One <b>driver</b> (the brain, holds the plan) → many <b>executors</b> (the hands, hold data and do work) → each executor has several <b>cores</b> (each core handles one partition at a time). Get this picture right and 80% of Spark stops feeling mysterious.
+  </div>
+
+  <p>Below, the magician is dividing a job. Change how finely he breaks the mountain and see what happens.</p>
+</div>
+
+<div class="wide reveal">
+<figure class="fig">
+  <div class="fig-head">
+    <span class="fig-tag">Living Diagram 03</span>
+    <h4>Driver, executors, partitions — the magician's formation</h4>
+  </div>
+  <div class="fig-stage"><canvas id="clusterCanvas" height="380"></canvas></div>
+  <div class="ctrls">
+    <div class="slider-row">
+      <span>EXECUTORS</span>
+      <input type="range" id="exSlider" min="1" max="6" value="4">
+      <span class="pill" id="exVal">4</span>
+    </div>
+    <div class="slider-row">
+      <span>PARTITIONS</span>
+      <input type="range" id="partSlider" min="4" max="64" value="24">
+      <span class="pill" id="partVal">24</span>
+    </div>
+    <button class="btn primary" id="clusterRun">Send the work out</button>
+  </div>
+  <figcaption><b>Play with it:</b> Too few partitions and some executors sit idle with nothing to do — you paid for hands you did not use. Too many tiny partitions and the magician wastes his breath just giving instructions (scheduling overhead). The sweet spot is roughly <strong>2 to 4 partitions per available core</strong>. This is the single most common reason a Spark job is slow, and it is not a mystery — it is arithmetic.</figcaption>
+</figure>
+</div>
+
+<div class="container reveal">
+  <h3 style="font-size:26px;margin:60px 0 10px;color:var(--gold)">Power Two — I remember the recipe, not just the dish</h3>
+
+  <p>This is the power that made everyone fall silent.</p>
+
+  <p>When a worker fell sick in the sage's time, the whole job had to be restarted, or the sage had to go dig up the last paper he had written. That is why he wrote so much paper.</p>
+
+  <p>The magician does something cleverer. He does not save copies of the data everywhere. Instead, <strong>he remembers exactly how every piece of data was made</strong> — which file it came from, which filter was applied, which column was added, in which order.</p>
+
+  <p>This memory of steps is called <span class="term">lineage</span>, and the picture it forms is called a <span class="term">DAG</span> — a Directed Acyclic Graph. Say it simply: <em>an arrow-diagram of steps that never goes backwards in a circle.</em></p>
+
+  <p>So when a worker collapses and a piece of data is lost, the magician does not panic and does not restart everything. He looks at his DAG, finds the one branch that was destroyed, and recreates <em>only that branch</em>. Two seconds of work instead of two hours.</p>
+
+  <blockquote>
+    Do not preserve the sweet. Preserve the recipe.<br>Then any sweet can be made again, whenever you need it.
+    <span class="who">— The heart of Spark's fault tolerance</span>
+  </blockquote>
+
+  <p>Try to break him. Click on any node in the tree below and destroy it.</p>
+</div>
+
+<div class="wide reveal">
+<figure class="fig">
+  <div class="fig-head">
+    <span class="fig-tag">Living Diagram 04</span>
+    <h4>The lineage tree — click a node to destroy it</h4>
+  </div>
+  <div class="fig-stage"><div id="dagHost" style="min-height:300px"></div></div>
+  <div class="ctrls">
+    <button class="btn" id="dagReset">Rebuild the tree</button>
+    <span class="pill" id="dagMsg">Click any glowing node to destroy that piece of data</span>
+  </div>
+  <figcaption><b>What you are seeing:</b> a real lineage graph — read a file, filter it, add a column, group it, and write the result. Destroy any node and Spark walks <em>backwards</em> along the arrows to the nearest surviving ancestor, then recomputes forward. It never needs a backup copy, because the recipe <em>is</em> the backup. This is why Spark can run happily on cheap, ordinary machines that fail all the time.</figcaption>
+</figure>
+</div>
+
+<div class="container reveal">
+  <h3 style="font-size:26px;margin:60px 0 10px;color:var(--gold)">Power Three — I listen to your whole wish before I lift a finger</h3>
+
+  <p>Now, the power that most people find strange the first time.</p>
+
+  <p>You go to the magician and say: "Read this file." He nods. Nothing happens.</p>
+
+  <p>You say: "Now filter only Maharashtra rows." He nods again. Still nothing happens.</p>
+
+  <p>"Now add a column. Now join with this other table. Now group by district." He keeps nodding. <em>Still</em> nothing happens. You start getting irritated. Is this fellow even working?</p>
+
+  <p>Then you finally say: "Now show me the answer." And in that instant — <strong>everything</strong> happens, all at once, beautifully.</p>
+
+  <p>This is called <span class="term">lazy evaluation</span>, and it is not laziness at all. It is patience with a purpose.</p>
+
+  <p>Think of a tailor. If you tell him "cut the cloth" and he cuts immediately, then you say "actually make it smaller", the cloth is already wasted. A wise tailor listens to your <em>full</em> requirement, measures everything, plans every cut on the whole cloth, and only then picks up the scissors — once, correctly.</p>
+
+  <p>In Spark's vocabulary: the instructions you give are <span class="term">transformations</span> (lazy — they only add to the plan). The moment you ask for a result, that is an <span class="term">action</span> (eager — it triggers the whole thing).</p>
+
+  <div class="aside">
+    <b>Transformations (lazy, nothing runs):</b> <code>filter</code>, <code>select</code>, <code>withColumn</code>, <code>join</code>, <code>groupBy</code>, <code>map</code><br>
+    <b>Actions (eager, everything runs):</b> <code>show</code>, <code>count</code>, <code>collect</code>, <code>write</code>, <code>take</code>
+  </div>
+
+  <p>Give the magician some instructions and watch him do absolutely nothing about them.</p>
+</div>
+
+<div class="wide reveal">
+<figure class="fig">
+  <div class="fig-head">
+    <span class="fig-tag">Living Diagram 05</span>
+    <h4>The patient magician — stack up spells, then cast</h4>
+  </div>
+  <div class="fig-stage" style="padding:18px"><div id="lazyHost"></div></div>
+  <div class="ctrls" id="lazyCtrls">
+    <button class="btn" data-spell="filter">+ filter()</button>
+    <button class="btn" data-spell="select">+ select()</button>
+    <button class="btn" data-spell="withColumn">+ withColumn()</button>
+    <button class="btn" data-spell="join">+ join()</button>
+    <button class="btn" data-spell="groupBy">+ groupBy()</button>
+    <button class="btn primary" id="lazyAct">.show() &nbsp;— &nbsp;ACTION</button>
+    <button class="btn ghost" id="lazyReset">Clear</button>
+  </div>
+  <figcaption><b>What you are seeing:</b> every transformation you add just gets written into the plan — notice the CPU stays completely idle. Only the action wakes the cluster. And because Spark saw the <em>whole</em> wish before starting, it could rearrange it into something smarter first. Which brings us to the magician's wisest advisor…</figcaption>
+</figure>
+</div>
+
+<div class="container reveal">
+  <h3 style="font-size:26px;margin:60px 0 10px;color:var(--gold)">Power Four — My minister rewrites my orders, and I let him</h3>
+
+  <p>Beside the magician sits a quiet, brilliant minister named <span class="term">Catalyst</span>.</p>
+
+  <p>When you hand over your wish, Catalyst does not run it. He first <em>improves</em> it — and he does this without ever changing your answer. Only the route changes, never the destination.</p>
+
+  <p>His three favourite corrections are so simple you will laugh, and so powerful you will not:</p>
+
+  <p><strong>One — filter first, carry less.</strong> You wrote: "load the whole ten-crore-row table, join it with another table, then keep only Pune." Catalyst rewrites it to: "keep only Pune first, <em>then</em> join." Same answer. You just carried a suitcase instead of a truck. This is called <span class="term">predicate pushdown</span>.</p>
+
+  <p><strong>Two — carry only what you asked for.</strong> Your table has 200 columns; your report needs 4. Catalyst reads only those 4 from the disk. In a columnar file format like Parquet or Delta, this is not a trick — the columns really are stored separately. This is <span class="term">column pruning</span>.</p>
+
+  <p><strong>Three — if one side is small, don't move the big one.</strong> Joining ten crore sales rows with a 200-row list of city names? Do not drag the sales data across the network. Send the tiny city list to every machine instead. This is a <span class="term">broadcast join</span>, and it turns hours into minutes.</p>
+
+  <p>And there is one more thing, added later, which is genuinely the cleverest part: <span class="term">Adaptive Query Execution (AQE)</span>. Catalyst makes his plan, but then he <em>watches the job while it runs</em>. If the real data turns out different from what he assumed — one district has ten times more rows than expected — he changes the plan mid-flight. Very few planners in this world have the humility to do that.</p>
+</div>
+
+<div class="wide reveal">
+<figure class="fig">
+  <div class="fig-head">
+    <span class="fig-tag">Living Diagram 06</span>
+    <h4>Catalyst rewrites your query in front of your eyes</h4>
+  </div>
+  <div class="fig-stage"><div id="catalystHost" style="min-height:300px"></div></div>
+  <div class="ctrls">
+    <button class="btn primary" id="catRun">Let Catalyst optimise</button>
+    <button class="btn ghost" id="catReset">Show my original plan</button>
+    <span class="pill" id="catStat">Rows carried: —</span>
+  </div>
+  <figcaption><b>What you are seeing:</b> the same query as you wrote it (left) and as Catalyst decided to actually run it (right). Notice the filter climbing down towards the source and the small table turning into a broadcast. You did not write better code. Spark simply refused to run your code literally — and that is a feature.</figcaption>
+</figure>
+</div>
+
+<div class="container reveal">
+  <h3 style="font-size:26px;margin:60px 0 10px;color:var(--gold)">The one weakness — the river he must cross</h3>
+
+  <p>Every hero must have a weakness, otherwise the story is boring and, more importantly, untrue.</p>
+
+  <p>The magician's workers are fast because each one works alone on its own piece. But some questions cannot be answered alone. "How many sales in each district?" — for that, every record of Pune must come together in one place, no matter which worker was holding it.</p>
+
+  <p>So the data must cross the hall. Records fly from every machine to every other machine, over the network, through the disk. This crossing is called the <span class="term">shuffle</span>, and it is the slowest, heaviest, most expensive thing Spark ever does.</p>
+
+  <p>You cannot remove the shuffle — <code>groupBy</code>, <code>join</code>, <code>distinct</code>, <code>orderBy</code> all need it. But a good engineer learns to <em>respect</em> it: filter before you shuffle, broadcast the small side, and never shuffle the same data twice when you could cache it once.</p>
+</div>
+
+<div class="wide reveal">
+<figure class="fig">
+  <div class="fig-head">
+    <span class="fig-tag">Living Diagram 07</span>
+    <h4>The shuffle — when every worker must talk to every worker</h4>
+  </div>
+  <div class="fig-stage"><canvas id="shuffleCanvas" height="320"></canvas></div>
+  <div class="ctrls">
+    <button class="btn primary" id="shufRun">Run groupBy(district)</button>
+    <button class="btn" id="shufFilter">Filter first, then groupBy</button>
+    <span class="pill" id="shufStat">Records crossing the network: —</span>
+  </div>
+  <figcaption><b>Compare the two buttons.</b> Same final answer, hugely different amount of traffic. Filtering before a shuffle is the cheapest performance win in all of data engineering, and it costs you one line of code moved up.</figcaption>
+</figure>
+</div>
+</section>
+
+<div class="hr-orn">✦ ✦ ✦</div>
+
+<!-- ============ CHAPTER 4 ============ -->
+<section class="chapter">
+<div class="container reveal">
+  <div class="ch-num">Chapter Four</div>
+  <h2>The Gurukul That Raised Him</h2>
+
+  <p class="lede drop">Now, a magician alone in a forest is only a story. A magician with a school, a discipline and a stage becomes a civilisation.</p>
+
+  <p>The same people who created Spark in that Berkeley lab — Matei Zaharia and his colleagues — did something unusual. They gave Spark away, free, to the whole world through the Apache Foundation. Then, in 2013, they founded a gurukul to raise him properly.</p>
+
+  <p>That gurukul is <span class="term" style="color:#ff6b52">Databricks</span>.</p>
+
+  <p>People often confuse the two, so let us settle it in one line, once and for all:</p>
+
+  <div class="aside" style="border-color:#5a2a24;background:linear-gradient(90deg,rgba(255,54,33,.08),transparent)">
+    <b>Apache Spark</b> is the engine — free, open source, yours to run anywhere. <b>Databricks</b> is the fully-built vehicle around that engine — the chassis, the gearbox, the air conditioning, the security guard and the service centre. You can absolutely build your own car around the engine. Most teams would simply rather drive.
+  </div>
+
+  <p>And in the gurukul, the magician learned four new disciplines that he could never have learned alone.</p>
+
+  <h3 style="font-size:24px;margin:50px 0 10px;color:var(--gold)">Discipline one — Delta Lake, the honest ledger</h3>
+
+  <p>Spark was always brilliant at <em>reading</em>. But the godown itself — plain files sitting in cloud storage — was a lawless place. If a job crashed halfway through writing, you were left with half-written garbage. If one person was reading while another was writing, who knows what you got. And nobody could tell you what the data looked like last Tuesday.</p>
+
+  <p>So the gurukul gave the village a proper ledger: <span class="term">Delta Lake</span>. It sits on top of your ordinary files and adds three things every accountant has demanded since the beginning of time:</p>
+
+  <p><strong>ACID transactions</strong> — a write either fully happens or fully does not. No half-truths. <strong>Time travel</strong> — you can literally ask for the table as it stood twenty versions ago, which has saved more careers than any monitoring dashboard. <strong>Schema enforcement</strong> — if someone tries to push a string into a number column, the ledger refuses politely instead of quietly corrupting six months of reports.</p>
+
+  <h3 style="font-size:24px;margin:50px 0 10px;color:var(--gold)">Discipline two — the Lakehouse and the three vessels</h3>
+
+  <p>For years the village kept two separate godowns and argued about them endlessly. A <span class="term">data lake</span> — cheap, holds anything, messy. A <span class="term">data warehouse</span> — clean, fast, structured, expensive, and refuses to hold your photos and logs.</p>
+
+  <p>Databricks asked the obvious question that nobody had asked: why two? Keep the cheap open storage of the lake, and put warehouse-grade discipline on top of it. They called it the <span class="term">Lakehouse</span>, and today it is simply how modern data platforms are built.</p>
+
+  <p>Inside it, data flows through three vessels, and every data engineer in the world now speaks this language:</p>
+</div>
+
+<div class="wide reveal">
+<figure class="fig">
+  <div class="fig-head">
+    <span class="fig-tag">Living Diagram 08</span>
+    <h4>The Medallion — Bronze, Silver, Gold</h4>
+  </div>
+  <div class="fig-stage"><div id="medHost" style="min-height:400px"></div></div>
+  <div class="ctrls">
+    <button class="btn primary" id="medFlow">Let the data flow</button>
+    <span class="pill" id="medStat">Hover any layer to learn what happens there</span>
+  </div>
+  <figcaption><b>Bronze</b> is raw truth — exactly as it arrived, nothing thrown away, so you can always go back. <b>Silver</b> is cleaned and joined — duplicates removed, types fixed, tables made sensible. <b>Gold</b> is the business answer — small, aggregated, ready for the dashboard your CEO opens at 9 AM. Each arrow is a Spark job. Each vessel is a Delta table.</figcaption>
+</figure>
+</div>
+
+<div class="container reveal">
+  <h3 style="font-size:24px;margin:50px 0 10px;color:var(--gold)">Discipline three — Photon, the second heart</h3>
+
+  <p>Here the gurukul did something that surprised even the magician.</p>
+
+  <p>Spark's original body was built in Scala and runs on the JVM — flexible, portable, wonderful. But for pure number-crunching, a JVM has a ceiling. So Databricks quietly built the magician a second heart, written in C++, and named it <span class="term">Photon</span>.</p>
+
+  <p>Photon's trick is called <span class="term">vectorisation</span>. The old way processed one row at a time — check this row, then the next, then the next. Photon takes a whole <em>batch</em> of values and applies the operation to all of them in a single stroke, using the SIMD instructions sitting unused inside every modern CPU.</p>
+
+  <p>Think of it as the difference between stamping one envelope, then the next, then the next — versus a machine that stamps forty envelopes in one press.</p>
+
+  <p>And the most beautiful part: you do not rewrite a single line of your code. Same SQL, same DataFrame. Photon simply takes over the parts it can handle and hands the rest back. The magician got faster without changing his spells.</p>
+</div>
+
+<div class="wide reveal">
+<figure class="fig">
+  <div class="fig-head">
+    <span class="fig-tag">Living Diagram 09</span>
+    <h4>Row-by-row vs. Photon's vectorised batch</h4>
+  </div>
+  <div class="fig-stage"><canvas id="photonCanvas" height="300"></canvas></div>
+  <div class="ctrls">
+    <button class="btn primary" id="photRun">Stamp 64 rows</button>
+    <span class="pill" id="photA">Row-at-a-time: —</span>
+    <span class="pill" id="photB">Photon vectorised: —</span>
+  </div>
+  <figcaption><b>Same work, different rhythm.</b> The top lane handles one value per beat. The bottom lane loads eight values into a vector register and applies the operation to all eight in one CPU instruction. On real query workloads this shows up as a several-times speed-up on scans, filters, joins and aggregations — with zero code change.</figcaption>
+</figure>
+</div>
+
+<div class="container reveal">
+  <h3 style="font-size:24px;margin:50px 0 10px;color:var(--gold)">Discipline four — Unity Catalog, the gatekeeper</h3>
+
+  <p>Power without control is a problem waiting for a Monday morning. The last discipline the gurukul taught was not about speed at all.</p>
+
+  <p><span class="term">Unity Catalog</span> is the dwarpal — the gatekeeper — standing at the entrance of the whole lakehouse. One place that decides who may see which table, which column, even which row. One place that records where every piece of data came from and which dashboard it eventually fed. That last one is called <span class="term">lineage</span> again — the same beautiful idea as the DAG, but now for your entire organisation instead of one job.</p>
+
+  <p>And in 2026 this gatekeeper had to learn something new, because the visitors changed. It is no longer only humans and dashboards asking for data. It is <strong>AI agents</strong> — programs that decide for themselves which table to query and which tool to call. So governance quietly grew from "who can open this door" into "what is this agent allowed to actually do once inside, and what did it do last Tuesday at 3 AM."</p>
+
+  <p>The magician who once only counted rows is now the one who feeds the machines that think.</p>
+</div>
+</section>
+
+<div class="hr-orn">✦ ✦ ✦</div>
+
+<!-- ============ CHAPTER 5 ============ -->
+<section class="chapter">
+<div class="container reveal">
+  <div class="ch-num">Chapter Five</div>
+  <h2>Where the Magician Stands Today</h2>
+
+  <p class="lede drop">It is 2026. The small research project from Berkeley is now the engine underneath an enormous share of the world's data work — in banks, hospitals, telecom towers, e-commerce warehouses and, quite likely, in whatever app you opened this morning.</p>
+
+  <p>Spark crossed into its fourth major age with <strong>Spark 4.0</strong>, and the line has kept moving steadily — <strong>4.2.0 arrived in July 2026</strong>. The changes tell you exactly where the magician is walking.</p>
+
+  <p><strong>He became lighter.</strong> With <span class="term">Spark Connect</span>, your code no longer has to sit inside the cluster shouting at it. A thin client — a mere 1.5 MB, and it does not even need Java installed anymore — talks to Spark over a proper protocol. Your laptop, your notebook, your web app, your agent: all can speak to the magician from a distance.</p>
+
+  <p><strong>He became stricter, in a good way.</strong> ANSI SQL mode is now the default. Earlier, a bad number would quietly become <code>null</code> and your report would be silently wrong. Now it raises its hand and says "this is an error." Loud failure is a kindness; silent wrongness is not.</p>
+
+  <p><strong>He learned to hold messy shapes.</strong> The new <span class="term">VARIANT</span> type stores semi-structured JSON properly — flexible like a document store, but still fast to query, because half the world's data arrives as untidy JSON and pretending otherwise never worked.</p>
+
+  <p><strong>He became more Pythonic.</strong> A native plotting API, a Python Data Source API so you can teach Spark to read anything you like in pure Python, Python UDTFs, and a much friendlier profiler. Spark stopped asking Python people to learn Scala.</p>
+
+  <div class="aside">
+    <b>Quick timeline:</b> 2009 — born as a research project at UC Berkeley's AMPLab. 2010 — open sourced. 2013 — donated to the Apache Foundation; Databricks founded. 2014 — Spark 1.0, and it wins the Daytona GraySort record. 2016 — Spark 2.0 brings DataFrames, Catalyst and Structured Streaming. 2020 — Spark 3.0 brings Adaptive Query Execution. 2025 — Spark 4.0. 2026 — Spark 4.2, and the lakehouse becomes the ground floor of enterprise AI.
+  </div>
+
+  <h3 style="font-size:26px;margin:56px 0 10px;color:var(--gold)">So where does the superpower actually come from?</h3>
+
+  <p>Let us answer the elders' question properly, in one table. There is no magic anywhere in it.</p>
+
+  <table class="tbl">
+    <tr><th>The power</th><th>The real reason behind it</th></tr>
+    <tr><td>Speed</td><td>Data stays in memory between steps instead of running to disk after every stage</td></tr>
+    <tr><td>Scale</td><td>Work is split into partitions and spread across many executors, all running at once</td></tr>
+    <tr><td>Never loses data</td><td>It remembers the recipe (lineage / DAG) and can rebuild any lost piece on demand</td></tr>
+    <tr><td>Writes better code than you</td><td>Lazy evaluation lets Catalyst see the whole plan and rewrite it before a single row moves</td></tr>
+    <tr><td>Adapts mid-flight</td><td>AQE watches the real data at runtime and changes the plan when its assumptions were wrong</td></tr>
+    <tr><td>One tool, many jobs</td><td>SQL, DataFrames, streaming and ML all compile down to the same engine</td></tr>
+    <tr><td>Extra gear (on Databricks)</td><td>Photon's C++ vectorised execution, Delta Lake's transactions, Unity Catalog's governance</td></tr>
+  </table>
+
+  <h3 style="font-size:26px;margin:56px 0 10px;color:var(--gold)">The moral of the story</h3>
+
+  <p>If you take away only one thing from this whole tale, take this.</p>
+
+  <p>Apache Spark did not win because it was clever in a thousand ways. It won because it was clever about <strong>three ordinary human ideas</strong>, and then absolutely refused to compromise on them.</p>
+
+  <p><em>Divide the work, so no one hand carries the mountain.</em><br>
+  <em>Remember how things were made, so nothing is ever truly lost.</em><br>
+  <em>Listen to the whole request before you begin, so you begin correctly.</em></p>
+
+  <p>A magician, in the end, is only someone who understood the problem better than everybody else in the room — and then had the patience to build for it.</p>
+
+  <blockquote style="margin-top:44px">
+    The mountain never became smaller.<br>
+    The magician simply stopped trying to lift it alone.
+    <span class="who">— The Magician of Mahadata</span>
+  </blockquote>
+</div>
+</section>
+
+<div class="wrap end-back">
+  <a class="back-link" href="index.html">&larr; Back to all stories</a>
+  <div class="share-row"><span class="share-label">Share</span><a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.niluniverse.com%2Fspark-magician.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a><a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fblog.niluniverse.com%2Fspark-magician.html&text=The%20Magician%20of%20Mahadata%3A%20How%20Apache%20Spark%20Got%20Its%20Superpowers" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a><a class="share-btn" href="mailto:?subject=The%20Magician%20of%20Mahadata&body=https%3A%2F%2Fblog.niluniverse.com%2Fspark-magician.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a><button class="share-btn" type="button" data-copy-url="https://blog.niluniverse.com/spark-magician.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button></div>
+</div>
+
+<footer>
+  <div class="wrap foot-inner">
+    <span>&copy; 2026 Nilesh Mohite &mdash; <a href="https://niluniverse.com" style="color:var(--accent)">niluniverse.com</a></span>
+    <span>Written between deployments &middot; Amalner, India</span>
+  </div>
+  <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:14px;font-family:var(--mono)">Every diagram on this page is live and interactive &mdash; refresh and play with them again.</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   SHARED HELPERS
+   ============================================================ */
+var modules = [];
+var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function fit(canvas, cssH){
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var host = canvas.parentElement;
+  var w = Math.max(300, host.clientWidth);
+  canvas.width  = Math.round(w * dpr);
+  canvas.height = Math.round(cssH * dpr);
+  canvas.style.width = '100%';
+  canvas.style.height = cssH + 'px';
+  var ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx: ctx, w: w, h: cssH };
+}
+function rr(ctx,x,y,w,h,r){
+  r = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+function lerp(a,b,t){ return a + (b-a)*t; }
+function ease(t){ return t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
+function svg(tag, attrs){
+  var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (var k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+var C = {
+  saffron:'#ff9a2e', gold:'#f6c65b', ember:'#ff5f3d', water:'#4ec5ff',
+  leaf:'#5fd6a4', violet:'#a986ff', brick:'#ff3621', muted:'#6f6785',
+  line:'#2b2540', ink:'#ece7dc'
+};
+
+/* ============================================================
+   SCROLL REVEAL
+   ============================================================ */
+(function(){
+  var els = document.querySelectorAll('.reveal');
+  if (!('IntersectionObserver' in window)) {
+    for (var i=0;i<els.length;i++) els[i].classList.add('in');
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+  els.forEach(function(el){ io.observe(el); });
+})();
+
+/* ============================================================
+   HERO — drifting embers + constellation
+   ============================================================ */
+(function(){
+  var c = document.getElementById('heroCanvas');
+  if (!c) return;
+  var ctx, W, H, parts = [];
+  function build(){
+    var dpr = Math.min(window.devicePixelRatio||1, 2);
+    W = c.clientWidth || window.innerWidth;
+    H = c.clientHeight || window.innerHeight;
+    c.width = W*dpr; c.height = H*dpr;
+    ctx = c.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    var n = Math.min(90, Math.round(W*H/16000));
+    parts = [];
+    for (var i=0;i<n;i++){
+      parts.push({
+        x: Math.random()*W, y: Math.random()*H,
+        vx: (Math.random()-0.5)*0.18, vy: -(0.12+Math.random()*0.35),
+        r: 0.7+Math.random()*1.9,
+        hue: Math.random()<0.28 ? 45 : 26,
+        a: 0.25+Math.random()*0.6
+      });
+    }
+  }
+  function frame(){
+    if (!ctx) return;
+    ctx.clearRect(0,0,W,H);
+    // constellation lines
+    ctx.lineWidth = 0.6;
+    for (var i=0;i<parts.length;i++){
+      for (var j=i+1;j<parts.length;j++){
+        var dx = parts[i].x-parts[j].x, dy = parts[i].y-parts[j].y;
+        var d2 = dx*dx+dy*dy;
+        if (d2 < 13000){
+          var a = (1 - d2/13000) * 0.16;
+          ctx.strokeStyle = 'rgba(255,170,90,'+a.toFixed(3)+')';
+          ctx.beginPath(); ctx.moveTo(parts[i].x,parts[i].y); ctx.lineTo(parts[j].x,parts[j].y); ctx.stroke();
+        }
+      }
+    }
+    for (var k=0;k<parts.length;k++){
+      var p = parts[k];
+      var g = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*7);
+      g.addColorStop(0,'hsla('+p.hue+',100%,68%,'+p.a+')');
+      g.addColorStop(1,'hsla('+p.hue+',100%,60%,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r*7,0,6.283); ctx.fill();
+      ctx.fillStyle = 'hsla('+p.hue+',100%,82%,'+Math.min(1,p.a+0.25)+')';
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r*0.55,0,6.283); ctx.fill();
+      if (!REDUCED){
+        p.x += p.vx; p.y += p.vy;
+        p.x += Math.sin((p.y+k*40)/90)*0.14;
+      }
+      if (p.y < -20){ p.y = H+15; p.x = Math.random()*W; }
+      if (p.x < -20) p.x = W+15;
+      if (p.x > W+20) p.x = -15;
+    }
+    requestAnimationFrame(frame);
+  }
+  build(); frame();
+  modules.push(build);
+})();
+
+/* ============================================================
+   FIG 01 — MANY HANDS
+   ============================================================ */
+(function(){
+  var c = document.getElementById('handsCanvas');
+  if (!c) return;
+  var slider = document.getElementById('handsSlider');
+  var lblN = document.getElementById('handsVal');
+  var lblT = document.getElementById('handsTime');
+  var btn  = document.getElementById('handsRun');
+
+  var TOTAL = 96, COLS = 16, ROWS = 6;
+  var S, state, workers, running=false, t0=0, elapsed=0, nextIdx=0, raf=null;
+  var PER = 620; // ms per ledger
+
+  function reset(){
+    state = new Array(TOTAL).fill(0); // 0 pending 1 busy 2 done
+    var n = parseInt(slider.value,10);
+    workers = [];
+    for (var i=0;i<n;i++) workers.push({idx:-1, t:0});
+    nextIdx = 0; elapsed = 0; running = false;
+    lblT.textContent = 'ready';
+    btn.disabled = false;
+    draw(0);
+  }
+  function layout(){ S = fit(c, 286); }
+
+  function draw(now){
+    var ctx = S.ctx, W = S.w, H = S.h;
+    ctx.clearRect(0,0,W,H);
+    var padX = 26, topY = 34;
+    var gw = W - padX*2;
+    var cw = gw/COLS, ch = 22;
+    // title
+    ctx.font = '11px ui-monospace, Menlo, monospace';
+    ctx.fillStyle = C.muted; ctx.textAlign='left';
+    ctx.fillText('THE GODOWN — 96 LEDGERS TO TOTAL', padX, 20);
+
+    var done=0;
+    for (var i=0;i<TOTAL;i++){
+      var r = Math.floor(i/COLS), col = i%COLS;
+      var x = padX + col*cw + 2, y = topY + r*(ch+6);
+      var w = cw-5, h = ch;
+      if (state[i]===2){ done++;
+        ctx.fillStyle = 'rgba(246,198,91,.85)'; rr(ctx,x,y,w,h,4); ctx.fill();
+        ctx.strokeStyle='rgba(255,220,140,.6)'; ctx.lineWidth=1; ctx.stroke();
+      } else if (state[i]===1){
+        var pulse = 0.55+0.45*Math.sin(now/140);
+        ctx.fillStyle = 'rgba(255,95,61,'+pulse.toFixed(2)+')'; rr(ctx,x,y,w,h,4); ctx.fill();
+      } else {
+        ctx.fillStyle = '#221d35'; rr(ctx,x,y,w,h,4); ctx.fill();
+        ctx.strokeStyle='#2f2847'; ctx.lineWidth=1; ctx.stroke();
+      }
+    }
+
+    // workers row
+    var wy = topY + ROWS*(ch+6) + 26;
+    ctx.font = '11px ui-monospace, Menlo, monospace';
+    ctx.fillStyle = C.muted;
+    ctx.fillText('WORKERS', padX, wy-10);
+    var n = workers.length;
+    var wStep = Math.min(30, (W - padX*2 - 80) / Math.max(1,n));
+    for (var k=0;k<n;k++){
+      var wx = padX + 74 + k*wStep;
+      var busy = workers[k].idx >= 0;
+      var g = ctx.createRadialGradient(wx,wy+4,0,wx,wy+4,16);
+      g.addColorStop(0, busy ? 'rgba(255,154,46,.95)' : 'rgba(120,110,150,.5)');
+      g.addColorStop(1, 'rgba(255,154,46,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(wx,wy+4,16,0,6.283); ctx.fill();
+      ctx.fillStyle = busy ? '#ffd79a' : '#4a4364';
+      ctx.beginPath(); ctx.arc(wx,wy+4,5,0,6.283); ctx.fill();
+    }
+
+    // progress
+    var by = H-24;
+    ctx.fillStyle='#221d35'; rr(ctx,padX,by,W-padX*2,10,5); ctx.fill();
+    ctx.fillStyle=C.gold; rr(ctx,padX,by,(W-padX*2)*(done/TOTAL),10,5); ctx.fill();
+    ctx.fillStyle=C.muted; ctx.font='11px ui-monospace, Menlo, monospace'; ctx.textAlign='right';
+    ctx.fillText(done+' / '+TOTAL+' done', W-padX, by-6);
+    ctx.textAlign='left';
+  }
+
+  function tick(now){
+    if (!t0) t0 = now;
+    var dt = now - (tick.last || now); tick.last = now;
+    if (dt > 100) dt = 100;
+    elapsed += dt;
+    var allDone = true;
+    for (var k=0;k<workers.length;k++){
+      var w = workers[k];
+      if (w.idx >= 0){
+        w.t += dt;
+        if (w.t >= PER){ state[w.idx]=2; w.idx=-1; w.t=0; }
+      }
+      if (w.idx < 0 && nextIdx < TOTAL){ w.idx = nextIdx++; state[w.idx]=1; w.t=0; }
+      if (w.idx >= 0) allDone = false;
+    }
+    if (nextIdx < TOTAL) allDone = false;
+    lblT.textContent = (elapsed/1000).toFixed(1)+' night-hours';
+    draw(now);
+    if (allDone){ running=false; btn.disabled=false; lblT.textContent = 'finished in '+(elapsed/1000).toFixed(1)+' night-hours'; return; }
+    raf = requestAnimationFrame(tick);
+  }
+
+  slider.addEventListener('input', function(){
+    var n = parseInt(slider.value,10);
+    lblN.textContent = n + (n===1?' worker':' workers');
+    if (!running) reset();
+  });
+  btn.addEventListener('click', function(){
+    if (running) return;
+    reset(); running = true; btn.disabled = true; t0 = 0; tick.last = 0;
+    raf = requestAnimationFrame(tick);
+  });
+
+  layout(); reset();
+  modules.push(function(){ layout(); draw(performance.now()); });
+})();
+
+/* ============================================================
+   FIG 02 — DISK RACE
+   ============================================================ */
+(function(){
+  var c = document.getElementById('raceCanvas');
+  if (!c) return;
+  var btn = document.getElementById('raceRun');
+  var lblA = document.getElementById('raceMR'), lblB = document.getElementById('raceSP');
+  var STAGES = 10, COMPUTE = 260, DISK = 520;
+  var S, running=false;
+  var A, B;
+
+  function reset(){
+    A = { stage:0, t:0, phase:'compute', done:false, time:0 };
+    B = { stage:0, t:0, phase:'compute', done:false, time:0 };
+    running = false; btn.disabled = false;
+    lblA.textContent = 'Sage MapReduce: ready';
+    lblB.textContent = 'Magician Spark: ready';
+    draw(0);
+  }
+  function layout(){ S = fit(c, 264); }
+
+  function lane(ctx,W,y,label,runner,color,withDisk){
+    var narrow = W < 560;
+    var padX = narrow ? 22 : 100, tw = W - padX - (narrow ? 24 : 40);
+    ctx.font='12px ui-monospace, Menlo, monospace';
+    ctx.fillStyle = color; ctx.textAlign='left';
+    ctx.fillText(label, 22, y-24);
+    // track
+    ctx.fillStyle='#1b1729'; rr(ctx,padX,y-9,tw,18,9); ctx.fill();
+    for (var i=1;i<STAGES;i++){
+      var x = padX + tw*(i/STAGES);
+      ctx.strokeStyle='#2b2540'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(x,y-9); ctx.lineTo(x,y+9); ctx.stroke();
+    }
+    var frac = runner.stage/STAGES;
+    if (runner.phase==='compute') frac += (runner.t/COMPUTE)/STAGES;
+    frac = Math.min(1,frac);
+    var grad = ctx.createLinearGradient(padX,0,padX+tw,0);
+    grad.addColorStop(0,color+'55'); grad.addColorStop(1,color);
+    ctx.fillStyle = grad; rr(ctx,padX,y-9,tw*frac,18,9); ctx.fill();
+    var hx = padX + tw*frac;
+    var g = ctx.createRadialGradient(hx,y,0,hx,y,18);
+    g.addColorStop(0,color); g.addColorStop(1,color+'00');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(hx,y,18,0,6.283); ctx.fill();
+
+    if (withDisk){
+      var dy = y+46;
+      ctx.strokeStyle='#2b2540'; ctx.setLineDash([3,4]); ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(padX,dy); ctx.lineTo(padX+tw,dy); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle='#544c6b'; ctx.font='10px ui-monospace, Menlo, monospace';
+      ctx.fillText('DISK (the godown)', narrow ? padX : 22, narrow ? dy-7 : dy+4);
+      if (runner.phase==='disk'){
+        var p = runner.t/DISK;
+        var yy = y + Math.sin(p*Math.PI)*46;
+        ctx.fillStyle=C.ember;
+        ctx.beginPath(); ctx.arc(hx, yy, 5, 0, 6.283); ctx.fill();
+        ctx.strokeStyle='rgba(255,95,61,.45)'; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.moveTo(hx,y); ctx.lineTo(hx,yy); ctx.stroke();
+        ctx.fillStyle='rgba(255,95,61,.8)'; ctx.font='10px ui-monospace, Menlo, monospace';
+        ctx.textAlign='center'; ctx.fillText('write + read', hx, dy+18); ctx.textAlign='left';
+      }
+    }
+  }
+
+  function draw(now){
+    var ctx=S.ctx, W=S.w, H=S.h;
+    ctx.clearRect(0,0,W,H);
+    ctx.font='11px ui-monospace, Menlo, monospace'; ctx.fillStyle=C.muted;
+    ctx.fillText('SAME JOB · 10 STAGES', 22, 20);
+    lane(ctx,W,80,'SAGE MAPREDUCE',A,C.ember,true);
+    lane(ctx,W,196,'MAGICIAN SPARK',B,C.gold,false);
+    ctx.fillStyle='#544c6b'; ctx.font='10px ui-monospace, Menlo, monospace';
+    ctx.fillText('keeps working data in memory — no trip needed', W<560?22:100, H-14);
+  }
+
+  function step(r, hasDisk, dt){
+    if (r.done) return;
+    r.time += dt; r.t += dt;
+    if (r.phase==='compute'){
+      if (r.t >= COMPUTE){
+        r.t = 0; r.stage++;
+        if (r.stage >= STAGES){ r.done = true; return; }
+        r.phase = hasDisk ? 'disk' : 'compute';
+      }
+    } else {
+      if (r.t >= DISK){ r.t = 0; r.phase='compute'; }
+    }
+  }
+
+  var last=0;
+  function tick(now){
+    var dt = last ? Math.min(100, now-last) : 16; last = now;
+    step(A,true,dt); step(B,false,dt);
+    lblA.textContent = 'Sage MapReduce: ' + (A.done ? 'DONE in '+(A.time/1000).toFixed(1)+'s' : (A.time/1000).toFixed(1)+'s · stage '+(A.stage+1));
+    lblB.textContent = 'Magician Spark: ' + (B.done ? 'DONE in '+(B.time/1000).toFixed(1)+'s' : (B.time/1000).toFixed(1)+'s · stage '+(B.stage+1));
+    draw(now);
+    if (A.done && B.done){ running=false; btn.disabled=false; return; }
+    requestAnimationFrame(tick);
+  }
+
+  btn.addEventListener('click', function(){
+    if (running) return;
+    reset(); running=true; btn.disabled=true; last=0;
+    requestAnimationFrame(tick);
+  });
+
+  layout(); reset();
+  modules.push(function(){ layout(); draw(0); });
+})();
+
+/* ============================================================
+   FIG 03 — DRIVER / EXECUTORS / PARTITIONS
+   ============================================================ */
+(function(){
+  var c = document.getElementById('clusterCanvas');
+  if (!c) return;
+  var exS = document.getElementById('exSlider'), exV = document.getElementById('exVal');
+  var pS  = document.getElementById('partSlider'), pV = document.getElementById('partVal');
+  var btn = document.getElementById('clusterRun');
+  var CORES = 2, PER = 480;
+  var S, execs, parts, queue, running=false, elapsed=0, busyTime=0, last=0;
+
+  function layout(){ S = fit(c, 352); }
+
+  function reset(){
+    var ne = parseInt(exS.value,10), np = parseInt(pS.value,10);
+    execs = [];
+    for (var i=0;i<ne;i++){
+      var slots=[];
+      for (var k=0;k<CORES;k++) slots.push({p:null,t:0});
+      execs.push({slots:slots});
+    }
+    parts = [];
+    for (var j=0;j<np;j++) parts.push({id:j, state:0, x:0, y:0, tx:0, ty:0, fly:0, ex:-1, slot:-1});
+    queue = parts.slice();
+    elapsed=0; busyTime=0; running=false; btn.disabled=false;
+    draw(0);
+  }
+
+  function geom(){
+    var W=S.w, H=S.h;
+    var narrow = W < 560;
+    return {
+      narrow: narrow,
+      dx: narrow ? 46 : 62, dy: H/2,
+      ex0: narrow ? W*0.56 : W*0.62,
+      exW: narrow ? W*0.40 : Math.min(230, W*0.33),
+      exH: narrow ? 48 : 54, gap: narrow ? 11 : 14,
+      qx: narrow ? W*0.32 : W*0.30
+    };
+  }
+
+  function draw(now){
+    var ctx=S.ctx, W=S.w, H=S.h, g=geom();
+    ctx.clearRect(0,0,W,H);
+    ctx.font='11px ui-monospace, Menlo, monospace';
+
+    // ---- driver
+    var pulse = 0.6+0.4*Math.sin(now/420);
+    var rg = ctx.createRadialGradient(g.dx,g.dy,0,g.dx,g.dy,54);
+    rg.addColorStop(0,'rgba(255,154,46,'+(0.5*pulse).toFixed(2)+')');
+    rg.addColorStop(1,'rgba(255,154,46,0)');
+    ctx.fillStyle=rg; ctx.beginPath(); ctx.arc(g.dx,g.dy,54,0,6.283); ctx.fill();
+    ctx.fillStyle='#20192f'; ctx.strokeStyle=C.saffron; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(g.dx,g.dy,26,0,6.283); ctx.fill(); ctx.stroke();
+    ctx.fillStyle=C.gold; ctx.textAlign='center';
+    ctx.fillText('DRIVER', g.dx, g.dy+4);
+    ctx.fillStyle=C.muted; ctx.font='10px ui-monospace, Menlo, monospace';
+    ctx.fillText('holds the plan', g.dx, g.dy+46);
+
+    // ---- executors
+    var n = execs.length;
+    var totalH = n*g.exH + (n-1)*g.gap;
+    var y0 = (H-totalH)/2;
+    ctx.textAlign='left';
+    for (var i=0;i<n;i++){
+      var ey = y0 + i*(g.exH+g.gap);
+      var anyBusy = execs[i].slots.some(function(s){return s.p!==null;});
+      ctx.fillStyle = anyBusy ? '#1e2a2b' : '#1a1728';
+      ctx.strokeStyle = anyBusy ? 'rgba(95,214,164,.75)' : '#2f2847';
+      ctx.lineWidth=1.5;
+      rr(ctx,g.ex0,ey,g.exW,g.exH,10); ctx.fill(); ctx.stroke();
+      ctx.font='10px ui-monospace, Menlo, monospace';
+      ctx.fillStyle = anyBusy ? C.leaf : '#5b5378';
+      ctx.fillText((g.narrow?'EXEC ':'EXECUTOR ')+(i+1), g.ex0+10, ey+15);
+      // cores
+      for (var k=0;k<CORES;k++){
+        var cx = g.ex0+12+k*((g.exW-24)/CORES), cw=(g.exW-30)/CORES, cy=ey+(g.narrow?23:26), chh=g.narrow?15:16;
+        var s = execs[i].slots[k];
+        ctx.fillStyle = s.p!==null ? 'rgba(255,154,46,.25)' : '#221d35';
+        rr(ctx,cx,cy,cw,chh,5); ctx.fill();
+        if (s.p!==null){
+          ctx.fillStyle = C.saffron;
+          rr(ctx,cx,cy,cw*Math.min(1,s.t/PER),chh,5); ctx.fill();
+        }
+        ctx.fillStyle = s.p!==null ? '#2a1500' : '#4a4364';
+        ctx.font='9px ui-monospace, Menlo, monospace';
+        ctx.fillText('core '+(k+1), cx+5, cy+11);
+      }
+    }
+
+    // ---- partitions
+    var pending = queue.length;
+    var cols = g.narrow ? 4 : 6, sz = g.narrow ? 10 : 12, gp = 4;
+    for (var q=0;q<Math.min(pending,42);q++){
+      var col=q%cols, row=Math.floor(q/cols);
+      var x = g.qx + col*(sz+gp), yy = H/2 - 60 + row*(sz+gp);
+      ctx.fillStyle='#3a3252'; rr(ctx,x,yy,sz,sz,3); ctx.fill();
+    }
+    if (pending>42){
+      ctx.fillStyle='#5b5378'; ctx.font='10px ui-monospace, Menlo, monospace';
+      ctx.fillText('+'+(pending-42), g.qx, H/2 - 60 + 8*(sz+gp));
+    }
+    ctx.fillStyle=C.muted; ctx.font='10px ui-monospace, Menlo, monospace';
+    if (g.narrow) ctx.fillText('WAITING: '+pending, 16, 20);
+    else ctx.fillText('PARTITIONS WAITING: '+pending, g.qx, H/2-76);
+
+    // flying partitions
+    for (var f=0;f<parts.length;f++){
+      var p=parts[f];
+      if (p.state===1){
+        var t = ease(Math.min(1,p.fly));
+        var x2 = lerp(p.x,p.tx,t), y2 = lerp(p.y,p.ty,t);
+        ctx.fillStyle=C.gold; rr(ctx,x2-6,y2-6,12,12,3); ctx.fill();
+        ctx.strokeStyle='rgba(246,198,91,.25)'; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(x2,y2); ctx.stroke();
+      }
+    }
+
+    // done pile
+    var doneN = parts.filter(function(p){return p.state===3;}).length;
+    ctx.fillStyle=C.muted; ctx.textAlign='right'; ctx.font='10px ui-monospace, Menlo, monospace';
+    ctx.fillText('COMPLETED: '+doneN+' / '+parts.length, S.w-16, 20);
+
+    // stats footer
+    var cap = execs.length*CORES;
+    var util = elapsed>0 ? Math.min(100, Math.round(100*busyTime/(elapsed*cap))) : 0;
+    ctx.textAlign='left'; ctx.font='11px ui-monospace, Menlo, monospace';
+    ctx.fillStyle = util>85 ? C.leaf : (util>0 ? C.ember : C.muted);
+    var msg = elapsed>0 ? ('time '+(elapsed/1000).toFixed(1)+'s   ·   core utilisation '+util+'%') : ('cores available: '+cap+'   ·   press run');
+    ctx.fillText(msg, 16, S.h-12);
+    if (parts.length < cap && !g.narrow){
+      ctx.fillStyle=C.ember; ctx.textAlign='right';
+      ctx.fillText('fewer partitions than cores — hands sitting idle', S.w-16, S.h-12);
+      ctx.textAlign='left';
+    }
+  }
+
+  function tick(now){
+    var dt = last ? Math.min(100, now-last) : 16; last=now;
+    elapsed += dt;
+    var g = geom(), H=S.h;
+    var n=execs.length, totalH=n*g.exH+(n-1)*g.gap, y0=(H-totalH)/2;
+    for (var i=0;i<n;i++){
+      for (var k=0;k<CORES;k++){
+        var s=execs[i].slots[k];
+        if (s.p){
+          s.t += dt; busyTime += dt;
+          if (s.p.state===1){ s.p.fly += dt/380; if (s.p.fly>=1) s.p.state=2; }
+          if (s.t>=PER){ s.p.state=3; s.p=null; s.t=0; }
+        }
+        if (!s.p && queue.length){
+          var p = queue.shift();
+          p.state=1; p.fly=0;
+          p.x=g.qx+20; p.y=H/2;
+          p.tx=g.ex0+20+k*((g.exW-28)/CORES); p.ty=y0+i*(g.exH+g.gap)+34;
+          s.p=p; s.t=0;
+        }
+      }
+    }
+    draw(now);
+    var alive = queue.length>0 || execs.some(function(e){return e.slots.some(function(s){return s.p;});});
+    if (!alive){ running=false; btn.disabled=false; return; }
+    requestAnimationFrame(tick);
+  }
+
+  exS.addEventListener('input', function(){ exV.textContent = exS.value; if(!running) reset(); });
+  pS.addEventListener('input',  function(){ pV.textContent  = pS.value;  if(!running) reset(); });
+  btn.addEventListener('click', function(){
+    if (running) return;
+    reset(); running=true; btn.disabled=true; last=0;
+    requestAnimationFrame(tick);
+  });
+
+  layout(); reset();
+  modules.push(function(){ layout(); draw(0); });
+})();
+
+/* ============================================================
+   FIG 04 — LINEAGE DAG
+   ============================================================ */
+(function(){
+  var host = document.getElementById('dagHost');
+  if (!host) return;
+  var msg = document.getElementById('dagMsg');
+  var btnReset = document.getElementById('dagReset');
+
+  var NODES = [
+    {id:0, x:78,  y:78,  l1:'read',       l2:'sales.parquet', p:[]},
+    {id:1, x:78,  y:222, l1:'read',       l2:'cities.csv',    p:[]},
+    {id:2, x:238, y:78,  l1:'filter',     l2:"state = 'MH'",  p:[0]},
+    {id:3, x:398, y:78,  l1:'withColumn', l2:'gst_amount',    p:[2]},
+    {id:4, x:558, y:150, l1:'join',       l2:'on city_id',    p:[3,1]},
+    {id:5, x:718, y:150, l1:'groupBy',    l2:'district',      p:[4]},
+    {id:6, x:878, y:150, l1:'write',      l2:'gold table',    p:[5]}
+  ];
+  var BW=132, BH=52;
+  var dead = {}, rebuilding=false, els={}, edges=[];
+
+  function build(){
+    host.innerHTML='';
+    dead={}; rebuilding=false; els={}; edges=[];
+    var s = svg('svg',{viewBox:'0 0 960 300', width:'100%', height:'100%',
+      preserveAspectRatio:'xMidYMid meet', style:'display:block;min-height:250px'});
+    var defs = svg('defs',{});
+    var m = svg('marker',{id:'arw',viewBox:'0 0 10 10',refX:'9',refY:'5',markerWidth:'6',markerHeight:'6',orient:'auto-start-reverse'});
+    m.appendChild(svg('path',{d:'M0,0 L10,5 L0,10 z',fill:'#4a4364'}));
+    defs.appendChild(m); s.appendChild(defs);
+
+    // edges
+    NODES.forEach(function(n){
+      n.p.forEach(function(pid){
+        var a = NODES[pid], b = n;
+        var x1=a.x+BW/2, y1=a.y+BH/2, x2=b.x-BW/2-8, y2=b.y;
+        var mx=(x1+x2)/2;
+        var path = svg('path',{
+          d:'M'+x1+','+y1+' C'+mx+','+y1+' '+mx+','+y2+' '+x2+','+y2,
+          fill:'none', stroke:'#38304f','stroke-width':'2','marker-end':'url(#arw)'
+        });
+        s.appendChild(path);
+        edges.push({from:pid,to:n.id,el:path});
+      });
+    });
+
+    // nodes
+    NODES.forEach(function(n){
+      var gEl = svg('g',{style:'cursor:pointer', 'data-id':n.id});
+      var rect = svg('rect',{x:n.x-BW/2, y:n.y-BH/2, width:BW, height:BH, rx:10,
+        fill:'#1b1729', stroke:'#3d3357','stroke-width':'1.5'});
+      var t1 = svg('text',{x:n.x, y:n.y-4, 'text-anchor':'middle',
+        fill:'#f6c65b','font-family':'ui-monospace,Menlo,monospace','font-size':'13'});
+      t1.textContent = n.l1+'()';
+      var t2 = svg('text',{x:n.x, y:n.y+14, 'text-anchor':'middle',
+        fill:'#8d84a6','font-family':'ui-monospace,Menlo,monospace','font-size':'10.5'});
+      t2.textContent = n.l2;
+      var xm = svg('text',{x:n.x, y:n.y+7, 'text-anchor':'middle', fill:'#ff5f3d',
+        'font-family':'ui-monospace,Menlo,monospace','font-size':'26', opacity:'0'});
+      xm.textContent = '×';
+      gEl.appendChild(rect); gEl.appendChild(t1); gEl.appendChild(t2); gEl.appendChild(xm);
+      gEl.addEventListener('click', function(){ kill(n.id); });
+      gEl.addEventListener('mouseenter', function(){ if(!dead[n.id]&&!rebuilding) rect.setAttribute('stroke', C.saffron); });
+      gEl.addEventListener('mouseleave', function(){ if(!dead[n.id]&&!rebuilding) rect.setAttribute('stroke','#3d3357'); });
+      s.appendChild(gEl);
+      els[n.id]={g:gEl, rect:rect, t1:t1, t2:t2, x:xm};
+    });
+
+    var cap = svg('text',{x:'480', y:'286','text-anchor':'middle', fill:'#5b5378',
+      'font-family':'ui-monospace,Menlo,monospace','font-size':'11'});
+    cap.textContent = 'THE DAG — arrows only move forward, never in a circle';
+    s.appendChild(cap);
+    host.appendChild(s);
+  }
+
+  function paint(id, state){
+    var e = els[id]; if (!e) return;
+    if (state==='dead'){
+      e.rect.setAttribute('fill','#2a1414'); e.rect.setAttribute('stroke',C.ember);
+      e.rect.setAttribute('stroke-dasharray','5 4');
+      e.t1.setAttribute('opacity','.18'); e.t2.setAttribute('opacity','.18');
+      e.x.setAttribute('opacity','1');
+    } else if (state==='rebuild'){
+      e.rect.setAttribute('fill','#31240f'); e.rect.setAttribute('stroke',C.saffron);
+      e.rect.setAttribute('stroke-dasharray','');
+      e.t1.setAttribute('opacity','1'); e.t2.setAttribute('opacity','1');
+      e.x.setAttribute('opacity','0');
+    } else {
+      e.rect.setAttribute('fill','#1b1729'); e.rect.setAttribute('stroke','#3d3357');
+      e.rect.setAttribute('stroke-dasharray','');
+      e.t1.setAttribute('opacity','1'); e.t2.setAttribute('opacity','1');
+      e.x.setAttribute('opacity','0');
+    }
+  }
+  function paintEdge(from,to,on){
+    edges.forEach(function(e){
+      if (e.from===from && e.to===to){
+        e.el.setAttribute('stroke', on ? C.saffron : '#38304f');
+        e.el.setAttribute('stroke-width', on ? '3' : '2');
+      }
+    });
+  }
+
+  function kill(id){
+    if (rebuilding || dead[id]) return;
+    dead[id]=true; paint(id,'dead');
+    msg.textContent = 'Executor holding ' + NODES[id].l1 + '() crashed — that data is gone.';
+    msg.style.color = C.ember;
+    setTimeout(rebuild, 900);
+  }
+
+  function rebuild(){
+    var lost = Object.keys(dead).map(Number).sort(function(a,b){return a-b;});
+    if (!lost.length) return;
+    rebuilding = true;
+    msg.textContent = 'Walking backwards along the lineage…';
+    msg.style.color = C.gold;
+    var i = 0;
+    function next(){
+      if (i >= lost.length){
+        lost.forEach(function(id){ paint(id,'alive'); delete dead[id]; });
+        edges.forEach(function(e){ paintEdge(e.from,e.to,false); });
+        msg.textContent = 'Rebuilt ' + lost.length + ' step' + (lost.length>1?'s':'') +
+          ' from the recipe. Nothing else was touched. No backup was needed.';
+        msg.style.color = C.leaf;
+        rebuilding = false;
+        return;
+      }
+      var id = lost[i++];
+      NODES[id].p.forEach(function(pid){ paintEdge(pid,id,true); });
+      paint(id,'rebuild');
+      setTimeout(function(){
+        paint(id,'alive');
+        setTimeout(next, 220);
+      }, 620);
+    }
+    setTimeout(next, 450);
+  }
+
+  btnReset.addEventListener('click', function(){
+    build();
+    msg.textContent = 'Click any glowing node to destroy that piece of data';
+    msg.style.color = C.gold;
+  });
+  build();
+})();
+
+/* ============================================================
+   FIG 05 — LAZY EVALUATION
+   ============================================================ */
+(function(){
+  var host = document.getElementById('lazyHost');
+  if (!host) return;
+  var ctrls = document.getElementById('lazyCtrls');
+  var actBtn = document.getElementById('lazyAct');
+  var resetBtn = document.getElementById('lazyReset');
+  var spells = [];
+  var DESC = {
+    filter:      "state = 'MH'",
+    select:      "district, amount",
+    withColumn:  "gst = amount * 0.18",
+    join:        "cities on city_id",
+    groupBy:     "district"
+  };
+
+  var css = document.createElement('style');
+  css.textContent = [
+    '#lazyHost .lz-grid{display:grid;grid-template-columns:1fr 190px;gap:16px}',
+    '@media(max-width:620px){#lazyHost .lz-grid{grid-template-columns:1fr}}',
+    '#lazyHost .lz-plan{min-height:150px}',
+    '#lazyHost .lz-hd{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.2em;color:#6f6785;margin-bottom:10px}',
+    '#lazyHost .lz-row{display:flex;align-items:center;gap:10px;padding:9px 12px;margin-bottom:7px;border:1px solid #2b2540;border-radius:9px;background:#171426;',
+      'font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:#f6c65b;animation:lzIn .35s cubic-bezier(.2,.9,.3,1)}',
+    '@keyframes lzIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}',
+    '#lazyHost .lz-row .arg{color:#8d84a6}',
+    '#lazyHost .lz-row .st{margin-left:auto;font-size:10px;color:#5b5378;letter-spacing:.08em}',
+    '#lazyHost .lz-row.fired{border-color:#5fd6a4;background:#16261f;box-shadow:0 0 22px -8px #5fd6a4}',
+    '#lazyHost .lz-row.fired .st{color:#5fd6a4}',
+    '#lazyHost .lz-empty{color:#5b5378;font-family:ui-monospace,Menlo,monospace;font-size:12px;padding:16px 4px}',
+    '#lazyHost .lz-cpu{border:1px solid #2b2540;border-radius:12px;padding:14px;background:#131020;text-align:center}',
+    '#lazyHost .lz-meter{height:118px;width:34px;margin:10px auto;border-radius:8px;background:#221d35;position:relative;overflow:hidden}',
+    '#lazyHost .lz-fill{position:absolute;left:0;right:0;bottom:0;height:0%;background:linear-gradient(180deg,#ff9a2e,#ff5f3d);transition:height .5s cubic-bezier(.3,.8,.3,1)}',
+    '#lazyHost .lz-state{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#5b5378;letter-spacing:.1em}',
+    '#lazyHost .lz-state.on{color:#ff9a2e}',
+    '#lazyHost .lz-note{margin-top:12px;font-size:12.5px;color:#8d84a6;line-height:1.5;min-height:34px}'
+  ].join('');
+  document.head.appendChild(css);
+
+  host.innerHTML =
+    '<div class="lz-grid">'+
+      '<div><div class="lz-hd">THE PLAN (LOGICAL)</div><div class="lz-plan" id="lzPlan"></div>'+
+      '<div class="lz-note" id="lzNote">Add some transformations. Watch the cluster. It will not move.</div></div>'+
+      '<div class="lz-cpu"><div class="lz-hd" style="margin:0">CLUSTER</div>'+
+        '<div class="lz-meter"><div class="lz-fill" id="lzFill"></div></div>'+
+        '<div class="lz-state" id="lzState">IDLE · 0%</div></div>'+
+    '</div>';
+
+  var plan = document.getElementById('lzPlan');
+  var fill = document.getElementById('lzFill');
+  var stEl = document.getElementById('lzState');
+  var note = document.getElementById('lzNote');
+
+  function render(){
+    if (!spells.length){
+      plan.innerHTML = '<div class="lz-empty">df = spark.read.parquet("sales")<br><span style="opacity:.5">— nothing else yet —</span></div>';
+      return;
+    }
+    plan.innerHTML = '<div class="lz-empty" style="padding:0 4px 10px">df = spark.read.parquet("sales")</div>' +
+      spells.map(function(s,i){
+        return '<div class="lz-row" id="lzr'+i+'">.'+s+'(<span class="arg">'+DESC[s]+'</span>)'+
+               '<span class="st">QUEUED</span></div>';
+      }).join('');
+  }
+
+  ctrls.querySelectorAll('button[data-spell]').forEach(function(b){
+    b.addEventListener('click', function(){
+      if (spells.length >= 6) return;
+      spells.push(b.getAttribute('data-spell'));
+      render();
+      fill.style.height='0%';
+      stEl.textContent='IDLE · 0%'; stEl.classList.remove('on');
+      note.textContent = spells.length + ' transformation' + (spells.length>1?'s':'') +
+        ' recorded in the plan. Zero rows have been read. The cluster is still sleeping.';
+    });
+  });
+
+  resetBtn.addEventListener('click', function(){
+    spells=[]; render(); fill.style.height='0%';
+    stEl.textContent='IDLE · 0%'; stEl.classList.remove('on');
+    note.textContent='Add some transformations. Watch the cluster. It will not move.';
+  });
+
+  actBtn.addEventListener('click', function(){
+    if (!spells.length){ note.textContent='Add at least one transformation first.'; return; }
+    stEl.textContent='RUNNING · 100%'; stEl.classList.add('on');
+    fill.style.height='100%';
+    note.textContent='Action received. Catalyst optimised the whole plan, then the cluster executed it in one single pass…';
+    var i=0;
+    (function fire(){
+      if (i>=spells.length){
+        setTimeout(function(){
+          fill.style.height='0%';
+          stEl.textContent='IDLE · 0%'; stEl.classList.remove('on');
+          note.innerHTML = '<span style="color:#5fd6a4">Done.</span> All '+spells.length+
+            ' transformations ran in <b>one</b> pass over the data — not '+spells.length+' separate passes. '+
+            'That is what the waiting bought you.';
+        }, 700);
+        return;
+      }
+      var row = document.getElementById('lzr'+i);
+      if (row){ row.classList.add('fired'); row.querySelector('.st').textContent='EXECUTED'; }
+      i++; setTimeout(fire, 260);
+    })();
+  });
+
+  render();
+})();
+
+/* ============================================================
+   FIG 06 — CATALYST OPTIMISER
+   ============================================================ */
+(function(){
+  var host = document.getElementById('catalystHost');
+  if (!host) return;
+  var runBtn = document.getElementById('catRun');
+  var resetBtn = document.getElementById('catReset');
+  var stat = document.getElementById('catStat');
+
+  var css = document.createElement('style');
+  css.textContent = [
+    '#catalystHost{padding:18px}',
+    '#catalystHost .ct-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}',
+    '@media(max-width:640px){#catalystHost .ct-grid{grid-template-columns:1fr}}',
+    '#catalystHost .ct-hd{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.2em;margin-bottom:12px}',
+    '#catalystHost .ct-col{position:relative;height:250px}',
+    '#catalystHost .ct-item{position:absolute;left:0;right:0;height:48px;border:1px solid #2b2540;border-radius:10px;',
+      'background:#171426;padding:7px 12px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#ece7dc;',
+      'transition:transform .75s cubic-bezier(.3,.9,.25,1),border-color .5s,background .5s,opacity .5s}',
+    '#catalystHost .ct-item .sub{display:block;font-size:10.5px;color:#8d84a6;margin-top:3px}',
+    '#catalystHost .ct-item.good{border-color:#5fd6a4;background:#152420}',
+    '#catalystHost .ct-item.good .sub{color:#5fd6a4}',
+    '#catalystHost .ct-item.hot{border-color:#ff5f3d;background:#241417}',
+    '#catalystHost .ct-item.hot .sub{color:#ff8f78}'
+  ].join('');
+  document.head.appendChild(css);
+
+  host.innerHTML =
+    '<div class="ct-grid">'+
+      '<div><div class="ct-hd" style="color:#6f6785">AS YOU WROTE IT</div><div class="ct-col" id="ctL"></div></div>'+
+      '<div><div class="ct-hd" style="color:#ff9a2e">AS CATALYST RUNS IT</div><div class="ct-col" id="ctR"></div></div>'+
+    '</div>';
+
+  var LEFT = [
+    {t:'Scan  sales.parquet', s:'all 200 columns · 10 crore rows', cls:'hot'},
+    {t:'Scan  cities.csv',    s:'200 rows',                        cls:''},
+    {t:'SortMergeJoin',       s:'shuffles BOTH sides across network', cls:'hot'},
+    {t:'Filter',              s:"state = 'MH'  ← applied far too late", cls:''},
+    {t:'Aggregate',           s:'group by district',                cls:''}
+  ];
+  var RIGHT_TEXT = [
+    {t:'PushedFilter',        s:"state = 'MH' — pushed into the scan", cls:'good'},
+    {t:'Scan  sales.parquet', s:'only 4 columns · 24 lakh rows',       cls:'good'},
+    {t:'Scan  cities.csv',    s:'200 rows → BROADCAST to all',         cls:'good'},
+    {t:'BroadcastHashJoin',   s:'no shuffle of the big table',         cls:'good'},
+    {t:'Aggregate',           s:'partial → final (two-step)',          cls:''}
+  ];
+  // original index of each right item: filter was #3, scan #0, cities #1, join #2, agg #4
+  var ORIG_ORDER = [3,0,1,2,4];
+
+  var L = document.getElementById('ctL'), R = document.getElementById('ctR');
+  var rightEls = [];
+
+  function mk(d){
+    var el = document.createElement('div');
+    el.className = 'ct-item' + (d.cls ? ' '+d.cls : '');
+    el.innerHTML = d.t + '<span class="sub">' + d.s + '</span>';
+    return el;
+  }
+  function build(){
+    L.innerHTML=''; R.innerHTML=''; rightEls=[];
+    LEFT.forEach(function(d,i){
+      var el = mk(d); el.style.transform='translateY('+(i*50)+'px)'; L.appendChild(el);
+    });
+    // right starts as a copy of LEFT in LEFT's order
+    ORIG_ORDER.forEach(function(origIdx, targetIdx){
+      var el = mk(LEFT[origIdx]);
+      el.style.transform = 'translateY('+(origIdx*50)+'px)';
+      el.style.opacity = '.45';
+      R.appendChild(el);
+      rightEls.push({el:el, target:targetIdx, data:RIGHT_TEXT[targetIdx]});
+    });
+    stat.textContent = 'Rows carried: 10 crore';
+    stat.style.color = C.ember;
+  }
+
+  runBtn.addEventListener('click', function(){
+    rightEls.forEach(function(r,i){
+      setTimeout(function(){
+        r.el.style.opacity='1';
+        r.el.style.transform = 'translateY('+(r.target*50)+'px)';
+        r.el.className = 'ct-item' + (r.data.cls ? ' '+r.data.cls : '');
+        r.el.innerHTML = r.data.t + '<span class="sub">' + r.data.s + '</span>';
+      }, i*240);
+    });
+    var start = 100000000, end = 2400000, t0 = performance.now();
+    stat.style.color = C.leaf;
+    (function count(now){
+      var k = Math.min(1, (now-t0)/1600);
+      var v = Math.round(lerp(start,end,ease(k)));
+      stat.textContent = 'Rows carried: ' + (v>=10000000 ? (v/10000000).toFixed(2)+' crore' : (v/100000).toFixed(0)+' lakh');
+      if (k<1) requestAnimationFrame(count);
+      else stat.textContent = 'Rows carried: 24 lakh  (97.6% less)';
+    })(t0);
+  });
+  resetBtn.addEventListener('click', build);
+  build();
+})();
+
+/* ============================================================
+   FIG 07 — THE SHUFFLE
+   ============================================================ */
+(function(){
+  var c = document.getElementById('shuffleCanvas');
+  if (!c) return;
+  var runBtn = document.getElementById('shufRun');
+  var filtBtn = document.getElementById('shufFilter');
+  var stat = document.getElementById('shufStat');
+  var COLORS = ['#4ec5ff','#5fd6a4','#ff9a2e','#a986ff'];
+  var DIST = ['Pune','Nashik','Nagpur','Thane'];
+  var N = 4, S, recs = [], phase='idle', t=0, mode='all', crossings=0, last=0;
+
+  function layout(){ S = fit(c, 320); }
+  function geom(){
+    var W=S.w,H=S.h;
+    var narrow = W < 560;
+    var bw = narrow ? W*0.25 : Math.min(140, W*0.24), bh=narrow?40:44, gap=(H-90-N*bh)/(N-1);
+    return {narrow:narrow, lx:16, rx:W-16-bw, bw:bw, bh:bh, y0:56, gap:gap};
+  }
+  function boxY(i){ var g=geom(); return g.y0 + i*(g.bh+g.gap); }
+
+  function reset(m){
+    mode = m || 'all';
+    recs = [];
+    for (var i=0;i<64;i++){
+      var src = i % N;
+      var d = Math.floor(Math.random()*N);
+      recs.push({src:src, dst:d, keep: (mode==='all') ? true : (d===0 || Math.random()<0.12),
+                 p:0, delay: Math.random()*0.55, fade:1});
+    }
+    crossings = 0; t = 0; phase='idle';
+    draw();
+  }
+
+  function draw(){
+    var ctx=S.ctx,W=S.w,H=S.h,g=geom();
+    ctx.clearRect(0,0,W,H);
+    ctx.font='10px ui-monospace, Menlo, monospace';
+    ctx.fillStyle=C.muted; ctx.textAlign='left';
+    ctx.fillText(g.narrow ? 'STAGE 1' : 'STAGE 1 — data as it lies', g.lx, 24);
+    ctx.textAlign='right';
+    ctx.fillText(g.narrow ? 'STAGE 2' : 'STAGE 2 — one district per worker', W-g.lx, 24);
+    ctx.textAlign='left';
+
+    // boxes
+    for (var i=0;i<N;i++){
+      var y=boxY(i);
+      ctx.fillStyle='#1a1728'; ctx.strokeStyle='#2f2847'; ctx.lineWidth=1.5;
+      rr(ctx,g.lx,y,g.bw,g.bh,9); ctx.fill(); ctx.stroke();
+      ctx.fillStyle='#7a7194'; ctx.font='10px ui-monospace, Menlo, monospace';
+      ctx.fillText(g.narrow?('exec '+(i+1)):('executor '+(i+1)), g.lx+9, y+g.bh/2+4);
+
+      ctx.fillStyle='#1a1728'; ctx.strokeStyle=COLORS[i]+'66';
+      rr(ctx,g.rx,y,g.bw,g.bh,9); ctx.fill(); ctx.stroke();
+      ctx.fillStyle=COLORS[i];
+      ctx.fillText(DIST[i], g.rx+9, y+g.bh/2+4);
+    }
+
+    // records
+    for (var k=0;k<recs.length;k++){
+      var r = recs[k];
+      if (r.fade<=0.02) continue;
+      var sy = boxY(r.src)+g.bh/2 + ((k%7)-3)*4.2;
+      var ey = boxY(r.dst)+g.bh/2 + ((k%7)-3)*4.2;
+      var sx = g.lx+g.bw-6, ex = g.rx+6;
+      var pr = Math.max(0, Math.min(1, (r.p - r.delay)/(1-r.delay)));
+      var tt = ease(pr);
+      var mx = (sx+ex)/2;
+      // quadratic-ish
+      var x = lerp(sx,ex,tt);
+      var y = lerp(sy,ey,tt) + Math.sin(tt*Math.PI)*(-18)*(r.dst<r.src?-1:1);
+      ctx.globalAlpha = r.fade;
+      if (pr>0 && pr<1){
+        ctx.strokeStyle = COLORS[r.dst]+'2a'; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.moveTo(sx,sy);
+        ctx.quadraticCurveTo(mx, (sy+ey)/2-24, x, y); ctx.stroke();
+      }
+      ctx.fillStyle = COLORS[r.dst];
+      ctx.beginPath(); ctx.arc(x,y,3.4,0,6.283); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    // footer
+    ctx.fillStyle = C.muted; ctx.font=(g.narrow?'10px':'11px')+' ui-monospace, Menlo, monospace';
+    var label = mode==='all' ? 'no filter — every record must travel' : "filter(state='MH') before the shuffle";
+    ctx.fillText(label, g.lx, H-14);
+  }
+
+  function tick(now){
+    var dt = last ? Math.min(80, now-last) : 16; last=now;
+    t += dt/1000;
+    if (phase==='fading'){
+      var f = Math.min(1, t/0.7);
+      recs.forEach(function(r){ if(!r.keep) r.fade = 1-f; });
+      if (f>=1){ phase='flying'; t=0; }
+    } else if (phase==='flying'){
+      var p = Math.min(1, t/1.9);
+      recs.forEach(function(r){ if (r.keep) r.p = p; });
+      if (p>=1){ phase='idle'; draw(); finish(); return; }
+    }
+    draw();
+    requestAnimationFrame(tick);
+  }
+
+  function finish(){
+    var moved = recs.filter(function(r){return r.keep;}).length;
+    var cross = recs.filter(function(r){return r.keep && r.src!==r.dst;}).length;
+    stat.textContent = 'Records crossing the network: ' + cross + ' of ' + moved;
+    stat.style.color = cross > 24 ? C.ember : C.leaf;
+    runBtn.disabled = false; filtBtn.disabled = false;
+  }
+
+  function start(m){
+    reset(m);
+    runBtn.disabled = true; filtBtn.disabled = true;
+    phase = (m==='all') ? 'flying' : 'fading';
+    t=0; last=0;
+    stat.textContent = 'Records crossing the network: …';
+    stat.style.color = C.gold;
+    requestAnimationFrame(tick);
+  }
+
+  runBtn.addEventListener('click', function(){ start('all'); });
+  filtBtn.addEventListener('click', function(){ start('filtered'); });
+
+  layout(); reset('all');
+  modules.push(function(){ layout(); draw(); });
+})();
+
+/* ============================================================
+   FIG 08 — MEDALLION LAKEHOUSE
+   ============================================================ */
+(function(){
+  var host = document.getElementById('medHost');
+  if (!host) return;
+  var btn = document.getElementById('medFlow');
+  var stat = document.getElementById('medStat');
+
+  var css = document.createElement('style');
+  css.textContent = [
+    '#medHost{padding:20px 18px}',
+    '#medHost .md-wrap{display:grid;grid-template-columns:62px 1fr;gap:14px}',
+    '#medHost .md-rail{position:relative}',
+    '#medHost .md-pipe{position:absolute;left:50%;top:10px;bottom:10px;width:3px;margin-left:-1.5px;',
+      'background:linear-gradient(180deg,#4ec5ff44,#cd7f3244,#c0c8d044,#f6c65b66)}',
+    '#medHost .md-dot{position:absolute;left:50%;width:9px;height:9px;margin-left:-4.5px;border-radius:50%;',
+      'background:#4ec5ff;box-shadow:0 0 12px #4ec5ff;opacity:0}',
+    '#medHost .md-dot.go{animation:mdFall 2.6s linear forwards}',
+    '@keyframes mdFall{0%{top:0;opacity:0;background:#4ec5ff;box-shadow:0 0 12px #4ec5ff}',
+      '8%{opacity:1}30%{background:#cd7f32;box-shadow:0 0 12px #cd7f32}',
+      '60%{background:#cfd6de;box-shadow:0 0 12px #cfd6de}',
+      '92%{opacity:1;background:#f6c65b;box-shadow:0 0 16px #f6c65b}',
+      '100%{top:100%;opacity:0}}',
+    '#medHost .md-card{border:1px solid #2b2540;border-radius:14px;padding:14px 16px;margin-bottom:12px;',
+      'background:#151223;transition:.3s;cursor:default}',
+    '#medHost .md-card:hover{transform:translateX(5px)}',
+    '#medHost .md-card h5{margin:0 0 4px;font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.18em}',
+    '#medHost .md-card p{margin:0;font-size:13px;color:#9d94b4;line-height:1.55}',
+    '#medHost .md-card .cnt{float:right;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#6f6785}',
+    '#medHost .md-b{border-color:#5c4020}#medHost .md-b:hover{border-color:#cd7f32;box-shadow:0 0 34px -18px #cd7f32}',
+    '#medHost .md-s{border-color:#3d4550}#medHost .md-s:hover{border-color:#cfd6de;box-shadow:0 0 34px -18px #cfd6de}',
+    '#medHost .md-g{border-color:#5c4d1e}#medHost .md-g:hover{border-color:#f6c65b;box-shadow:0 0 34px -18px #f6c65b}',
+    '#medHost .md-src,#medHost .md-out{border-style:dashed;background:transparent}',
+    '#medHost .md-card.pulse{box-shadow:0 0 40px -14px currentColor;transform:translateX(5px)}'
+  ].join('');
+  document.head.appendChild(css);
+
+  host.innerHTML =
+   '<div class="md-wrap">'+
+     '<div class="md-rail"><div class="md-pipe"></div><div id="mdDots"></div></div>'+
+     '<div>'+
+       '<div class="md-card md-src" data-i="0"><h5 style="color:#4ec5ff">SOURCES <span class="cnt" id="c0">streaming in</span></h5>'+
+         '<p>App events, POS machines, IoT sensors, CSV dumps from the old system, JSON from partners.</p></div>'+
+       '<div class="md-card md-b" data-i="1" style="color:#cd7f32"><h5 style="color:#cd7f32">BRONZE — RAW TRUTH <span class="cnt" id="c1">1,00,000 rows</span></h5>'+
+         '<p>Landed exactly as it arrived. Nothing dropped, nothing fixed, only a timestamp added. If tomorrow you discover a bug in your cleaning logic, this is the only reason you can recover.</p></div>'+
+       '<div class="md-card md-s" data-i="2" style="color:#cfd6de"><h5 style="color:#cfd6de">SILVER — CLEANED &amp; JOINED <span class="cnt" id="c2">— </span></h5>'+
+         '<p>Duplicates removed, data types fixed, bad rows quarantined, tables joined into proper business entities. This is where most Spark code actually lives.</p></div>'+
+       '<div class="md-card md-g" data-i="3" style="color:#f6c65b"><h5 style="color:#f6c65b">GOLD — THE ANSWER <span class="cnt" id="c3">— </span></h5>'+
+         '<p>Small, aggregated, business-ready. Revenue by district by day. Churn score per customer. The table your dashboard actually reads at 9 AM.</p></div>'+
+       '<div class="md-card md-out" data-i="4"><h5 style="color:#a986ff">CONSUMERS</h5>'+
+         '<p>BI dashboards, SQL analysts, ML feature tables, and — increasingly — AI agents asking their own questions.</p></div>'+
+     '</div>'+
+   '</div>';
+
+  var dots = document.getElementById('mdDots');
+  var cards = host.querySelectorAll('.md-card');
+  var HOVER = ['Raw events arriving from everywhere, in every shape.',
+               'Bronze: append-only. Never edit history — you will need it.',
+               'Silver: this is where Spark does its heaviest lifting.',
+               'Gold: tiny tables, huge business value.',
+               'Every consumer reads governed, trustworthy tables.'];
+  cards.forEach(function(card,i){
+    card.addEventListener('mouseenter', function(){ stat.textContent = HOVER[i]; });
+  });
+
+  var running=false;
+  btn.addEventListener('click', function(){
+    if (running) return; running=true; btn.disabled=true;
+    dots.innerHTML='';
+    document.getElementById('c1').textContent='1,00,000 rows';
+    document.getElementById('c2').textContent='— ';
+    document.getElementById('c3').textContent='— ';
+    for (var i=0;i<14;i++){
+      (function(i){
+        var d = document.createElement('div');
+        d.className='md-dot'; dots.appendChild(d);
+        setTimeout(function(){ d.classList.add('go'); }, i*150);
+      })(i);
+    }
+    [1,2,3].forEach(function(idx,k){
+      setTimeout(function(){
+        cards[idx].classList.add('pulse');
+        setTimeout(function(){ cards[idx].classList.remove('pulse'); }, 700);
+        if (idx===2) document.getElementById('c2').textContent='92,400 rows';
+        if (idx===3) document.getElementById('c3').textContent='148 rows';
+      }, 700 + k*800);
+    });
+    setTimeout(function(){
+      stat.textContent = 'One lakh raw events became 148 rows a human can actually read.';
+      running=false; btn.disabled=false;
+    }, 3600);
+  });
+})();
+
+/* ============================================================
+   FIG 09 — PHOTON VECTORISATION
+   ============================================================ */
+(function(){
+  var c = document.getElementById('photonCanvas');
+  if (!c) return;
+  var btn = document.getElementById('photRun');
+  var la = document.getElementById('photA'), lb = document.getElementById('photB');
+  var TOTAL=64, VEC=8, BEAT=52;
+  var S, aDone=0, bDone=0, beats=0, running=false, acc=0, last=0;
+
+  function layout(){ S = fit(c, 300); }
+  function reset(){ aDone=0; bDone=0; beats=0; acc=0; running=false; btn.disabled=false;
+    la.textContent='Row-at-a-time: —'; lb.textContent='Photon vectorised: —'; draw(); }
+
+  function lane(ctx,W,y,title,done,color,sub){
+    var narrow = W < 560;
+    var padX=narrow?14:22, cols=16, rows=4;
+    var cw = (W-padX*2-(cols-1)*(narrow?3:5))/cols, ch=16, gpx=(narrow?3:5);
+    ctx.font=(narrow?'10px':'11px')+' ui-monospace, Menlo, monospace'; ctx.textAlign='left';
+    ctx.fillStyle=color; ctx.fillText(narrow ? title.split(' (')[0] : title, padX, y-10);
+    if (!narrow){
+      ctx.fillStyle='#5b5378'; ctx.font='10px ui-monospace, Menlo, monospace';
+      ctx.textAlign='right'; ctx.fillText(sub, W-padX, y-10); ctx.textAlign='left';
+    }
+    for (var i=0;i<TOTAL;i++){
+      var col=i%cols, row=Math.floor(i/cols);
+      var x=padX+col*(cw+gpx), yy=y+row*(ch+5);
+      if (i<done){ ctx.fillStyle=color; rr(ctx,x,yy,cw,ch,3); ctx.fill(); }
+      else { ctx.fillStyle='#221d35'; rr(ctx,x,yy,cw,ch,3); ctx.fill(); }
+    }
+    // active marker
+    if (done<TOTAL && running){
+      var n = (title.indexOf('Photon')>=0) ? VEC : 1;
+      for (var k=0;k<n && done+k<TOTAL;k++){
+        var idx=done+k, col2=idx%cols, row2=Math.floor(idx/cols);
+        var x2=padX+col2*(cw+gpx), y2=y+row2*(ch+5);
+        ctx.strokeStyle='#fff'; ctx.lineWidth=1.5;
+        rr(ctx,x2-1,y2-1,cw+2,ch+2,4); ctx.stroke();
+      }
+    }
+  }
+
+  function draw(){
+    var ctx=S.ctx,W=S.w,H=S.h;
+    ctx.clearRect(0,0,W,H);
+    ctx.font='11px ui-monospace, Menlo, monospace'; ctx.fillStyle=C.muted;
+    ctx.fillText(W<560?'64 VALUES · SAME CLOCK':'64 VALUES · SAME OPERATION · SAME CLOCK', W<560?14:22, 22);
+    lane(ctx,W,64,'ROW AT A TIME (classic JVM)', aDone, C.ember, '1 value per beat');
+    lane(ctx,W,190,'PHOTON — VECTORISED (C++ / SIMD)', bDone, C.leaf, '8 values per beat');
+    ctx.fillStyle='#5b5378'; ctx.font='10px ui-monospace, Menlo, monospace';
+    ctx.fillText('beats elapsed: '+beats, W<560?14:22, H-12);
+  }
+
+  function tick(now){
+    var dt = last ? Math.min(120, now-last) : 16; last=now;
+    acc += dt;
+    while (acc >= BEAT){
+      acc -= BEAT; beats++;
+      if (aDone<TOTAL) aDone = Math.min(TOTAL, aDone+1);
+      if (bDone<TOTAL) bDone = Math.min(TOTAL, bDone+VEC);
+      if (bDone>=TOTAL && lb.textContent.indexOf('beats')<0) lb.textContent='Photon vectorised: done in '+beats+' beats';
+      if (aDone>=TOTAL) la.textContent='Row-at-a-time: done in '+beats+' beats';
+    }
+    if (bDone<TOTAL) lb.textContent='Photon vectorised: '+bDone+'/64';
+    if (aDone<TOTAL) la.textContent='Row-at-a-time: '+aDone+'/64';
+    draw();
+    if (aDone>=TOTAL && bDone>=TOTAL){ running=false; btn.disabled=false; draw(); return; }
+    requestAnimationFrame(tick);
+  }
+
+  btn.addEventListener('click', function(){
+    if (running) return;
+    aDone=0;bDone=0;beats=0;acc=0;last=0;running=true;btn.disabled=true;
+    requestAnimationFrame(tick);
+  });
+
+  layout(); reset();
+  modules.push(function(){ layout(); draw(); });
+})();
+
+/* ============================================================
+   RESIZE
+   ============================================================ */
+var rt;
+window.addEventListener('resize', function(){
+  clearTimeout(rt);
+  rt = setTimeout(function(){ modules.forEach(function(f){ try{ f(); }catch(e){} }); }, 160);
+});
+
+})();
+</script>
+<script>
+(function(){
+  var KEY='nu-theme';
+  var toggle=document.getElementById('themeToggle');
+  if(!toggle) return;
+  function apply(t){
+    document.documentElement.setAttribute('data-theme',t);
+    toggle.setAttribute('aria-pressed', t==='linkedin' ? 'true':'false');
+    toggle.setAttribute('title', t==='linkedin' ? 'Switch to dark theme' : 'Switch to light theme');
+  }
+  var saved=null; try{saved=localStorage.getItem(KEY);}catch(e){}
+  if(saved==='linkedin' || saved==='cinema') apply(saved);
+  toggle.addEventListener('click',function(){
+    var isLight=document.documentElement.getAttribute('data-theme')==='linkedin';
+    var next=isLight?'cinema':'linkedin';
+    apply(next);
+    try{localStorage.setItem(KEY,next);}catch(e){}
+  });
+})();
+</script>
+<script>
+(function(){
+  document.querySelectorAll('[data-copy-url]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var url = btn.getAttribute('data-copy-url');
+      var done = function(){
+        var original = btn.getAttribute('aria-label');
+        btn.classList.add('copied');
+        btn.setAttribute('aria-label','Copied!');
+        setTimeout(function(){ btn.classList.remove('copied'); btn.setAttribute('aria-label', original); }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function(){});
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = url; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch(e){}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+})();
+</script>
+<script>
+(function(){
+  var HEADING_SELECTOR = 'section.chapter h2';
+  var headings = Array.prototype.slice.call(document.querySelectorAll(HEADING_SELECTOR));
+  if (!headings.length) return;
+
+  var fill = document.getElementById('rpFill');
+  var ring = document.getElementById('rpRing');
+  var pct = document.getElementById('rpPct');
+  var status = document.getElementById('rpStatus');
+  var list = document.getElementById('rpList');
+  var toc = document.getElementById('rpToc');
+  var toggle = document.getElementById('rpToggle');
+  if (!fill || !toc) return;
+
+  var RING_CIRC = 97.4;
+  var seen = {};
+
+  var items = headings.map(function(h, i){
+    var base = 'rp-section-' + (i + 1);
+    if (!h.id) h.id = base;
+    while (seen[h.id]) { h.id = base + '-' + Math.random().toString(36).slice(2,6); }
+    seen[h.id] = true;
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.textContent = h.textContent.replace(/\s+/g,' ').trim();
+    li.appendChild(a);
+    list.appendChild(li);
+    return { heading: h, li: li };
+  });
+
+  function updateProgress(){
+    var doc = document.documentElement;
+    var scrollTop = window.scrollY || doc.scrollTop;
+    var height = doc.scrollHeight - doc.clientHeight;
+    var ratio = height > 0 ? Math.min(1, Math.max(0, scrollTop / height)) : 0;
+    var percent = Math.round(ratio * 100);
+    fill.style.width = percent + '%';
+    if (ring) ring.style.strokeDashoffset = String(RING_CIRC * (1 - ratio));
+    if (pct) pct.textContent = percent + '%';
+    if (status) status.textContent = percent >= 99 ? 'Finished reading' : percent + '% read';
+
+    var activeIdx = 0;
+    var probe = scrollTop + window.innerHeight * 0.3;
+    for (var i = 0; i < items.length; i++) {
+      var top = items[i].heading.getBoundingClientRect().top + scrollTop;
+      if (top <= probe) activeIdx = i;
+    }
+    items.forEach(function(it, i){ it.li.classList.toggle('active', i === activeIdx); });
+  }
+
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  window.addEventListener('resize', updateProgress);
+  updateProgress();
+
+  toggle.addEventListener('click', function(){
+    var open = toc.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', function(e){
+    if (!toc.contains(e.target)) toc.classList.remove('open');
+  });
+})();
+</script>
+</body>
+</html>

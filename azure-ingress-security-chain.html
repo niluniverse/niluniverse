@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cinema">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clearance Denied — How a Request Clears Azure Front Door, API Management and the AKS Load Balancer | Nilesh Mohite</title>
+<meta name="description" content="One request, five checkpoints, and the paperwork it has to survive. A walk through Azure's edge-to-pod security chain — and what kubectl apply really provisions in your resource group.">
+<meta name="author" content="Nilesh Mohite">
+<meta property="og:title" content="Clearance Denied — The Airport Security Model of Azure Ingress">
+<meta property="og:description" content="Front Door, API Management and the AKS load balancer, told as one request's walk from the terminal door to the aircraft.">
+<meta property="og:url" content="https://blog.niluniverse.com/azure-ingress-security-chain.html">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Clearance Denied — The Airport Security Model of Azure Ingress">
+<meta name="twitter:description" content="Front Door, API Management and the AKS load balancer, told as one request's walk from the terminal door to the aircraft.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="favicon-180.png">
+<style>
+/* ─────────────────────────────────────────────
+   THEME TOKENS — swap these to match the site
+   ───────────────────────────────────────────── */
+:root{
+  --az-bg:#0c0d10;
+  --bg-raised:#131519;
+  --bg-code:#0f1114;
+  --rule:#22262e;
+  --rule-soft:#1a1d23;
+  --ink:#e8e6e1;
+  --ink-dim:#a7a49d;
+  --ink-faint:#6d6b66;
+  --az-accent:#e0a45c;
+  --accent-dim:#8a6535;
+  --danger:#d9694f;
+  --az-ok:#6fae7d;
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --measure:44rem;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--az-bg);color:var(--ink);
+  font-family:var(--sans);font-weight:300;font-size:17.5px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── grain / vignette so it reads cinematic, not flat ── */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(120% 80% at 50% -10%,rgba(224,164,92,.07),transparent 60%);
+}
+.wrap{position:relative;z-index:1}
+
+/* ─────────── NAV ─────────── */
+.nav{
+  display:flex;align-items:center;justify-content:space-between;
+  max-width:72rem;margin:0 auto;padding:1.6rem 1.5rem;
+  border-bottom:1px solid var(--rule-soft);
+}
+.logo{
+  font-family:var(--serif);font-weight:600;font-size:1.05rem;letter-spacing:-.01em;
+  color:var(--ink);text-decoration:none;
+}
+.logo span{color:var(--az-accent)}
+.nav a.back{
+  font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-faint);text-decoration:none;transition:color .2s;
+}
+.nav a.back:hover{color:var(--az-accent)}
+
+/* ─────────── HERO ─────────── */
+.hero{max-width:var(--measure);margin:0 auto;padding:5rem 1.5rem 2.5rem}
+.badge{
+  display:inline-block;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--az-accent);border:1px solid var(--accent-dim);
+  padding:.35rem .7rem;border-radius:2px;margin-bottom:1.8rem;
+}
+h1{
+  font-family:var(--serif);font-weight:600;font-size:clamp(2.1rem,5.5vw,3.4rem);
+  line-height:1.08;letter-spacing:-.025em;margin:0 0 1.2rem;
+}
+h1 em{font-style:italic;color:var(--az-accent)}
+.dek{
+  font-size:1.15rem;color:var(--ink-dim);line-height:1.6;margin:0 0 2.2rem;
+  max-width:38rem;
+}
+.meta{
+  display:flex;flex-wrap:wrap;gap:.5rem 1.4rem;align-items:center;
+  font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);
+  padding-top:1.4rem;border-top:1px solid var(--rule-soft);
+}
+.tags{max-width:var(--measure);margin:1.4rem auto 0;padding:0 1.5rem;
+  display:flex;flex-wrap:wrap;gap:.5rem}
+.tag{
+  font-size:.72rem;letter-spacing:.05em;color:var(--ink-dim);
+  background:var(--bg-raised);border:1px solid var(--rule);
+  padding:.25rem .6rem;border-radius:2px;font-family:var(--mono);
+}
+
+/* ─────────── ARTICLE ─────────── */
+article{max-width:var(--measure);margin:0 auto;padding:3.5rem 1.5rem 2rem}
+article p{margin:0 0 1.35rem}
+.lede::first-letter{
+  font-family:var(--serif);font-size:3.6rem;line-height:.85;float:left;
+  padding:.35rem .55rem 0 0;color:var(--az-accent);font-weight:600;
+}
+strong{font-weight:600;color:#fff}
+em{color:var(--ink)}
+a{color:var(--az-accent);text-decoration:none;border-bottom:1px solid var(--accent-dim)}
+a:hover{border-bottom-color:var(--az-accent)}
+
+/* section headers */
+.sec{margin:4.5rem 0 1.8rem}
+.sec .num{
+  display:block;font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;
+  color:var(--az-accent);margin-bottom:.65rem;
+}
+.sec h2{
+  font-family:var(--serif);font-weight:600;font-size:1.85rem;line-height:1.2;
+  letter-spacing:-.02em;margin:0 0 .4rem;
+}
+.sec .kicker{font-size:.9rem;color:var(--ink-faint);font-style:italic;margin:0}
+h3{
+  font-family:var(--sans);font-weight:600;font-size:1.02rem;letter-spacing:.02em;
+  margin:2.4rem 0 .8rem;color:#fff;
+}
+
+/* diamond divider */
+.rule{
+  text-align:center;color:var(--accent-dim);letter-spacing:1.2em;
+  margin:3.5rem 0;font-size:.7rem;
+}
+
+/* ─────────── CALLOUT ─────────── */
+.callout{
+  font-family:var(--serif);font-size:1.35rem;line-height:1.45;font-weight:400;
+  color:var(--ink);border-left:2px solid var(--az-accent);
+  padding:.2rem 0 .2rem 1.4rem;margin:2.6rem 0;
+}
+.callout em{color:var(--az-accent);font-style:italic}
+
+.note{
+  background:var(--bg-raised);border:1px solid var(--rule);border-left:3px solid var(--accent-dim);
+  padding:1rem 1.2rem;margin:2rem 0;font-size:.94rem;color:var(--ink-dim);border-radius:2px;
+}
+.note b{color:var(--az-accent);font-weight:600;letter-spacing:.06em;font-size:.75rem;
+  text-transform:uppercase;display:block;margin-bottom:.35rem}
+
+/* ─────────── CODE ─────────── */
+figure.code{margin:2rem 0;border:1px solid var(--rule);border-radius:3px;overflow:hidden;background:var(--bg-code)}
+figure.code figcaption{
+  font-family:var(--mono);font-size:.73rem;letter-spacing:.04em;color:var(--ink-faint);
+  background:var(--bg-raised);border-bottom:1px solid var(--rule);padding:.5rem .9rem;
+}
+figure.code pre{margin:0;padding:1.05rem .9rem;overflow-x:auto}
+pre,code{font-family:var(--mono);font-size:.815rem;line-height:1.65}
+pre{color:#cfd3da}
+p code,li code,td code{
+  font-size:.84em;background:var(--bg-raised);border:1px solid var(--rule);
+  padding:.08em .35em;border-radius:2px;color:var(--az-accent);
+}
+.c-com{color:#5f6672}
+.c-key{color:#c79ae0}
+.c-str{color:#8fc98f}
+.c-tag{color:#7fb2e0}
+.c-num{color:var(--az-accent)}
+.mark{color:var(--az-accent);font-weight:500}
+
+/* ─────────── DIAGRAM ─────────── */
+.diagram{
+  background:var(--bg-code);border:1px solid var(--rule);border-radius:3px;
+  padding:1.3rem 1rem;margin:2.2rem 0;overflow-x:auto;
+}
+.diagram pre{font-size:.74rem;line-height:1.5;color:var(--ink-dim);margin:0}
+.diagram .hi{color:var(--az-accent)}
+.diagram .bad{color:var(--danger)}
+.diagram .good{color:var(--az-ok)}
+.cap{font-size:.78rem;color:var(--ink-faint);text-align:center;margin:.6rem 0 0;font-style:italic}
+
+/* ─────────── TABLE ─────────── */
+.tablewrap{overflow-x:auto;margin:2.2rem 0}
+table{border-collapse:collapse;width:100%;font-size:.86rem}
+th{
+  text-align:left;font-weight:600;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--az-accent);border-bottom:1px solid var(--rule);padding:.6rem .7rem;white-space:nowrap;
+}
+td{border-bottom:1px solid var(--rule-soft);padding:.65rem .7rem;vertical-align:top;color:var(--ink-dim)}
+td:first-child{color:var(--ink)}
+tr:hover td{background:rgba(255,255,255,.015)}
+
+/* checkpoint chips */
+.chain{display:flex;flex-wrap:wrap;gap:.4rem;margin:2rem 0;align-items:center}
+.chip{
+  font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;
+  border:1px solid var(--rule);background:var(--bg-raised);color:var(--ink-dim);
+  padding:.35rem .6rem;border-radius:2px;
+}
+.chip.on{border-color:var(--accent-dim);color:var(--az-accent)}
+.arrow{color:var(--ink-faint);font-size:.8rem}
+
+ul,ol{margin:0 0 1.4rem;padding-left:1.25rem}
+li{margin-bottom:.5rem}
+li::marker{color:var(--accent-dim)}
+
+/* ─────────── FOOTER ─────────── */
+footer{
+  max-width:var(--measure);margin:4rem auto 0;padding:2.5rem 1.5rem 4rem;
+  border-top:1px solid var(--rule-soft);
+}
+.share{display:flex;gap:1.2rem;margin-bottom:2rem;flex-wrap:wrap}
+.share a{
+  font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-faint);border-bottom:1px solid transparent;
+}
+.share a:hover{color:var(--az-accent);border-bottom-color:var(--accent-dim)}
+.sig{font-size:.82rem;color:var(--ink-faint);line-height:1.9}
+.sig .name{font-family:var(--serif);color:var(--ink);font-size:1rem}
+
+@media(max-width:600px){
+  body{font-size:16.5px}
+  .hero{padding-top:3rem}
+  article{padding-top:2.5rem}
+  .diagram pre{font-size:.62rem}
+}
+
+  /* ==== Cinema theme (new default) + toggle button — shared with niluniverse.com ==== */
+  [data-theme="cinema"] {
+    --bg: #14171D; --panel: #1B1F27; --panel-2: #212630; --line: #2E3440;
+    --accent: #C9A24B; --accent-hi: #E6C06E; --on-accent: #14171D;
+    --text: #CBD1DA; --dim: #8891A0; --head: #F3F5F8; --ok: #7FBF8E;
+    --shadow: rgba(0,0,0,0.5);
+    --display-font: var(--serif); --display-weight: 500;
+    --radius-btn: 4px; --radius-chip: 4px; --ls-label: 0.14em;
+  }
+  .theme-toggle {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; flex: none;
+    border: 1px solid var(--line); border-radius: 50%;
+    background: var(--panel); color: var(--accent); cursor: pointer;
+    transition: background .18s, border-color .18s, transform .18s;
+  }
+  .theme-toggle:hover { background: var(--panel-2); border-color: var(--accent); transform: rotate(-8deg); }
+  .theme-toggle svg { width: 18px; height: 18px; }
+  .theme-toggle .icon-sun, .theme-toggle .icon-moon { display: none; }
+  html[data-theme="cinema"] .theme-toggle .icon-moon { display: block; }
+  html[data-theme="linkedin"] .theme-toggle .icon-sun { display: block; }
+  .back-bar { padding: 18px 24px 0; }
+  .back-link {
+    font-family: var(--mono); font-size: .76rem; letter-spacing: .03em;
+    color: var(--dim); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: color .2s, gap .2s;
+  }
+  .back-link:hover { color: var(--accent); gap: 10px; }
+  .end-back { padding: 6px 24px 60px; text-align: center; }
+  .end-back .back-link { justify-content: center; font-size: .82rem; }
+  .share-row { display: flex; align-items: center; gap: 8px; }
+  .share-label {
+    font-family: var(--mono); font-size: .68rem; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--dim); margin-right: 2px;
+  }
+  .share-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 50%; flex: none;
+    border: 1px solid var(--line); background: var(--panel);
+    color: var(--dim); cursor: pointer; text-decoration: none;
+    transition: color .18s, border-color .18s, background .18s, transform .18s;
+  }
+  .share-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--panel-2); transform: translateY(-1px); }
+  .share-btn svg { width: 14px; height: 14px; }
+  .share-btn.copied { color: var(--ok); border-color: var(--ok); }
+  .back-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .end-back { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  header.site { border-bottom: 1px solid var(--line); background: var(--bg); position: relative; z-index: 20; }
+  header.site .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+  header.site nav { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 64px; }
+  header.site .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--head); font-family: var(--mono); font-weight: 600; font-size: 15px; }
+  header.site .brand-mark { width: 28px; height: 28px; flex: none; }
+  header.site .b-nil { color: var(--accent); }
+
+  /* ==== Reading progress rail — shared with niluniverse.com ==== */
+  .rp-bar { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: transparent; z-index: 9999; pointer-events: none; }
+  .rp-fill { height: 100%; width: 0%; background: var(--accent); transition: width .1s linear; }
+  .rp-toc { position: fixed; right: 20px; bottom: 20px; z-index: 9998; font-family: var(--mono); }
+  .rp-toggle {
+    width: 52px; height: 52px; border-radius: 50%; flex: none;
+    background: var(--panel); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center; position: relative;
+    cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.35); padding: 0;
+  }
+  .rp-ring { position: absolute; inset: 0; width: 52px; height: 52px; transform: rotate(-90deg); }
+  .rp-ring-bg { fill: none; stroke: var(--line); stroke-width: 2.5; }
+  .rp-ring-fg { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 97.4; stroke-dashoffset: 97.4; transition: stroke-dashoffset .15s linear; }
+  .rp-pct { font-size: 10.5px; color: var(--head); font-weight: 600; position: relative; z-index: 1; }
+  .rp-panel {
+    position: absolute; right: 0; bottom: 64px; width: 260px; max-height: 60vh; overflow-y: auto;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px; box-shadow: 0 20px 50px rgba(0,0,0,.4);
+    opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .18s, transform .18s;
+  }
+  .rp-toc.open .rp-panel { opacity: 1; transform: none; pointer-events: auto; }
+  .rp-panel-head { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed var(--line); }
+  .rp-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+  .rp-list li a {
+    display: block; padding: 7px 8px; border-radius: 6px; font-size: 12.5px; line-height: 1.4;
+    color: var(--dim); text-decoration: none; transition: background .15s, color .15s;
+  }
+  .rp-list li a:hover { background: var(--bg); color: var(--head); }
+  .rp-list li.active a { color: var(--accent); background: var(--bg); font-weight: 600; }
+  @media (max-width: 640px) {
+    .rp-toc { right: 14px; bottom: 14px; }
+    .rp-toggle { width: 46px; height: 46px; }
+    .rp-ring { width: 46px; height: 46px; }
+    .rp-panel { width: min(78vw, 280px); }
+  }
+</style>
+</head>
+<body>
+<div class="rp-bar" id="rpBar"><div class="rp-fill" id="rpFill"></div></div>
+<div class="rp-toc" id="rpToc">
+  <button class="rp-toggle" id="rpToggle" type="button" aria-expanded="false" aria-label="Reading progress and section list">
+    <svg class="rp-ring" viewBox="0 0 36 36"><circle class="rp-ring-bg" cx="18" cy="18" r="15.5"/><circle class="rp-ring-fg" id="rpRing" cx="18" cy="18" r="15.5"/></svg>
+    <span class="rp-pct" id="rpPct">0%</span>
+  </button>
+  <div class="rp-panel" id="rpPanel">
+    <div class="rp-panel-head" id="rpStatus">0% read</div>
+    <ol class="rp-list" id="rpList"></ol>
+  </div>
+</div>
+<div class="wrap">
+
+<header class="site">
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="https://niluniverse.com">
+        <svg class="brand-mark" viewBox="0 0 120 120" fill="none" aria-hidden="true"><rect x="4" y="4" width="112" height="112" rx="26" fill="var(--accent)"/><polyline points="30,42 54,62 30,82" stroke="var(--on-accent)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><rect x="62" y="74" width="30" height="14" rx="4" fill="var(--on-accent)"/></svg>
+        <span><span class="b-nil">nil</span>universe</span>
+      </a>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" title="Switch to light theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap back-bar">
+  <a class="back-link" href="index.html">&larr; All stories</a>
+  <div class="share-row"><a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.niluniverse.com%2Fazure-ingress-security-chain.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a><a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fblog.niluniverse.com%2Fazure-ingress-security-chain.html&text=Clearance%20Denied%3A%20how%20a%20request%20clears%20Front%20Door%2C%20APIM%20and%20the%20AKS%20load%20balancer" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a><a class="share-btn" href="mailto:?subject=Clearance%20Denied&body=https%3A%2F%2Fblog.niluniverse.com%2Fazure-ingress-security-chain.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a><button class="share-btn" type="button" data-copy-url="https://blog.niluniverse.com/azure-ingress-security-chain.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button></div>
+</div>
+
+<header class="hero">
+  <span class="badge">Cloud Networking · Airport Thriller</span>
+  <h1>Clearance Denied: how a request <em>actually</em> gets through Front Door, APIM and the AKS load balancer</h1>
+  <p class="dek">Every HTTPS request to your platform is a passenger with no passport, no luggage tag and a very short connection time. Here is the terminal it walks through — and what <code>kubectl apply</code> quietly builds on the apron behind it.</p>
+  <div class="meta">
+    <span>14 August 2026</span>
+    <span>·</span>
+    <span>16 min read</span>
+    <span>·</span>
+    <span>Nilesh Mohite</span>
+  </div>
+</header>
+
+<div class="tags">
+  <span class="tag">Azure Front Door</span>
+  <span class="tag">API Management</span>
+  <span class="tag">AKS</span>
+  <span class="tag">Kubernetes</span>
+  <span class="tag">Private Link</span>
+  <span class="tag">.NET</span>
+</div>
+
+<article>
+
+<p class="lede">At 03:12 UTC a request checks in for a flight it will never remember taking. It is a <code>POST /v1/orders</code> from a mobile app in Pune, roughly 900 bytes of JSON, carrying a bearer token it did not read and a <code>User-Agent</code> string it cannot vouch for. It believes it is going straight to your API. It is not. It is about to walk the full length of an international terminal, and at every desk somebody is going to ask it a question it might not survive.</p>
+
+<p>Most architecture diagrams draw this journey as three friendly boxes and two arrows. That drawing is a lie of omission. Between the client and the pod there are at least five distinct trust boundaries, three different load-balancing algorithms, two TLS terminations, one firewall that runs <em>before</em> routing is even decided, and a Layer 4 appliance that you never explicitly created and probably cannot find in the portal.</p>
+
+<p>So let's walk it properly. Terminal door to aircraft door. One passenger, one bad afternoon.</p>
+
+<div class="rule">◆ ◆ ◆</div>
+
+<section class="sec">
+  <span class="num">01 / THE MANIFEST</span>
+  <h2>The terminal, from above</h2>
+  <p class="kicker">Before the walkthrough — the map on the wall by the entrance.</p>
+</section>
+
+<p>Here is the shape of the building. Read it once now; the rest of the article is a slow walk through it.</p>
+
+<div class="diagram">
+<pre>
+   CLIENT (Pune)
+        │  DNS → anycast IP
+        ▼
+┌────────────────────────────────────────────────────────────────────┐
+│  <span class="hi">AZURE FRONT DOOR</span>  — global, ~200 PoPs, anycast + split TCP        │
+│                                                                    │
+│   1. TLS terminated at the nearest PoP                             │
+│   2. Host header → which profile is this?                          │
+│   3. <span class="hi">WAF evaluated</span>  ← happens BEFORE routing and caching           │
+│   4. Route match  → 5. Rule set  → 6. Cache lookup                 │
+│   7. Origin selection (health probe + latency/priority/weight)     │
+└────────────────────────────────────────────────────────────────────┘
+        │  Microsoft backbone (not the public internet)
+        │  <span class="good">Private Link</span> — the origin has no public IP at all
+        ▼
+┌────────────────────────────────────────────────────────────────────┐
+│  <span class="hi">API MANAGEMENT</span>  — regional, the boarding-pass desk                │
+│                                                                    │
+│   inbound  → check-header X-Azure-FDID                             │
+│              validate-jwt                                          │
+│              rate-limit-by-key / quota-by-key                      │
+│              validate-content (schema)                             │
+│   backend  → forward-request, retry, circuit break                 │
+│   outbound → strip internal headers, shape the response            │
+│   on-error → the only lane that runs when something explodes       │
+└────────────────────────────────────────────────────────────────────┘
+        │  VNet — private IP, no internet leg
+        ▼
+┌────────────────────────────────────────────────────────────────────┐
+│  <span class="hi">AKS</span> — the apron                                                   │
+│                                                                    │
+│   Azure <span class="hi">internal</span> Load Balancer (Standard SKU)                      │
+│     frontend IP   10.240.0.25                                      │
+│     backend pool  = node NICs / node IPs                           │
+│     LB rule       :443 → :30412   +  health probe                  │
+│        │                                                           │
+│        ▼                                                           │
+│   node → kube-proxy (iptables/IPVS/eBPF) → ingress controller      │
+│        → Service ClusterIP → <span class="good">POD</span>                                   │
+└────────────────────────────────────────────────────────────────────┘
+</pre>
+<p class="cap">Five trust boundaries. Only one of them is drawn in most slide decks.</p>
+</div>
+
+<div class="chain">
+  <span class="chip on">DNS</span><span class="arrow">→</span>
+  <span class="chip on">PoP / TLS</span><span class="arrow">→</span>
+  <span class="chip on">WAF</span><span class="arrow">→</span>
+  <span class="chip on">Route</span><span class="arrow">→</span>
+  <span class="chip on">Private Link</span><span class="arrow">→</span>
+  <span class="chip on">APIM policy</span><span class="arrow">→</span>
+  <span class="chip on">Internal LB</span><span class="arrow">→</span>
+  <span class="chip on">kube-proxy</span><span class="arrow">→</span>
+  <span class="chip on">Pod</span>
+</div>
+
+<div class="rule">◆ ◆ ◆</div>
+
+<section class="sec">
+  <span class="num">02 / THE TERMINAL DOOR</span>
+  <h2>Front Door doesn't route first. It <em>opens</em> first.</h2>
+  <p class="kicker">Anycast, split TCP, and why your latency drops before you optimise anything.</p>
+</section>
+
+<p>The first thing that happens is not routing. It is <strong>geography</strong>.</p>
+
+<p>Your custom domain resolves — through a CNAME chain that ends at Front Door — to an <em>anycast</em> address. Anycast means the same IP is announced from every Front Door point of presence on the planet simultaneously, and internet routing hands the client to whichever PoP is topologically nearest. Our Pune request never crosses an ocean to say hello. It shakes hands with a building in India.</p>
+
+<p>That handshake matters more than people expect. TLS negotiation is the expensive part of a short HTTPS request — multiple round trips before a single byte of your JSON moves. Front Door terminates TLS at the PoP, then reuses <strong>warm, already-established connections</strong> over the Microsoft backbone to your origin. This is "split TCP": the slow, lossy, high-RTT leg is made as short as physically possible, and the long leg runs on a network with no congestion drama.</p>
+
+<div class="callout">The single largest latency win in most Azure architectures is not a code change. It is <em>moving the TLS handshake 1,500 km closer to the user.</em></div>
+
+<p>Only once the connection exists does Front Door look at the <code>Host</code> header to work out <em>whose</em> Front Door profile this request belongs to. This is why an unregistered custom domain fails in a confusing way: the PoP answered the door, but nobody in the building recognises the name on the envelope.</p>
+
+<h3>The order of operations, which almost everyone gets wrong</h3>
+
+<p>Front Door's processing order is documented and it is not the order most people assume:</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>#</th><th>Step</th><th>Why the order matters</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>PoP selection (anycast)</td><td>Client never chooses; BGP does.</td></tr>
+<tr><td>2</td><td>TLS termination</td><td>Cert must be for the custom domain, not the origin.</td></tr>
+<tr><td>3</td><td>Host header → profile match</td><td>Domain must be registered <em>and</em> validated.</td></tr>
+<tr><td>4</td><td><strong>WAF evaluation</strong></td><td>Runs <em>before</em> routing and <em>before</em> cache. A blocked request never costs you an origin call or a cache slot.</td></tr>
+<tr><td>5</td><td>Route match</td><td>Domain + path pattern → origin group.</td></tr>
+<tr><td>6</td><td>Rule set / rules engine</td><td>Can override the origin group, rewrite, or redirect.</td></tr>
+<tr><td>7</td><td>Cache lookup</td><td>A hit returns here. Origin never hears about it.</td></tr>
+<tr><td>8</td><td>Origin selection</td><td>Health probe status → then priority → then weight → then latency band.</td></tr>
+<tr><td>9</td><td>Forward to origin</td><td>Over the backbone, or over Private Link.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="note">
+<b>The practical consequence</b>
+Because WAF sits at step 4, a volumetric attack is absorbed at the edge, in the attacker's own region, and is billed as a WAF request rather than as origin compute, APIM capacity units and pod CPU. Every checkpoint you push <em>later</em> in the chain is a checkpoint you pay for in four currencies instead of one.
+</div>
+
+<div class="rule">◆ ◆ ◆</div>
+
+<section class="sec">
+  <span class="num">03 / CHECKPOINT ONE</span>
+  <h2>The WAF: the officer who doesn't care who you are</h2>
+  <p class="kicker">Pattern matching, not identity. Fast, dumb, and exactly where it should be.</p>
+</section>
+
+<p>The first officer our request meets does not ask for a boarding pass. It does not know what a tenant is. It looks at shape: the URI, the query string, the headers, the body, the source IP's reputation, and the rate at which this client has been arriving.</p>
+
+<p>On Front Door Premium you get the managed rule sets — the Microsoft Default Rule Set (an OWASP Core-Rule-Set derivative) and the Bot Manager rule set — plus custom rules you write yourself. The mental model that keeps people out of trouble:</p>
+
+<ul>
+  <li><strong>Managed rules</strong> are the generic threat library. SQL injection, XSS, path traversal, protocol violations, known-bad user agents. You did not write them and you should not try to.</li>
+  <li><strong>Custom rules</strong> are <em>your business's</em> physics. "Nobody outside these three countries should be hitting <code>/v1/admin</code>." "No client IP gets more than 300 requests per minute to <code>/v1/orders</code>."</li>
+  <li><strong>Custom rules are evaluated before managed rules</strong>, which is how you carve out an allow-list for the one legacy partner whose payload will otherwise trip rule 942100 forever.</li>
+</ul>
+
+<p>And the rule that saves careers: <strong>run in Detection mode first.</strong> Every managed rule set will block something legitimate in your estate. You want to discover which one on a Tuesday afternoon in a log query, not at 03:12 UTC in an incident bridge.</p>
+
+<figure class="code">
+<figcaption>waf.bicep — a policy that starts in Detection and means it</figcaption>
+<pre><span class="c-key">resource</span> waf <span class="c-str">'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2024-02-01'</span> = {
+  name: <span class="c-str">'wafOrdersApi'</span>
+  location: <span class="c-str">'Global'</span>
+  sku: { name: <span class="c-str">'Premium_AzureFrontDoor'</span> }
+  properties: {
+    policySettings: {
+      enabledState: <span class="c-str">'Enabled'</span>
+      mode: <span class="c-str">'Detection'</span>          <span class="c-com">// (1) flip to 'Prevention' only after a clean week</span>
+      requestBodyCheck: <span class="c-str">'Enabled'</span>
+    }
+    managedRules: {
+      managedRuleSets: [
+        { ruleSetType: <span class="c-str">'Microsoft_DefaultRuleSet'</span>, ruleSetVersion: <span class="c-str">'2.1'</span> }
+        { ruleSetType: <span class="c-str">'Microsoft_BotManagerRuleSet'</span>, ruleSetVersion: <span class="c-str">'1.1'</span> }
+      ]
+    }
+    customRules: {
+      rules: [
+        {
+          name: <span class="c-str">'ThrottleOrders'</span>
+          priority: <span class="c-num">100</span>                <span class="c-com">// (2) lower number = evaluated first</span>
+          ruleType: <span class="c-str">'RateLimitRule'</span>
+          rateLimitDurationInMinutes: <span class="c-num">1</span>
+          rateLimitThreshold: <span class="c-num">300</span>
+          action: <span class="c-str">'Block'</span>
+          matchConditions: [
+            {
+              matchVariable: <span class="c-str">'RequestUri'</span>
+              operator: <span class="c-str">'Contains'</span>
+              matchValue: [ <span class="c-str">'/v1/orders'</span> ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}</pre>
+</figure>
+
+<p>Two things worth internalising. First, WAF rate limiting is <em>per PoP</em> — it is a blunt instrument for stopping floods, not a precise instrument for enforcing a customer's contractual quota. That job belongs one checkpoint later, in APIM, where identity actually exists. Second, if you are behind Front Door, the client IP the WAF sees is the real one; the IP your <em>pod</em> sees will not be, and we will come back to that in section 07.</p>
+
+<div class="rule">◆ ◆ ◆</div>
+
+<section class="sec">
+  <span class="num">04 / CHECKPOINT TWO</span>
+  <h2>API Management: the desk that asks for your name</h2>
+  <p class="kicker">Four sections, one pipeline, and the only place that knows who you are.</p>
+</section>
+
+<p>The WAF asked <em>what does this look like</em>. APIM asks <em>who are you, what are you entitled to, and have you had too much already today</em>. It is the first component in the chain with a concept of identity, product, subscription and quota.</p>
+
+<p>Everything APIM does to a request happens in a four-stage pipeline, and understanding the stages is most of understanding the product:</p>
+
+<div class="diagram">
+<pre>
+  request ──▶ <span class="hi">inbound</span> ──▶ <span class="hi">backend</span> ──▶ [ your API in AKS ]
+                 │           │                    │
+                 │           └──── response ◀──────┘
+                 │                 │
+                 │                 ▼
+                 │            <span class="hi">outbound</span> ──▶ client
+                 │
+                 └── throw ──▶ <span class="bad">on-error</span> ──▶ client
+                     (remaining steps in the current
+                      section are skipped entirely)
+</pre>
+<p class="cap">on-error is not a catch-all wrapper. It is a separate lane the request is shunted into.</p>
+</div>
+
+<p>Policies are inherited down five scopes — global → workspace → product → API → operation — and the <code>&lt;base /&gt;</code> element is where the parent's policies get spliced in. Put <code>&lt;base /&gt;</code> first in each section unless you have a specific reason not to; the day you forget, an API-scope policy silently deletes your global security posture for that one API and nothing turns red.</p>
+
+<h3>The inbound section, written like you mean it</h3>
+
+<figure class="code">
+<figcaption>policies.xml — API scope, orders API</figcaption>
+<pre><span class="c-tag">&lt;policies&gt;</span>
+  <span class="c-tag">&lt;inbound&gt;</span>
+    <span class="c-tag">&lt;base /&gt;</span>
+
+    <span class="c-com">&lt;!-- (1) Did you come through the front door, or over the fence? --&gt;</span>
+    <span class="c-tag">&lt;check-header</span> name=<span class="c-str">"X-Azure-FDID"</span>
+                  failed-check-httpcode=<span class="c-str">"403"</span>
+                  failed-check-error-message=<span class="c-str">"Invalid request."</span>
+                  ignore-case=<span class="c-str">"false"</span><span class="c-tag">&gt;</span>
+      <span class="c-tag">&lt;value&gt;</span>{{FrontDoorId}}<span class="c-tag">&lt;/value&gt;</span>
+    <span class="c-tag">&lt;/check-header&gt;</span>
+
+    <span class="c-com">&lt;!-- (2) Identity, verified against the issuer's own keys --&gt;</span>
+    <span class="c-tag">&lt;validate-jwt</span> header-name=<span class="c-str">"Authorization"</span>
+                  failed-validation-httpcode=<span class="c-str">"401"</span>
+                  failed-validation-error-message=<span class="c-str">"Unauthorized"</span><span class="c-tag">&gt;</span>
+      <span class="c-tag">&lt;openid-config</span> url=<span class="c-str">"https://login.microsoftonline.com/{{tenantId}}/v2.0/.well-known/openid-configuration"</span> <span class="c-tag">/&gt;</span>
+      <span class="c-tag">&lt;audiences&gt;&lt;audience&gt;</span>api://orders<span class="c-tag">&lt;/audience&gt;&lt;/audiences&gt;</span>
+      <span class="c-tag">&lt;required-claims&gt;</span>
+        <span class="c-tag">&lt;claim</span> name=<span class="c-str">"roles"</span> match=<span class="c-str">"any"</span><span class="c-tag">&gt;&lt;value&gt;</span>Orders.Write<span class="c-tag">&lt;/value&gt;&lt;/claim&gt;</span>
+      <span class="c-tag">&lt;/required-claims&gt;</span>
+    <span class="c-tag">&lt;/validate-jwt&gt;</span>
+
+    <span class="c-com">&lt;!-- (3) Quota per *caller*, not per PoP. This is the real contract. --&gt;</span>
+    <span class="c-tag">&lt;rate-limit-by-key</span> calls=<span class="c-str">"120"</span> renewal-period=<span class="c-str">"60"</span>
+        counter-key=<span class="c-str">"@(context.Subscription?.Id ?? context.Request.IpAddress)"</span> <span class="c-tag">/&gt;</span>
+    <span class="c-tag">&lt;quota-by-key</span> calls=<span class="c-str">"100000"</span> renewal-period=<span class="c-str">"86400"</span>
+        counter-key=<span class="c-str">"@(context.Subscription.Id)"</span> <span class="c-tag">/&gt;</span>
+
+    <span class="c-com">&lt;!-- (4) Reject malformed bodies here, not in your domain layer --&gt;</span>
+    <span class="c-tag">&lt;validate-content</span> unspecified-content-type-action=<span class="c-str">"prevent"</span>
+                      max-size=<span class="c-str">"102400"</span> size-exceeded-action=<span class="c-str">"prevent"</span>
+                      errors-variable-name=<span class="c-str">"bodyErrors"</span><span class="c-tag">&gt;</span>
+      <span class="c-tag">&lt;content</span> type=<span class="c-str">"application/json"</span> validate-as=<span class="c-str">"json"</span> action=<span class="c-str">"prevent"</span> <span class="c-tag">/&gt;</span>
+    <span class="c-tag">&lt;/validate-content&gt;</span>
+
+    <span class="c-com">&lt;!-- (5) Give the pod a thread to pull on --&gt;</span>
+    <span class="c-tag">&lt;set-header</span> name=<span class="c-str">"X-Correlation-Id"</span> exists-action=<span class="c-str">"skip"</span><span class="c-tag">&gt;</span>
+      <span class="c-tag">&lt;value&gt;</span>@(context.RequestId.ToString())<span class="c-tag">&lt;/value&gt;</span>
+    <span class="c-tag">&lt;/set-header&gt;</span>
+  <span class="c-tag">&lt;/inbound&gt;</span>
+
+  <span class="c-tag">&lt;backend&gt;&lt;base /&gt;&lt;/backend&gt;</span>
+
+  <span class="c-tag">&lt;outbound&gt;</span>
+    <span class="c-tag">&lt;base /&gt;</span>
+    <span class="c-com">&lt;!-- (6) The pod's opinions are not the client's business --&gt;</span>
+    <span class="c-tag">&lt;set-header</span> name=<span class="c-str">"X-Powered-By"</span> exists-action=<span class="c-str">"delete"</span> <span class="c-tag">/&gt;</span>
+    <span class="c-tag">&lt;set-header</span> name=<span class="c-str">"Server"</span> exists-action=<span class="c-str">"delete"</span> <span class="c-tag">/&gt;</span>
+  <span class="c-tag">&lt;/outbound&gt;</span>
+
+  <span class="c-tag">&lt;on-error&gt;</span>
+    <span class="c-tag">&lt;base /&gt;</span>
+    <span class="c-tag">&lt;set-body&gt;</span>@{ return new JObject(
+        new JProperty("error","upstream_failure"),
+        new JProperty("correlationId", context.RequestId)).ToString(); }<span class="c-tag">&lt;/set-body&gt;</span>
+  <span class="c-tag">&lt;/on-error&gt;</span>
+<span class="c-tag">&lt;/policies&gt;</span></pre>
+</figure>
+
+<p>Line (1) is the one people skip, and it is the one that matters most. <code>X-Azure-FDID</code> is a GUID unique to <em>your</em> Front Door profile, injected by Front Door itself. Without that check, anyone who discovers your APIM hostname can bypass the WAF entirely by talking to APIM directly — the entire edge tier becomes decorative. Microsoft's own guidance is to do both this <em>and</em> an IP restriction using the <code>AzureFrontDoor.Backend</code> service tag.</p>
+
+<div class="callout">A security control you can walk around is not a security control. It is a <em>suggestion</em> with a monthly bill.</div>
+
+<div class="note">
+<b>Tier reality check</b>
+Networking capability in APIM is tier-shaped, and the shapes changed with the v2 tiers. VNet <em>injection</em> (external or internal mode, covering gateway, portal and management plane) lives in Developer and classic Premium; Premium v2 has injection too, but scoped to the gateway. Standard v2 and Premium v2 offer outbound <em>VNet integration</em>. Inbound private endpoints are available across the tiers including v2. Pick the tier from the network topology you need, not from the request-per-second number on the pricing page.
+</div>
+
+<div class="rule">◆ ◆ ◆</div>
+
+<section class="sec">
+  <span class="num">05 / THE JETWAY</span>
+  <h2>Nobody walks across the tarmac</h2>
+  <p class="kicker">Private Link, and deleting the public runway entirely.</p>
+</section>
+
+<p>Here is the failure mode that survives most security reviews: the chain is perfect, the WAF is in Prevention, the JWT validation is airtight — and the AKS ingress still has a public IP with a permissive NSG, because that is how it was during the spike three sprints ago.</p>
+
+<p>The fix is to make the origin unreachable from the internet by construction rather than by policy. Front Door Premium supports Private Link origins, and the supported origin list includes <strong>internal load balancers — explicitly naming AKS</strong> — as well as App Service, Blob Storage, Application Gateway, Container Apps and API Management.</p>
+
+<p>The flow is deliberately two-sided, and that is the point:</p>
+
+<ol>
+  <li>You enable Private Link on the origin in your Front Door profile.</li>
+  <li>Front Door creates a private endpoint <em>on your behalf</em>, from its own managed regional network.</li>
+  <li>A pending connection request appears on <em>your</em> resource. Nothing flows until you approve it — portal, CLI or PowerShell.</li>
+  <li>A few minutes later the tunnel is live. Traffic now goes client → global PoP → Microsoft backbone → Front Door's regional cluster → private endpoint → your origin.</li>
+</ol>
+
+<p>Two constraints to plan around. Front Door Private Link is only offered from regions with Availability Zone support; if your origin sits elsewhere, traffic hops in from the nearest supported region and you pay for that in latency. And approval is a human-in-the-loop step, which means it belongs in your runbook, not in your Bicep deployment's happy path.</p>
+
+<p>When Private Link is not on the table, the belt-and-braces version is a layered lockdown:</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Layer</th><th>Control</th><th>What it stops</th></tr></thead>
+<tbody>
+<tr><td>APIM NSG</td><td>Inbound allow from service tag <code>AzureFrontDoor.Backend</code> on 443; deny Internet</td><td>Anyone who found the hostname</td></tr>
+<tr><td>APIM policy</td><td><code>check-header X-Azure-FDID</code></td><td>Anyone inside <em>another</em> tenant's Front Door</td></tr>
+<tr><td>APIM infra</td><td>Allow <code>168.63.129.16</code> and <code>169.254.169.254</code></td><td>Nothing — but omitting them breaks the platform</td></tr>
+<tr><td>AKS Service</td><td><code>azure-load-balancer-internal: "true"</code></td><td>The public IP existing at all</td></tr>
+<tr><td>AKS network policy</td><td>Default-deny ingress, allow from ingress namespace</td><td>East-west movement after a pod compromise</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="rule">◆ ◆ ◆</div>
+
+<section class="sec">
+  <span class="num">06 / AIRSIDE</span>
+  <h2>What <code>kubectl apply</code> actually builds in your resource group</h2>
+  <p class="kicker">Twelve lines of YAML. Four Azure resources. Zero portal clicks.</p>
+</section>
+
+<p>This is the part of the chain that surprises people, because it is the part where a Kubernetes object silently becomes an Azure object.</p>
+
+<p>You write this:</p>
+
+<figure class="code">
+<figcaption>ingress-svc.yaml</figcaption>
+<pre><span class="c-key">apiVersion</span>: v1
+<span class="c-key">kind</span>: Service
+<span class="c-key">metadata</span>:
+  <span class="c-key">name</span>: ingress-nginx-controller
+  <span class="c-key">namespace</span>: ingress-nginx
+  <span class="c-key">annotations</span>:
+    service.beta.kubernetes.io/azure-load-balancer-internal: <span class="c-str">"true"</span>
+    service.beta.kubernetes.io/azure-load-balancer-internal-subnet: <span class="c-str">"apps-subnet"</span>
+    service.beta.kubernetes.io/azure-load-balancer-ipv4: <span class="c-str">10.240.0.25</span>
+<span class="c-key">spec</span>:
+  <span class="c-key">type</span>: LoadBalancer
+  <span class="c-key">externalTrafficPolicy</span>: Local
+  <span class="c-key">ports</span>:
+    - <span class="c-key">port</span>: <span class="c-num">443</span>
+      <span class="c-key">targetPort</span>: <span class="c-num">8443</span>
+  <span class="c-key">selector</span>:
+    <span class="c-key">app</span>: ingress-nginx</pre>
+</figure>
+
+<p>And this happens, without you asking:</p>
+
+<div class="diagram">
+<pre>
+ kubectl apply
+      │
+      ▼
+ kube-apiserver  ──▶ Service object created, status.loadBalancer = {} (pending)
+      │
+      ▼
+ <span class="hi">cloud-controller-manager</span>  (the Azure cloud provider, running in the cluster)
+      │
+      ├─▶ finds or creates the <span class="hi">Standard SKU Azure Load Balancer</span>
+      │      kubernetes-internal   (in the MC_* node resource group)
+      │
+      ├─▶ <span class="hi">frontend IP configuration</span>
+      │      private IP 10.240.0.25 from apps-subnet
+      │      (or, for a public Service, a brand-new Public IP —
+      │       each Service gets its own dedicated frontend IP)
+      │
+      ├─▶ <span class="hi">backend pool</span>
+      │      every eligible node NIC / node IP in the cluster
+      │      updated automatically as node pools scale
+      │
+      ├─▶ <span class="hi">load balancing rule</span>
+      │      frontend 10.240.0.25:443  ─▶  backend :nodePort (30000-32767)
+      │
+      ├─▶ <span class="hi">health probe</span>
+      │      externalTrafficPolicy: Local   → probes spec.healthCheckNodePort
+      │      externalTrafficPolicy: Cluster → probes the service port (TCP by default)
+      │
+      └─▶ <span class="hi">NSG rules</span> on the node subnet, opened to match the LB rule
+      │
+      ▼
+ Service.status.loadBalancer.ingress = 10.240.0.25   ← now EXTERNAL-IP populates
+</pre>
+<p class="cap">Nobody clicked anything. The load balancer is a side effect of a YAML file.</p>
+</div>
+
+<p>A handful of details worth carrying around in your head:</p>
+
+<ul>
+  <li>The load balancer lives in the <strong>node resource group</strong> (<code>MC_&lt;rg&gt;_&lt;cluster&gt;_&lt;region&gt;</code>), which is why people cannot find it. Do not hand-edit anything in there; the controller will reconcile your change away, usually at the least convenient moment.</li>
+  <li>The <strong>SKU is immutable after cluster creation</strong>, and one cluster gets one SKU. Standard is the default and the only sane choice — it is what gives you availability zones, larger backend pools and secure-by-default behaviour.</li>
+  <li>Every <code>type: LoadBalancer</code> Service gets its <em>own</em> frontend IP on the same LB. Twenty Services means twenty frontend IPs and twenty rules, which is precisely why you want <strong>one</strong> Service of type LoadBalancer fronting an ingress controller, and everything else behind it as <code>ClusterIP</code>.</li>
+  <li><code>spec.loadBalancerIP</code> is deprecated. Use the <code>azure-load-balancer-ipv4</code> / <code>-ipv6</code> annotations, and make sure the address is in the cluster's VNet and unclaimed.</li>
+</ul>
+
+<h3>The annotations that are actually worth knowing</h3>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Annotation (prefix <code>service.beta.kubernetes.io/</code>)</th><th>Effect</th></tr></thead>
+<tbody>
+<tr><td><code>azure-load-balancer-internal</code></td><td><code>"true"</code> → private frontend, no public IP. The single most important line in the manifest.</td></tr>
+<tr><td><code>azure-load-balancer-internal-subnet</code></td><td>Which subnet the private frontend binds to; defaults from cloud config.</td></tr>
+<tr><td><code>azure-load-balancer-ipv4</code> / <code>-ipv6</code></td><td>Pin a static address instead of taking whatever's free.</td></tr>
+<tr><td><code>azure-load-balancer-health-probe-protocol</code></td><td>Defaults: HTTP for <code>Local</code> services, TCP for <code>Cluster</code> services.</td></tr>
+<tr><td><code>azure-load-balancer-health-probe-request-path</code></td><td>e.g. <code>/healthz</code>. Ignored on TCP probes or when <code>appProtocol</code> is empty.</td></tr>
+<tr><td><code>azure-load-balancer-health-probe-interval</code></td><td>Seconds between probes. Default 5.</td></tr>
+<tr><td><code>azure-load-balancer-health-probe-num-of-probe</code></td><td>Consecutive failures before a node is pulled. Default 2.</td></tr>
+<tr><td><code>azure-load-balancer-tcp-idle-timeout</code></td><td>4–100 minutes. Raise it for long-poll and streaming workloads.</td></tr>
+<tr><td><code>azure-load-balancer-disable-tcp-reset</code></td><td>Default <code>"false"</code> — TCP reset is on, and you want it on. A reset is a fast failure; a silent drop is a 30-second hang.</td></tr>
+<tr><td><code>azure-pip-name</code> / <code>azure-pip-prefix-id</code></td><td>Bring your own public IP or prefix for public Services.</td></tr>
+<tr><td><code>port_{port}_health-probe_*</code></td><td>Per-port overrides when one Service exposes several ports with different health semantics.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="note">
+<b>Probe interval is a real availability lever</b>
+Default probing is 5 seconds × 2 failures. That is a ~10-second window in which the load balancer keeps sending live traffic to a node that has already stopped answering. On a latency-sensitive API, tightening the interval buys you seconds of recovery. On a cluster with hundreds of Services, tightening it everywhere buys you probe storms. Tune it where it matters, not globally.
+</div>
+
+<div class="rule">◆ ◆ ◆</div>
+
+<section class="sec">
+  <span class="num">07 / GROUND CREW</span>
+  <h2>Inside the fence: kube-proxy and the second hop nobody drew</h2>
+  <p class="kicker">Cluster vs Local, and where your client IP goes to die.</p>
+</section>
+
+<p>The Azure load balancer is Layer 4. It does not know what a pod is. It picks a <em>node</em> and hands the connection over, and from that moment the request is Kubernetes' problem.</p>
+
+<p>What happens next depends entirely on one field you probably left at its default.</p>
+
+<div class="diagram">
+<pre>
+ externalTrafficPolicy: <span class="hi">Cluster</span>   (the default)
+ ─────────────────────────────────────────────────────────────
+   LB ──▶ node-3 ──(kube-proxy SNATs, then forwards)──▶ node-7 ──▶ pod
+                        │
+                        └── <span class="bad">source IP rewritten to node-3</span>
+                            <span class="bad">extra network hop</span>
+                            <span class="good">even spread across all nodes</span>
+                            <span class="good">no imbalance if pods are uneven</span>
+
+ externalTrafficPolicy: <span class="hi">Local</span>
+ ─────────────────────────────────────────────────────────────
+   LB ──▶ node-3 ──▶ pod on node-3 (only)
+                        │
+                        └── <span class="good">client source IP preserved</span>
+                            <span class="good">one hop, lower latency</span>
+                            <span class="bad">nodes with no pod fail the probe and get</span>
+                            <span class="bad">excluded — traffic skews to pod-dense nodes</span>
+</pre>
+<p class="cap">Health probes are the enforcement mechanism, not a nice-to-have.</p>
+</div>
+
+<p>The mechanism is worth spelling out, because it explains a class of bug that looks like magic. With <code>Local</code>, Kubernetes allocates a <code>spec.healthCheckNodePort</code>, and the Azure health probe targets <em>that</em> port rather than your application. The node answers healthy only if it is hosting at least one ready endpoint for the Service. Nodes without a pod fail the probe and drop out of rotation — which is exactly how the "only send traffic where the pod actually is" guarantee is implemented. With <code>Cluster</code> and shared health probe mode enabled, the probe instead targets kube-proxy on the healthCheckNodePort for all cluster-policy Services at once, which is how large clusters avoid drowning in per-Service probes.</p>
+
+<p>And the client IP question. By the time our Pune request reaches the pod, it has been through two proxies and possibly one SNAT. The real client address is not in the TCP source; it is in headers:</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Header</th><th>Set by</th><th>Contains</th></tr></thead>
+<tbody>
+<tr><td><code>X-Azure-ClientIP</code></td><td>Front Door</td><td>The client's IP as Front Door determined it</td></tr>
+<tr><td><code>X-Azure-SocketIP</code></td><td>Front Door</td><td>The IP of the socket that actually connected to the PoP</td></tr>
+<tr><td><code>X-Forwarded-For</code></td><td>Front Door, appended by APIM/ingress</td><td>The chain — read it right-to-left, trust only the hops you control</td></tr>
+<tr><td><code>X-Azure-FDID</code></td><td>Front Door</td><td>Your profile GUID — the "came through the front door" proof</td></tr>
+<tr><td><code>X-Azure-Ref</code></td><td>Front Door</td><td>The reference ID to quote in a support case. Log it.</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>In ASP.NET Core this means <code>ForwardedHeadersMiddleware</code> is not optional — and it must be configured with known proxies or networks, or you have built an IP-spoofing endpoint and called it observability.</p>
+
+<figure class="code">
+<figcaption>Program.cs</figcaption>
+<pre><span class="c-key">builder</span>.Services.Configure&lt;ForwardedHeadersOptions&gt;(o =&gt;
+{
+    o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    o.ForwardLimit     = <span class="c-num">2</span>;                          <span class="c-com">// APIM + ingress</span>
+    o.KnownNetworks.Clear();                        <span class="c-com">// (1) don't trust the defaults</span>
+    o.KnownProxies.Clear();
+    o.KnownNetworks.Add(<span class="c-key">new</span> IPNetwork(IPAddress.Parse(<span class="c-str">"10.240.0.0"</span>), <span class="c-num">16</span>));
+});
+
+<span class="c-key">var</span> app = builder.Build();
+app.UseForwardedHeaders();                          <span class="c-com">// (2) FIRST. Before everything.</span></pre>
+</figure>
+
+<h3>One more airside option</h3>
+
+<p>An Azure Load Balancer plus an in-cluster ingress controller is the workhorse pattern, but it is not the only one. <strong>Application Gateway for Containers</strong> moves L7 routing, TLS and WAF out of the cluster and into a managed Azure resource driven by Gateway API resources — which is worth considering when you want WAF enforcement at the regional tier as well as the edge, or when you would rather not run and patch an ingress controller. The trade is the usual one: less to operate, less to tune, and a dependency on Azure's release cadence rather than your own Helm chart.</p>
+
+<div class="rule">◆ ◆ ◆</div>
+
+<section class="sec">
+  <span class="num">08 / DEPARTURES</span>
+  <h2>The runway you forgot: SNAT and outbound ports</h2>
+  <p class="kicker">The failure that arrives on the day you scale from 50 nodes to 51.</p>
+</section>
+
+<p>Everything so far has been about traffic coming <em>in</em>. The same load balancer is doing a second job on the way out, and this is where clusters die quietly.</p>
+
+<p>By default AKS creates one managed outbound public IP, and sets <code>allocatedOutboundPorts</code> to <code>0</code>, which means "allocate automatically based on backend pool size":</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Nodes in backend pool</th><th>SNAT ports per node</th></tr></thead>
+<tbody>
+<tr><td>≤ 50</td><td>1,024</td></tr>
+<tr><td>51 – 100</td><td>512</td></tr>
+<tr><td>101 – 200</td><td>256</td></tr>
+<tr><td>201 – 400</td><td>128</td></tr>
+<tr><td>401 – 800</td><td>64</td></tr>
+<tr><td>801 – 1,000</td><td>32</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Read that table again with an autoscaler in mind. Scaling from 50 nodes to 51 <strong>halves the outbound port budget on every node in the cluster, simultaneously</strong>. Your pods start failing to reach the database, the token endpoint, the payment gateway — and the trigger was a scale-<em>out</em>, which is the exact opposite of what everyone in the incident channel is looking for.</p>
+
+<div class="callout">The cruellest capacity bug in Azure is the one where <em>adding</em> a node is what breaks you.</div>
+
+<p>The arithmetic is fixed and simple: each outbound public IP provides 64,000 ephemeral ports. So</p>
+
+<div class="diagram">
+<pre>
+   max nodes = ( 64,000 / ports-per-node ) × number-of-outbound-IPs
+
+   example:   4,000 ports per node,  7 outbound IPs
+              ( 64,000 / 4,000 ) × 7  =  <span class="hi">112 nodes</span>
+</pre>
+</div>
+
+<figure class="code">
+<figcaption>pin it explicitly — do not let the table decide for you</figcaption>
+<pre>az aks update \
+  --resource-group $RG --name $CLUSTER \
+  --load-balancer-managed-outbound-ip-count <span class="c-num">7</span> \
+  --load-balancer-outbound-ports <span class="c-num">4000</span> \
+  --load-balancer-idle-timeout <span class="c-num">4</span>          <span class="c-com"># default is 30 minutes</span></pre>
+</figure>
+
+<p>Three habits that keep this boring:</p>
+
+<ul>
+  <li><strong>Pin the port allocation explicitly</strong> and size it for your maximum node count, including <code>maxSurge</code> headroom during upgrades. Automatic allocation is a footgun with a scale trigger.</li>
+  <li><strong>Drop the idle timeout</strong> from the 30-minute default to something like 4 minutes if your workload opens many short-lived outbound connections. Ports are reclaimed only when the flow goes idle for that long.</li>
+  <li><strong>Or sidestep SNAT entirely</strong> — use <code>outboundType: userDefinedRouting</code> and route egress through Azure Firewall or a NAT Gateway. NAT Gateway in particular has a far more forgiving port model and is the right answer for connection-heavy workloads.</li>
+</ul>
+
+<p>Symptoms to recognise: intermittent outbound connection timeouts, failures that correlate with node count rather than with traffic, and a <code>SnatConnectionCount</code>/<code>AllocatedSnatPorts</code> metric that looks fine on average and terrible at p99.</p>
+
+<div class="rule">◆ ◆ ◆</div>
+
+<section class="sec">
+  <span class="num">09 / THE PAPER TRAIL</span>
+  <h2>Every desk stamps the passport</h2>
+  <p class="kicker">What to log at each hop so the 03:12 page takes ten minutes, not ten hours.</p>
+</section>
+
+<p>A five-checkpoint architecture is only debuggable if every checkpoint writes down what it did and every log shares a key. Here is the minimum viable paper trail.</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Checkpoint</th><th>Where it lands</th><th>The field that saves you</th></tr></thead>
+<tbody>
+<tr><td>Front Door access</td><td><code>FrontDoorAccessLog</code></td><td><code>TrackingReference</code> (the <code>X-Azure-Ref</code>), <code>Pop</code>, <code>OriginName</code>, <code>TimeToFirstByte</code></td></tr>
+<tr><td>Front Door WAF</td><td><code>FrontDoorWebApplicationFirewallLog</code></td><td><code>ruleName</code>, <code>action</code>, <code>details.matches</code> — the exact field that tripped</td></tr>
+<tr><td>APIM</td><td><code>GatewayLogs</code> + Application Insights</td><td><code>CorrelationId</code>, <code>LastErrorSource</code>, <code>LastErrorReason</code>, backend response code</td></tr>
+<tr><td>Azure Load Balancer</td><td>LB metrics / VNet flow logs</td><td><code>DipAvailability</code> (health probe status per backend), <code>AllocatedSnatPorts</code></td></tr>
+<tr><td>Ingress controller</td><td>Container Insights</td><td><code>X-Forwarded-For</code>, upstream address, upstream response time</td></tr>
+<tr><td>Pod</td><td>OpenTelemetry → App Insights</td><td>trace ID propagated from <code>traceparent</code>, plus <code>X-Correlation-Id</code></td></tr>
+</tbody>
+</table>
+</div>
+
+<p>The single highest-leverage move: propagate <strong>one</strong> identifier from the edge all the way to the pod, and make sure it appears in every one of those six tables. Front Door's <code>X-Azure-Ref</code> is a reasonable root because it is generated before anything else in your system exists, and it is also the value Microsoft support will ask for. Stamp it into an APIM header, log it in the ingress controller's format string, attach it as a baggage item in OpenTelemetry, and the question "where did this request die?" becomes one query instead of six.</p>
+
+<div class="callout">If you cannot answer <em>which checkpoint stopped it</em> in under a minute, you don't have five layers of defence. You have five places to look.</div>
+
+<div class="rule">◆ ◆ ◆</div>
+
+<section class="sec">
+  <span class="num">10 / DISCRETION</span>
+  <h2>When to skip a checkpoint</h2>
+  <p class="kicker">Not every flight needs an international terminal.</p>
+</section>
+
+<p>This chain is not free. Front Door Premium plus APIM Premium plus a dedicated ingress tier is a real monthly number, and every hop adds latency, configuration surface and a new place to be wrong at 3am. Some honest guidance:</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Situation</th><th>Do this</th></tr></thead>
+<tbody>
+<tr><td>Internal API, one region, corporate network only</td><td>Skip Front Door. Internal LB + APIM (or just ingress) is enough. Global anycast for a VPN-only audience buys nothing.</td></tr>
+<tr><td>Single API, single consumer, no monetisation</td><td>Skip APIM. Do JWT validation in the ingress controller or the app. APIM earns its cost when you have <em>products, subscriptions and many consumers</em>.</td></tr>
+<tr><td>Public web app + API, multi-region, external partners</td><td>The full chain. This is the architecture it was designed for.</td></tr>
+<tr><td>You want WAF at the regional tier too</td><td>Front Door WAF (global) + Application Gateway or App Gateway for Containers WAF (regional). Defence in depth, but budget for tuning <em>two</em> rule sets.</td></tr>
+<tr><td>Static content and SPA assets</td><td>Front Door caching in front of Blob static website. Never let a cacheable asset reach APIM — you are paying capacity units to serve a logo.</td></tr>
+<tr><td>Very low latency, internal, east-west</td><td>Service mesh (Istio add-on) inside the cluster. Front Door and APIM are north-south tools.</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>And three anti-patterns that show up in almost every review:</p>
+
+<ul>
+  <li><strong>The decorative edge.</strong> Front Door in front, and an origin that still answers the public internet. If <code>X-Azure-FDID</code> isn't checked and the NSG isn't locked to <code>AzureFrontDoor.Backend</code>, the WAF is a suggestion.</li>
+  <li><strong>Twenty LoadBalancer Services.</strong> Twenty frontend IPs, twenty rules, twenty probes, and an NSG nobody can read. One Service of type LoadBalancer, one ingress controller, everything else ClusterIP.</li>
+  <li><strong>Rate limiting in exactly one place.</strong> The WAF limits per PoP and knows nothing about tenants; APIM limits per subscription and knows nothing about volumetric floods. They are different tools solving different problems, and you need both.</li>
+</ul>
+
+<div class="rule">◆ ◆ ◆</div>
+
+<section class="sec">
+  <span class="num">— / THE LANDING</span>
+  <h2>03:12:00.184 UTC</h2>
+</section>
+
+<p>Our request from Pune made it. One hundred and eighty-four milliseconds, terminal door to pod, and in that time it was fingerprinted by a firewall in Chennai, had its token verified against Entra ID's published keys, had its quota decremented against a subscription it does not know it belongs to, crossed a private endpoint that has no route to the public internet, was handed to a Layer 4 load balancer nobody in your organisation deliberately created, and was steered to a node that had proved five seconds earlier that it was still holding a ready pod.</p>
+
+<p>It will never know any of that happened. That is the whole point. The measure of a good security chain is not how visible it is — it is how completely invisible it is to everything that has legitimate business getting through, and how absolutely final it is for everything that does not.</p>
+
+<p>The passenger boards. The gate closes. Somewhere in a log table, six rows share a tracking reference.</p>
+
+<div class="rule">◆ ◆ ◆</div>
+
+<h3>Further reading</h3>
+<ul>
+  <li><a href="https://learn.microsoft.com/en-us/azure/frontdoor/front-door-routing-architecture">Front Door routing architecture</a> — the definitive order of operations.</li>
+  <li><a href="https://learn.microsoft.com/en-us/azure/api-management/front-door-api-management">Front Door in front of API Management</a> — including the <code>check-header</code> policy.</li>
+  <li><a href="https://learn.microsoft.com/en-us/azure/frontdoor/private-link">Secure your origin with Private Link</a> — supported origin types and the approval flow.</li>
+  <li><a href="https://learn.microsoft.com/en-us/azure/aks/load-balancer-standard">AKS Standard load balancer</a> and <a href="https://learn.microsoft.com/en-us/azure/aks/internal-lb">internal load balancer</a>.</li>
+  <li><a href="https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/">cloud-provider-azure LoadBalancer annotations</a> — the full annotation reference.</li>
+  <li><a href="https://learn.microsoft.com/en-us/azure/aks/configure-load-balancer-standard">Configuring outbound ports and SNAT</a>.</li>
+  <li><a href="https://learn.microsoft.com/en-us/azure/api-management/virtual-network-concepts">APIM networking options by tier</a>.</li>
+</ul>
+
+</article>
+
+<div class="wrap end-back">
+  <a class="back-link" href="index.html">&larr; Back to all stories</a>
+  <div class="share-row"><span class="share-label">Share</span><a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.niluniverse.com%2Fazure-ingress-security-chain.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a><a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fblog.niluniverse.com%2Fazure-ingress-security-chain.html&text=Clearance%20Denied%3A%20how%20a%20request%20clears%20Front%20Door%2C%20APIM%20and%20the%20AKS%20load%20balancer" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a><a class="share-btn" href="mailto:?subject=Clearance%20Denied&body=https%3A%2F%2Fblog.niluniverse.com%2Fazure-ingress-security-chain.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a><button class="share-btn" type="button" data-copy-url="https://blog.niluniverse.com/azure-ingress-security-chain.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button></div>
+</div>
+
+<footer>
+  <div class="wrap foot-inner">
+    <span>&copy; 2026 Nilesh Mohite &mdash; <a href="https://niluniverse.com" style="color:var(--accent)">niluniverse.com</a></span>
+    <span>Written between deployments &middot; Amalner, India</span>
+  </div>
+</footer>
+
+</div>
+<script>
+(function(){
+  var KEY='nu-theme';
+  var toggle=document.getElementById('themeToggle');
+  if(!toggle) return;
+  function apply(t){
+    document.documentElement.setAttribute('data-theme',t);
+    toggle.setAttribute('aria-pressed', t==='linkedin' ? 'true':'false');
+    toggle.setAttribute('title', t==='linkedin' ? 'Switch to dark theme' : 'Switch to light theme');
+  }
+  var saved=null; try{saved=localStorage.getItem(KEY);}catch(e){}
+  if(saved==='linkedin' || saved==='cinema') apply(saved);
+  toggle.addEventListener('click',function(){
+    var isLight=document.documentElement.getAttribute('data-theme')==='linkedin';
+    var next=isLight?'cinema':'linkedin';
+    apply(next);
+    try{localStorage.setItem(KEY,next);}catch(e){}
+  });
+})();
+</script>
+<script>
+(function(){
+  document.querySelectorAll('[data-copy-url]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var url = btn.getAttribute('data-copy-url');
+      var done = function(){
+        var original = btn.getAttribute('aria-label');
+        btn.classList.add('copied');
+        btn.setAttribute('aria-label','Copied!');
+        setTimeout(function(){ btn.classList.remove('copied'); btn.setAttribute('aria-label', original); }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function(){});
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = url; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch(e){}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+})();
+</script>
+<script>
+(function(){
+  var HEADING_SELECTOR = 'article h2';
+  var headings = Array.prototype.slice.call(document.querySelectorAll(HEADING_SELECTOR));
+  if (!headings.length) return;
+
+  var fill = document.getElementById('rpFill');
+  var ring = document.getElementById('rpRing');
+  var pct = document.getElementById('rpPct');
+  var status = document.getElementById('rpStatus');
+  var list = document.getElementById('rpList');
+  var toc = document.getElementById('rpToc');
+  var toggle = document.getElementById('rpToggle');
+  if (!fill || !toc) return;
+
+  var RING_CIRC = 97.4;
+  var seen = {};
+
+  var items = headings.map(function(h, i){
+    var base = 'rp-section-' + (i + 1);
+    if (!h.id) h.id = base;
+    while (seen[h.id]) { h.id = base + '-' + Math.random().toString(36).slice(2,6); }
+    seen[h.id] = true;
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.textContent = h.textContent.replace(/\s+/g,' ').trim();
+    li.appendChild(a);
+    list.appendChild(li);
+    return { heading: h, li: li };
+  });
+
+  function updateProgress(){
+    var doc = document.documentElement;
+    var scrollTop = window.scrollY || doc.scrollTop;
+    var height = doc.scrollHeight - doc.clientHeight;
+    var ratio = height > 0 ? Math.min(1, Math.max(0, scrollTop / height)) : 0;
+    var percent = Math.round(ratio * 100);
+    fill.style.width = percent + '%';
+    if (ring) ring.style.strokeDashoffset = String(RING_CIRC * (1 - ratio));
+    if (pct) pct.textContent = percent + '%';
+    if (status) status.textContent = percent >= 99 ? 'Finished reading' : percent + '% read';
+
+    var activeIdx = 0;
+    var probe = scrollTop + window.innerHeight * 0.3;
+    for (var i = 0; i < items.length; i++) {
+      var top = items[i].heading.getBoundingClientRect().top + scrollTop;
+      if (top <= probe) activeIdx = i;
+    }
+    items.forEach(function(it, i){ it.li.classList.toggle('active', i === activeIdx); });
+  }
+
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  window.addEventListener('resize', updateProgress);
+  updateProgress();
+
+  toggle.addEventListener('click', function(){
+    var open = toc.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', function(e){
+    if (!toc.contains(e.target)) toc.classList.remove('open');
+  });
+})();
+</script>
+</body>
+</html>

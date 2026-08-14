@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cinema">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Case of the Vanishing Request — Observability &amp; Distributed Tracing</title>
+<meta name="description" content="A developer puts on a detective's hat. Somewhere across forty services, a request failed, and only observability can identify the cause. A clear, practical guide to distributed tracing in microservices.">
+<meta property="og:title" content="The Case of the Vanishing Request: Distributed Tracing" />
+<meta property="og:description" content="A request failed somewhere across forty services, with no clear cause. Using three signals and one shared trace ID, a waterfall chart can crack the case in one screen." />
+<meta property="og:url" content="https://blog.niluniverse.com/observability-detective.html" />
+<meta property="og:type" content="article" />
+<meta property="og:image" content="https://blog.niluniverse.com/observability-detective-banner.jpg" />
+<meta property="og:image:width" content="1400" />
+<meta property="og:image:height" content="788" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="The Case of the Vanishing Request: Distributed Tracing" />
+<meta name="twitter:description" content="A request failed somewhere across forty services, with no clear cause. Using three signals and one shared trace ID, a waterfall chart can crack the case in one screen." />
+<meta name="twitter:image" content="https://blog.niluniverse.com/observability-detective-banner.jpg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/site.css" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon-180.png" />
+<style>
+  /* ==== palette remapped onto the site design system ==== */
+  :root{
+    --ink:var(--bg);--ink-2:var(--panel);--panel-line:var(--line);
+    --fog:var(--dim);--paper:var(--text);--paper-dim:var(--dim);
+    --signal:var(--accent);--signal-deep:var(--accent-hi);
+    --noir:var(--bg);--noir-2:var(--panel);--smoke:var(--dim);--chalk:var(--head);
+    --clue:var(--accent);--blood:#D9695A;--alive:var(--ok);
+    --stage:var(--bg);--stage-2:var(--panel);--curtain:var(--line);
+    --curtain-deep:var(--line);--bulb:var(--accent);--bulb-dim:var(--dim);
+    --cream:var(--head);--cream-dim:var(--dim);
+    --good:var(--ok);--bad:#D9695A;--maxw:740px;
+  }
+
+  :root{
+    --noir:#0a0a0c;          /* the night */
+    --noir-2:#101116;
+    --panel:#15161d;
+    --panel-line:#26283340;
+    --line:#2a2c38;
+    --smoke:#8a8d9c;         /* faded testimony */
+    --chalk:#e9e9ef;         /* what's written down */
+    --clue:#e8a13c;          /* tungsten amber — a warm clue under the lamp */
+    --signal:#3fd0c9;        /* cold investigative teal — the trace, the truth */
+    --blood:#d64b4b;         /* the error, the death */
+    --maxw:750px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--noir);
+    color:var(--chalk);
+    font-family:var(--sans);
+    line-height:1.74;
+    font-size:18px;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--signal);color:var(--noir)}
+
+  /* film grain + vignette overlay across the whole page */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 30%, transparent 55%, rgba(0,0,0,.55) 100%);
+    mix-blend-mode:multiply;
+  }
+  body::after{
+    content:"";position:fixed;inset:-50%;z-index:9998;pointer-events:none;opacity:.045;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 700ms steps(3) infinite;
+  }
+  @keyframes grain{0%{transform:translate(0,0)}33%{transform:translate(-4%,2%)}66%{transform:translate(3%,-3%)}100%{transform:translate(0,0)}}
+
+  /* ---------- HERO : the crime scene ---------- */
+  .hero{
+    position:relative;min-height:100vh;display:flex;flex-direction:column;
+    justify-content:center;align-items:center;text-align:center;
+    padding:6rem 1.5rem 4rem;overflow:hidden;
+    background:radial-gradient(80% 60% at 50% 22%, #1b1c24 0%, var(--noir) 62%);
+  }
+  /* the swinging interrogation lamp cone */
+  .lamp{
+    position:absolute;top:-6vh;left:50%;width:2px;height:22vh;background:linear-gradient(var(--line),transparent);
+    transform-origin:top center;animation:sway 6s ease-in-out infinite;z-index:1;
+  }
+  .lamp::after{
+    content:"";position:absolute;top:20vh;left:50%;transform:translateX(-50%);
+    width:0;height:0;border-left:46vw solid transparent;border-right:46vw solid transparent;
+    border-top:78vh solid rgba(232,161,60,.06);
+  }
+  .lamp .bulb{position:absolute;top:20vh;left:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:var(--clue);box-shadow:0 0 40px 14px rgba(232,161,60,.4)}
+  @keyframes sway{0%,100%{transform:rotate(-2.2deg)}50%{transform:rotate(2.2deg)}}
+
+  .hero-inner{position:relative;z-index:3;max-width:900px;animation:fadein 1.4s ease both}
+  .case-no{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.4em;text-transform:uppercase;
+    color:var(--signal);border:1px solid rgba(63,208,201,.3);padding:.5rem 1.1rem;border-radius:2px;display:inline-block;margin-bottom:2rem;
+  }
+  h1{
+    font-family:var(--display-font);font-weight:400;
+    font-size:clamp(2.3rem,6.6vw,4.7rem);line-height:1.06;letter-spacing:-.01em;margin-bottom:1.5rem;
+    text-shadow:0 2px 0 rgba(0,0,0,.6);
+  }
+  h1 .redact{background:var(--chalk);color:var(--chalk);border-radius:2px;padding:0 .1em;transition:color .3s}
+  h1 .redact:hover{color:var(--noir)}
+  h1 .lit{color:var(--clue)}
+  .logline{
+    font-size:clamp(1.05rem,2.4vw,1.32rem);color:var(--smoke);max-width:600px;margin:0 auto 2.4rem;font-weight:400;font-style:italic;
+  }
+  .credits{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;color:#5c5f6e;text-transform:uppercase}
+  @keyframes fadein{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+
+  .scrollcue{position:absolute;bottom:1.8rem;left:50%;transform:translateX(-50%);z-index:3;color:#5c5f6e;font-family:var(--mono);font-size:.64rem;letter-spacing:.3em;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:.5rem;animation:bob 2.4s ease-in-out infinite}
+  .scrollcue .l{width:1px;height:30px;background:linear-gradient(var(--signal),transparent)}
+  @keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(7px)}}
+
+  /* ---------- ARTICLE ---------- */
+  article{max-width:var(--maxw);margin:0 auto;padding:5rem 1.5rem 7rem}
+  .section{margin-bottom:2.6rem}
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  h2{font-family:var(--display-font);font-weight:400;font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.16;margin:3.4rem 0 1.2rem;color:var(--chalk)}
+  h2 .tag{display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.36em;color:var(--signal);margin-bottom:.7rem}
+  p{margin-bottom:1.35rem;color:#cfd0da}
+  article p:first-of-type{font-size:1.15rem}
+  .lead:first-letter{font-family:var(--display-font);float:left;font-size:4.2rem;line-height:.8;padding:.3rem .48rem 0 0;color:var(--clue)}
+  strong{color:var(--chalk);font-weight:600}
+  em{color:#e4e5ec}
+  a{color:var(--signal);text-decoration:none;border-bottom:1px solid rgba(63,208,201,.35)}
+  a:hover{border-color:var(--signal)}
+  code{font-family:var(--mono);font-size:.86em;color:var(--clue);background:#1b1c24;padding:.08em .4em;border-radius:3px}
+
+  /* case file callout */
+  .casefile{
+    border:1px solid var(--line);border-left:3px solid var(--clue);background:var(--noir-2);
+    padding:1.4rem 1.5rem;margin:2.2rem 0;border-radius:4px;
+  }
+  .casefile .fh{font-family:var(--mono);font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--clue);margin-bottom:.7rem}
+  .casefile p{margin:0;color:#cfd0da;font-size:.98rem}
+
+  /* the three witnesses (pillars) grid */
+  .witnesses{display:grid;grid-template-columns:1fr;gap:1rem;margin:2.2rem 0}
+  .witness{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:1.3rem 1.4rem;position:relative;overflow:hidden}
+  .witness::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--w,var(--smoke))}
+  .witness .wname{font-family:var(--display-font);font-size:1.15rem;color:var(--chalk);margin-bottom:.15rem}
+  .witness .wrole{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--w,var(--smoke));margin-bottom:.6rem}
+  .witness p{font-size:.94rem;margin:0;color:#c3c4d0}
+  .w-logs{--w:var(--clue)}.w-metrics{--w:var(--signal)}.w-traces{--w:#b98cf0}
+
+  /* pull quote — chalk on slate */
+  .pull{font-family:var(--display-font);font-size:clamp(1.4rem,3.4vw,2rem);line-height:1.32;color:var(--chalk);text-align:center;margin:3.2rem 0;padding:2rem 1rem;position:relative}
+  .pull .lit{color:var(--clue)}
+  .pull::before,.pull::after{content:"";position:absolute;left:50%;transform:translateX(-50%);width:44px;height:1px;background:var(--signal)}
+  .pull::before{top:.4rem}.pull::after{bottom:.4rem}
+
+  /* code */
+  .code-wrap{margin:1.8rem 0;border:1px solid var(--line);border-radius:9px;background:var(--noir-2);overflow:hidden;box-shadow:0 24px 60px -34px #000}
+  .code-bar{display:flex;align-items:center;gap:.5rem;padding:.65rem 1rem;background:var(--panel);border-bottom:1px solid var(--line)}
+  .dot{width:11px;height:11px;border-radius:50%}
+  .dot.r{background:#d64b4b}.dot.y{background:#e8a13c}.dot.g{background:#3fd0c9}
+  .code-name{margin-left:.6rem;font-family:var(--mono);font-size:.72rem;color:var(--smoke)}
+  pre{padding:1.25rem 1.4rem;overflow-x:auto;font-family:var(--mono);font-size:.8rem;line-height:1.7}
+  .t-key{color:#c98af2}.t-type{color:#3fd0c9}.t-str{color:var(--clue)}.t-com{color:#585b6b;font-style:italic}.t-fn{color:#6fb3ff}.t-num{color:#d64b4b}
+
+  /* THE TRACE WATERFALL — signature evidence exhibit */
+  .exhibit{border:1px solid var(--line);border-radius:10px;background:linear-gradient(180deg,var(--panel),var(--noir-2));padding:1.5rem 1.3rem 1.2rem;margin:2.6rem 0}
+  .exhibit-h{font-family:var(--mono);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--signal);margin-bottom:1.1rem;display:flex;justify-content:space-between}
+  .exhibit-h .rid{color:var(--smoke)}
+  .span-row{display:grid;grid-template-columns:132px 1fr;align-items:center;gap:.7rem;margin-bottom:.5rem;font-family:var(--mono);font-size:.72rem}
+  .span-name{color:#c3c4d0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .span-track{position:relative;height:16px;background:#1c1d25;border-radius:3px}
+  .span-bar{position:absolute;top:0;bottom:0;border-radius:3px;background:var(--sig,var(--signal));opacity:.9;transform:scaleX(0);transform-origin:left;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+  .exhibit.in .span-bar{transform:scaleX(1)}
+  .span-bar.slow{background:repeating-linear-gradient(45deg,var(--blood),var(--blood) 6px,#a83a3a 6px,#a83a3a 12px)}
+  .span-bar.err{background:var(--blood)}
+  .span-ms{position:absolute;right:-.2rem;top:50%;transform:translate(100%,-50%);padding-left:.5rem;color:var(--smoke);font-size:.66rem}
+  .exhibit-note{margin-top:1rem;font-family:var(--mono);font-size:.7rem;color:var(--smoke);border-top:1px dashed var(--line);padding-top:.9rem}
+  .exhibit-note b{color:var(--blood)}
+
+  ul.notes{list-style:none;margin:1.3rem 0}
+  ul.notes li{position:relative;padding-left:1.7rem;margin-bottom:.9rem;color:#cfd0da}
+  ul.notes li::before{content:"";position:absolute;left:0;top:.62em;width:8px;height:8px;background:var(--signal);border-radius:50%}
+
+  ol.steps{list-style:none;counter-reset:s;margin:1.4rem 0}
+  ol.steps li{position:relative;padding-left:3rem;margin-bottom:1.3rem;counter-increment:s;color:#cfd0da}
+  ol.steps li::before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:0;font-family:var(--display-font);font-size:1.1rem;color:var(--clue)}
+  ol.steps li b{color:var(--chalk)}
+
+  .divider{display:flex;align-items:center;gap:1rem;margin:3.2rem 0;color:var(--line)}
+  .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+  .divider span{font-family:var(--mono);font-size:.9rem;color:var(--signal);letter-spacing:.34em}
+
+  footer{border-top:1px solid var(--line);padding:3rem 1.5rem;text-align:center;background:var(--noir-2)}
+  footer p{color:#5c5f6e;font-size:.84rem;font-family:var(--mono);letter-spacing:.05em}
+  footer .site{color:var(--signal)}
+
+  @media (max-width:600px){
+    body{font-size:16.5px}
+    .lead:first-letter{font-size:3.4rem}
+    pre{font-size:.72rem}
+    .span-row{grid-template-columns:96px 1fr;font-size:.66rem}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .reveal{opacity:1;transform:none}
+    .exhibit .span-bar{transform:scaleX(1)}
+  }
+  /* ==== Cinema theme (new default) + toggle button — shared with niluniverse.com ==== */
+  [data-theme="cinema"] {
+    --bg: #14171D; --panel: #1B1F27; --panel-2: #212630; --line: #2E3440;
+    --accent: #C9A24B; --accent-hi: #E6C06E; --on-accent: #14171D;
+    --text: #CBD1DA; --dim: #8891A0; --head: #F3F5F8; --ok: #7FBF8E;
+    --shadow: rgba(0,0,0,0.5);
+    --display-font: var(--serif); --display-weight: 500;
+    --radius-btn: 4px; --radius-chip: 4px; --ls-label: 0.14em;
+  }
+  .theme-toggle {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; flex: none;
+    border: 1px solid var(--line); border-radius: 50%;
+    background: var(--panel); color: var(--accent); cursor: pointer;
+    transition: background .18s, border-color .18s, transform .18s;
+  }
+  .theme-toggle:hover { background: var(--panel-2); border-color: var(--accent); transform: rotate(-8deg); }
+  .theme-toggle svg { width: 18px; height: 18px; }
+  .theme-toggle .icon-sun, .theme-toggle .icon-moon { display: none; }
+  html[data-theme="cinema"] .theme-toggle .icon-moon { display: block; }
+  html[data-theme="linkedin"] .theme-toggle .icon-sun { display: block; }
+  .back-bar { padding: 18px 24px 0; }
+  .back-link {
+    font-family: var(--mono); font-size: .76rem; letter-spacing: .03em;
+    color: var(--dim); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: color .2s, gap .2s;
+  }
+  .back-link:hover { color: var(--accent); gap: 10px; }
+  .end-back { padding: 6px 24px 60px; text-align: center; }
+  .end-back .back-link { justify-content: center; font-size: .82rem; }
+  .share-row { display: flex; align-items: center; gap: 8px; }
+  .share-label {
+    font-family: var(--mono); font-size: .68rem; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--dim); margin-right: 2px;
+  }
+  .share-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 50%; flex: none;
+    border: 1px solid var(--line); background: var(--panel);
+    color: var(--dim); cursor: pointer; text-decoration: none;
+    transition: color .18s, border-color .18s, background .18s, transform .18s;
+  }
+  .share-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--panel-2); transform: translateY(-1px); }
+  .share-btn svg { width: 14px; height: 14px; }
+  .share-btn.copied { color: var(--ok); border-color: var(--ok); }
+  .back-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .end-back { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+
+  /* ==== Reading progress rail — shared with niluniverse.com ==== */
+  .rp-bar { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: transparent; z-index: 9999; pointer-events: none; }
+  .rp-fill { height: 100%; width: 0%; background: var(--accent); transition: width .1s linear; }
+  .rp-toc { position: fixed; right: 20px; bottom: 20px; z-index: 9998; font-family: var(--mono); }
+  .rp-toggle {
+    width: 52px; height: 52px; border-radius: 50%; flex: none;
+    background: var(--panel); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center; position: relative;
+    cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.35); padding: 0;
+  }
+  .rp-ring { position: absolute; inset: 0; width: 52px; height: 52px; transform: rotate(-90deg); }
+  .rp-ring-bg { fill: none; stroke: var(--line); stroke-width: 2.5; }
+  .rp-ring-fg { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 97.4; stroke-dashoffset: 97.4; transition: stroke-dashoffset .15s linear; }
+  .rp-pct { font-size: 10.5px; color: var(--head); font-weight: 600; position: relative; z-index: 1; }
+  .rp-panel {
+    position: absolute; right: 0; bottom: 64px; width: 260px; max-height: 60vh; overflow-y: auto;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px; box-shadow: 0 20px 50px rgba(0,0,0,.4);
+    opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .18s, transform .18s;
+  }
+  .rp-toc.open .rp-panel { opacity: 1; transform: none; pointer-events: auto; }
+  .rp-panel-head { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed var(--line); }
+  .rp-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+  .rp-list li a {
+    display: block; padding: 7px 8px; border-radius: 6px; font-size: 12.5px; line-height: 1.4;
+    color: var(--dim); text-decoration: none; transition: background .15s, color .15s;
+  }
+  .rp-list li a:hover { background: var(--bg); color: var(--head); }
+  .rp-list li.active a { color: var(--accent); background: var(--bg); font-weight: 600; }
+  @media (max-width: 640px) {
+    .rp-toc { right: 14px; bottom: 14px; }
+    .rp-toggle { width: 46px; height: 46px; }
+    .rp-ring { width: 46px; height: 46px; }
+    .rp-panel { width: min(78vw, 280px); }
+  }
+</style>
+</head>
+<body>
+<div class="rp-bar" id="rpBar"><div class="rp-fill" id="rpFill"></div></div>
+<div class="rp-toc" id="rpToc">
+  <button class="rp-toggle" id="rpToggle" type="button" aria-expanded="false" aria-label="Reading progress and section list">
+    <svg class="rp-ring" viewBox="0 0 36 36"><circle class="rp-ring-bg" cx="18" cy="18" r="15.5"/><circle class="rp-ring-fg" id="rpRing" cx="18" cy="18" r="15.5"/></svg>
+    <span class="rp-pct" id="rpPct">0%</span>
+  </button>
+  <div class="rp-panel" id="rpPanel">
+    <div class="rp-panel-head" id="rpStatus">0% read</div>
+    <ol class="rp-list" id="rpList"></ol>
+  </div>
+</div>
+<header class="site">
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="https://niluniverse.com">
+        <svg class="brand-mark" viewBox="0 0 120 120" fill="none" aria-hidden="true"><rect x="4" y="4" width="112" height="112" rx="26" fill="var(--accent)"/><polyline points="30,42 54,62 30,82" stroke="var(--on-accent)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><rect x="62" y="74" width="30" height="14" rx="4" fill="var(--on-accent)"/></svg>
+        <span><span class="b-nil">nil</span>universe</span>
+      </a>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" title="Switch to light theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap back-bar">
+  <a class="back-link" href="index.html">&larr; All stories</a>
+  <div class="share-row"><a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.niluniverse.com%2Fobservability-detective.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a><a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fblog.niluniverse.com%2Fobservability-detective.html&text=The%20Case%20of%20the%20Vanishing%20Request%3A%20Distributed%20Tracing" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a><a class="share-btn" href="mailto:?subject=The%20Case%20of%20the%20Vanishing%20Request%3A%20Distributed%20Tracing&body=https%3A%2F%2Fblog.niluniverse.com%2Fobservability-detective.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a><button class="share-btn" type="button" data-copy-url="https://blog.niluniverse.com/observability-detective.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button></div>
+</div>
+
+<!-- ===================== HERO : crime scene ===================== -->
+<header class="hero">
+  <div class="lamp"><span class="bulb"></span></div>
+  <div class="hero-inner">
+    <span class="case-no">Case File №&nbsp;500 · Status: OPEN</span>
+    <h1>The Case of the<br><span class="lit">Vanishing Request</span></h1>
+    <p class="logline">It entered the system healthy. Forty services later, it was dead — no body, no note, no witness willing to talk. Somebody has to put on the hat.</p>
+    <p class="credits">A Noir Field Guide to Observability &amp; Distributed Tracing</p>
+  </div>
+  <div class="scrollcue"><span>open the file</span><span class="l"></span></div>
+</header>
+
+<!-- ===================== ARTICLE ===================== -->
+<article>
+
+  <div class="section reveal">
+    <p class="lead">It always starts the same way. A pager buzzes at 2:14 a.m. The checkout service is returning 500 errors for "some" users, but nobody can say exactly which ones. The dashboard is almost entirely green, except for one graph that turned red an hour ago. The request entered the system looking perfectly healthy, passed through forty microservices, and never came out the other side. There is no stack trace long enough to follow, and no single log entry that explains what happened.</p>
+    <p>You pour a cup of coffee and get ready to focus. Tonight, you are not just a developer — you are a <strong>detective</strong>, and the system is a suspect that has learned to stay silent.</p>
+  </div>
+
+  <div class="casefile reveal">
+    <div class="fh">The nature of the crime</div>
+    <p>In a monolith, everything happens in one place — one process, one stack trace, and one log file to read from start to finish. In microservices, the request is passed from one service to another across the network. The service that <em>reports</em> the failure is almost never the one that <em>caused</em> it. Without observability, you are left questioning forty different services, each of which claims it only saw the request for four milliseconds before passing it along.</p>
+  </div>
+
+  <div class="section reveal">
+    <h2><span class="tag">MOTIVE — WHY THIS MATTERS</span>You cannot fix what you cannot see</h2>
+    <p>Here is an uncomfortable truth that every on-call engineer eventually learns: <strong>in a distributed system, failures are normal, not an exception.</strong> Networks have brief interruptions. Pods get evicted. A downstream dependency adds 200 milliseconds, and a retry storm turns that into a full cascade. The real question is never <em>whether</em> something will break. It is whether you can <em>identify the cause</em> before your users identify it for you, on social media.</p>
+    <p>Observability is the difference between saying "checkout is slow, we are looking into it" for six hours, and saying "the payment gateway's p99 latency tripled at 02:03, here is the trace, and we are deploying a timeout fix now." The first is a guess. The second is real detective work. The gap between them is measured in lost revenue, lost sleep, and lost trust.</p>
+  </div>
+
+  <p class="pull">Monitoring tells you the <span class="lit">house is on fire.</span><br>Observability tells you <span class="lit">who lit the match.</span></p>
+
+  <div class="section reveal">
+    <h2><span class="tag">THE WITNESSES — THREE PILLARS</span>Everyone saw something different</h2>
+    <p>Every case has witnesses, and a good detective knows that each one only tells part of the story. Observability has three main witnesses, and you need all of them working together.</p>
+
+    <div class="witnesses">
+      <div class="witness w-logs">
+        <div class="wname">Logs</div>
+        <div class="wrole">The diary keeper</div>
+        <p>This is the most detailed witness. It remembers exact words, timestamps, and the occasional exception. But its notes are scattered across forty notebooks in forty different services, and it often writes pages that nobody asked for. It is not very useful until you can line up every entry that belongs to the same request.</p>
+      </div>
+      <div class="witness w-metrics">
+        <div class="wname">Metrics</div>
+        <div class="wrole">The bird's-eye watcher</div>
+        <p>This witness saw the whole street from the rooftop. It can tell you that error rates rose, latency doubled, and the queue backed up — the <em>overall shape</em> of the problem. But it never remembers a single face. It is very good at telling you that "something is wrong," but it cannot tell you "which request, and why."</p>
+      </div>
+      <div class="witness w-traces">
+        <div class="wname">Traces</div>
+        <div class="wrole">The eyewitness who followed him</div>
+        <p>This is the star witness. It followed the request from the front door through every service it touched, timing each stop, and noting exactly where it stumbled. This witness is the one who actually breaks the case — the connecting thread that the other two can only point toward.</p>
+      </div>
+    </div>
+
+    <div class="casefile reveal">
+      <div class="fh">Detective's note</div>
+      <p>None of the three witnesses can solve the case alone. Metrics tell you <em>when</em> to start looking, traces tell you <em>where</em> the request died, and logs tell you <em>why</em> — the exact exception at that exact point. The skill lies in connecting all three with one shared thread: an identifier that every witness is forced to write down.</p>
+    </div>
+  </div>
+
+  <div class="section reveal">
+    <h2><span class="tag">THE THREAD — CORRELATION</span>One ID to connect their testimonies</h2>
+    <p>This is one of the oldest tricks in detective work: give every witness the same case number, and require them to cite it. In distributed tracing, that number is called the <strong>trace ID</strong>. It is created the instant a request enters the system, and it is then carried across every network hop in the request headers. Each service that touches the request opens a <strong>span</strong> — its own record of "I received it at T, did this work, and handed it off at T+Δ" — and every span is stamped with the same trace ID.</p>
+    <p>The modern standard for this is <a href="https://opentelemetry.io/" target="_blank" rel="noopener">OpenTelemetry</a> (OTel). It is vendor-neutral, and it is the reason your traces, metrics, and logs can finally work together. In .NET, it is built on <code>System.Diagnostics.Activity</code> and the W3C <code>traceparent</code> header, so context propagates across HTTP calls and message-bus hops without you having to pass IDs around by hand.</p>
+
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">Program.cs — deputizing OpenTelemetry (.NET / Azure)</span></div>
+<pre><code><span class="t-com">// Wire the whole app to testify: traces + metrics, auto-propagated.</span>
+builder.Services.<span class="t-fn">AddOpenTelemetry</span>()
+    .<span class="t-fn">ConfigureResource</span>(r =&gt; r.<span class="t-fn">AddService</span>(<span class="t-str">"checkout-api"</span>))
+    .<span class="t-fn">WithTracing</span>(t =&gt; t
+        .<span class="t-fn">AddAspNetCoreInstrumentation</span>()   <span class="t-com">// inbound spans</span>
+        .<span class="t-fn">AddHttpClientInstrumentation</span>()   <span class="t-com">// outbound hops carry traceparent</span>
+        .<span class="t-fn">AddSource</span>(<span class="t-str">"Checkout"</span>)
+        .<span class="t-fn">AddOtlpExporter</span>())                <span class="t-com">// → Azure Monitor / Jaeger / Tempo</span>
+    .<span class="t-fn">WithMetrics</span>(m =&gt; m
+        .<span class="t-fn">AddAspNetCoreInstrumentation</span>()
+        .<span class="t-fn">AddOtlpExporter</span>());
+
+<span class="t-com">// A custom span = one witness statement you control.</span>
+<span class="t-key">using var</span> activity = _source.<span class="t-fn">StartActivity</span>(<span class="t-str">"ReservePayment"</span>);
+activity?.<span class="t-fn">SetTag</span>(<span class="t-str">"order.id"</span>, order.Id);
+activity?.<span class="t-fn">SetTag</span>(<span class="t-str">"customer.tier"</span>, tier);
+<span class="t-com">// ...on failure, record who did it:</span>
+activity?.<span class="t-fn">SetStatus</span>(<span class="t-type">ActivityStatusCode</span>.Error, <span class="t-str">"gateway timeout"</span>);</code></pre>
+    </div>
+    <p>That is the whole trick: with one round of setup, every request now leaves a trail of breadcrumbs, each one stamped with the same case number. The different services can no longer tell inconsistent stories, because they are all writing down the same ID.</p>
+  </div>
+
+  <div class="section reveal">
+    <h2><span class="tag">EXHIBIT A — THE TRACE</span>Reading the eyewitness testimony</h2>
+    <p>Here is what the star witness gives you: a <strong>waterfall</strong> chart. Every bar represents one span — one service's part of the request — laid out on a timeline. Reading it from left to right, you can watch the request move through the system. The moment one bar stretches out while the rest stay idle, you have found where the time was lost.</p>
+
+    <div class="exhibit reveal">
+      <div class="exhibit-h"><span>Exhibit A · Trace Waterfall</span><span class="rid">trace_id: 4c1f…a903 · 1,842 ms · ERROR</span></div>
+
+      <div class="span-row">
+        <span class="span-name">api-gateway</span>
+        <div class="span-track"><span class="span-bar" style="--sig:#3fd0c9;left:0%;width:100%"><span class="span-ms">1842ms</span></span></div>
+      </div>
+      <div class="span-row">
+        <span class="span-name">checkout-svc</span>
+        <div class="span-track"><span class="span-bar" style="--sig:#3fd0c9;left:3%;width:93%"></span></div>
+      </div>
+      <div class="span-row">
+        <span class="span-name">cart-svc</span>
+        <div class="span-track"><span class="span-bar" style="--sig:#3fd0c9;left:6%;width:9%"><span class="span-ms">120ms</span></span></div>
+      </div>
+      <div class="span-row">
+        <span class="span-name">inventory-svc</span>
+        <div class="span-track"><span class="span-bar" style="--sig:#3fd0c9;left:16%;width:11%"><span class="span-ms">140ms</span></span></div>
+      </div>
+      <div class="span-row">
+        <span class="span-name">payment-svc</span>
+        <div class="span-track"><span class="span-bar slow" style="left:28%;width:64%"><span class="span-ms" style="color:#d64b4b">1180ms ⚠</span></span></div>
+      </div>
+      <div class="span-row">
+        <span class="span-name">↳ gateway-api</span>
+        <div class="span-track"><span class="span-bar err" style="left:30%;width:60%"><span class="span-ms" style="color:#d64b4b">timeout</span></span></div>
+      </div>
+      <div class="exhibit-note">Reading the exhibit: the gateways at the top look fine. <b>payment-svc → gateway-api</b> held the request for 1,180 ms and then returned a timeout — the entire 500 error traces back to this one downstream call. The case is solved on one screen, instead of after six hours of searching logs.</div>
+    </div>
+
+    <p>This is the real payoff. Without the trace, you would have to log into six different services and read through logs, guessing at the order of events. With the trace, the guilty span is <em>literally the longest red bar on the screen</em>. The detective's job becomes much simpler: instead of searching the whole city, you just read the one testimony that followed the request all the way to the end.</p>
+  </div>
+
+  <div class="section reveal">
+    <h2><span class="tag">THE METHOD — SOLVING THE CASE</span>How to work the scene</h2>
+    <p>Every experienced investigator follows a procedure. Here is the one that closes distributed-systems cases quickly:</p>
+    <ol class="steps">
+      <li><b>Start from the alarm, not the code.</b> A metric — error rate, p99 latency, or saturation — tells you <em>when</em> and roughly <em>where</em> the trouble began. Let the RED (Rate, Errors, Duration) or USE signals point you toward the right area before you start investigating in detail.</li>
+      <li><b>Get the trace for a failing request.</b> Filter your traces to the errors in that time window, and open one. The waterfall chart shows the guilty span, without you having to guess the order of services.</li>
+      <li><b>Zoom in from span to log.</b> Every span carries the trace ID, and every log line should too. Jump from the red span straight to <em>its</em> logs — the exact exception and the exact input — instead of searching through forty different files.</li>
+      <li><b>Confirm the pattern, not just one example.</b> One slow trace is only a lead; the metric confirms whether the problem is systemic. Check whether the p99 latency on that dependency changed for everyone, or just for this one request.</li>
+      <li><b>Name it, fix it, and leave a better witness behind.</b> Add the missing span attribute, the timeout, or the retry budget — so that the <em>next</em> detective (probably you, next month) can solve it in one screen instead of six.</li>
+    </ol>
+  </div>
+
+  <div class="section reveal">
+    <h2><span class="tag">FIELD KIT — ON AZURE &amp; KUBERNETES</span>The detective's toolbelt</h2>
+    <ul class="notes">
+      <li><strong>Instrument with OpenTelemetry, and export anywhere.</strong> OTel provides the vendor-neutral wiring. Point the OTLP exporter at <strong>Azure Monitor / Application Insights</strong> in production, or at Jaeger / Grafana Tempo locally — the instrumentation stays the same, only the destination changes.</li>
+      <li><strong>Carry context across the message bus, not just over HTTP.</strong> The trail breaks the moment an event reaches a queue without its <code>traceparent</code>. Carry the trace context into Service Bus or Kafka messages, so that asynchronous hops remain part of the same story. This is exactly where an <em>outbox</em> row should also record the trace ID.</li>
+      <li><strong>Sample your traces intentionally.</strong> You cannot keep every single trace at scale, but tail-based sampling lets you keep the <em>interesting</em> ones — the slow requests and the failed ones. Never accidentally sample away the important cases.</li>
+      <li><strong>Make your logs structured and correlated.</strong> JSON logs with the trace ID as a proper field turn a slow, hopeful search into a one-click jump from a span straight to the evidence.</li>
+      <li><strong>Watch the golden signals, and alert on symptoms.</strong> Page your team for user-facing problems, such as errors and latency, not for small CPU fluctuations. An alarm should mean something is genuinely wrong, not just a minor, harmless change.</li>
+    </ul>
+  </div>
+
+  <div class="divider"><span>◆ CASE CLOSED ◆</span></div>
+
+  <div class="section reveal">
+    <h2>The closing statement</h2>
+    <p>The request that vanished at 2:14 a.m. was never really gone. It left a trail the whole way through the system, waiting for someone with the right tools to read it. That is what observability really is: not a dashboard, and not a graph for show, but the practice of building a system that can <em>explain itself</em> when something goes wrong.</p>
+    <p>Do the work up front: set up OpenTelemetry once, put a trace ID on every hop, and make your logs aware of their case number. After that, the next 2 a.m. page stops being a long manhunt. It becomes what good detective work always is: a quiet, methodical reading of the evidence, with a clear answer written down before the coffee even goes cold.</p>
+    <p>Put on the hat. The system is talking. All you have to do is make it impossible for it to stay silent.</p>
+  </div>
+
+</article>
+
+<div class="wrap end-back">
+  <a class="back-link" href="index.html">&larr; Back to all stories</a>
+  <div class="share-row"><span class="share-label">Share</span><a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.niluniverse.com%2Fobservability-detective.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a><a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fblog.niluniverse.com%2Fobservability-detective.html&text=The%20Case%20of%20the%20Vanishing%20Request%3A%20Distributed%20Tracing" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a><a class="share-btn" href="mailto:?subject=The%20Case%20of%20the%20Vanishing%20Request%3A%20Distributed%20Tracing&body=https%3A%2F%2Fblog.niluniverse.com%2Fobservability-detective.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a><button class="share-btn" type="button" data-copy-url="https://blog.niluniverse.com/observability-detective.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button></div>
+</div>
+<script>
+/* scroll reveal (also triggers the trace-waterfall animation) */
+(function(){
+  const els=document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver'in window)){els.forEach(e=>e.classList.add('in'));return;}
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+  },{threshold:.14,rootMargin:'0px 0px -8% 0px'});
+  els.forEach(e=>io.observe(e));
+})();
+</script>
+<script src="assets/engagement.js" data-accent="var(--accent)" defer></script>
+<footer>
+  <div class="wrap foot-inner">
+    <span>&copy; 2026 Nilesh Mohite &mdash; <a href="https://niluniverse.com" style="color:var(--accent)">niluniverse.com</a></span>
+    <span>Written between deployments &middot; Amalner, India</span>
+  </div>
+</footer>
+<script>
+(function(){
+  var KEY='nu-theme';
+  var toggle=document.getElementById('themeToggle');
+  if(!toggle) return;
+  function apply(t){
+    document.documentElement.setAttribute('data-theme',t);
+    toggle.setAttribute('aria-pressed', t==='linkedin' ? 'true':'false');
+    toggle.setAttribute('title', t==='linkedin' ? 'Switch to dark theme' : 'Switch to light theme');
+  }
+  var saved=null; try{saved=localStorage.getItem(KEY);}catch(e){}
+  if(saved==='linkedin' || saved==='cinema') apply(saved);
+  toggle.addEventListener('click',function(){
+    var isLight=document.documentElement.getAttribute('data-theme')==='linkedin';
+    var next=isLight?'cinema':'linkedin';
+    apply(next);
+    try{localStorage.setItem(KEY,next);}catch(e){}
+  });
+})();
+</script>
+<script>
+(function(){
+  document.querySelectorAll('[data-copy-url]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var url = btn.getAttribute('data-copy-url');
+      var done = function(){
+        var original = btn.getAttribute('aria-label');
+        btn.classList.add('copied');
+        btn.setAttribute('aria-label','Copied!');
+        setTimeout(function(){ btn.classList.remove('copied'); btn.setAttribute('aria-label', original); }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function(){});
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = url; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch(e){}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+})();
+</script>
+<script>
+(function(){
+  var HEADING_SELECTOR = 'article h2';
+  var headings = Array.prototype.slice.call(document.querySelectorAll(HEADING_SELECTOR));
+  if (!headings.length) return;
+
+  var fill = document.getElementById('rpFill');
+  var ring = document.getElementById('rpRing');
+  var pct = document.getElementById('rpPct');
+  var status = document.getElementById('rpStatus');
+  var list = document.getElementById('rpList');
+  var toc = document.getElementById('rpToc');
+  var toggle = document.getElementById('rpToggle');
+  if (!fill || !toc) return;
+
+  var RING_CIRC = 97.4;
+  var seen = {};
+
+  var items = headings.map(function(h, i){
+    var base = 'rp-section-' + (i + 1);
+    if (!h.id) h.id = base;
+    while (seen[h.id]) { h.id = base + '-' + Math.random().toString(36).slice(2,6); }
+    seen[h.id] = true;
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.textContent = h.textContent.replace(/\s+/g,' ').trim();
+    li.appendChild(a);
+    list.appendChild(li);
+    return { heading: h, li: li };
+  });
+
+  function updateProgress(){
+    var doc = document.documentElement;
+    var scrollTop = window.scrollY || doc.scrollTop;
+    var height = doc.scrollHeight - doc.clientHeight;
+    var ratio = height > 0 ? Math.min(1, Math.max(0, scrollTop / height)) : 0;
+    var percent = Math.round(ratio * 100);
+    fill.style.width = percent + '%';
+    if (ring) ring.style.strokeDashoffset = String(RING_CIRC * (1 - ratio));
+    if (pct) pct.textContent = percent + '%';
+    if (status) status.textContent = percent >= 99 ? 'Finished reading' : percent + '% read';
+
+    var activeIdx = 0;
+    var probe = scrollTop + window.innerHeight * 0.3;
+    for (var i = 0; i < items.length; i++) {
+      var top = items[i].heading.getBoundingClientRect().top + scrollTop;
+      if (top <= probe) activeIdx = i;
+    }
+    items.forEach(function(it, i){ it.li.classList.toggle('active', i === activeIdx); });
+  }
+
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  window.addEventListener('resize', updateProgress);
+  updateProgress();
+
+  toggle.addEventListener('click', function(){
+    var open = toc.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', function(e){
+    if (!toc.contains(e.target)) toc.classList.remove('open');
+  });
+})();
+</script>
+</body>
+</html>

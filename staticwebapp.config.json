@@ -1,8 +1,11 @@
 {
   "trailingSlash": "auto",
+  "routes": [
+    { "route": "/api/*", "allowedRoles": ["anonymous"] }
+  ],
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["*.png", "*.svg", "*.js", "*.css", "*.json"]
+    "exclude": ["/assets/*", "/api/*", "*.html", "*.js", "*.css", "*.png", "*.svg"]
   },
   "globalHeaders": { "X-Content-Type-Options": "nosniff" }
 }
