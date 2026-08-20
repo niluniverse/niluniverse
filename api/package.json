@@ -1,0 +1,9 @@
+{
+    "name": "niluniverse-blog-api",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Azure Functions API for the niluniverse.com blog: per-article like, view and share counters backed by Azure Cosmos DB's free-tier Table API.",
+    "dependencies": {
+          "@azure/data-tables": "^13.3.2"
+    }
+}
