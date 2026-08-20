@@ -467,9 +467,10 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   .rp-panel{width:min(78vw,280px)}
 }
   .credit-line {
-    text-align: center; font-family: var(--serif); font-style: italic; font-weight: 500;
-    font-size: clamp(1.05rem, .74rem + 1.6vw, 1.5rem); letter-spacing: .03em;
-    color: var(--dim); padding: 2px 20px 20px; margin: 0 auto;
+    flex: 1 1 auto; min-width: 0; text-align: center; font-family: var(--serif); font-style: italic; font-weight: 500;
+    font-size: clamp(.72rem, .4rem + 1.1vw, 1rem); letter-spacing: .02em;
+    color: var(--dim); margin: 0; padding: 0 10px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .credit-line a {
     font-style: normal; font-weight: 600; color: var(--accent);
@@ -479,10 +480,14 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   .tagline-marketing {
     text-align: center; font-family: var(--mono); font-size: .7rem; font-weight: 500;
     letter-spacing: .06em; text-transform: uppercase; color: var(--dim);
-    padding: 0 20px 20px; margin: 0 auto; opacity: .78;
+    padding: 2px 20px 20px; margin: 0 auto; opacity: .78;
   }
-  @media (max-width: 620px) {
-    .credit-line { font-size: 1.08rem; padding: 0 16px 16px; }
+  @media (max-width: 760px) {
+    nav { flex-wrap: wrap; row-gap: 6px; height: auto; padding: 10px 0; }
+    .credit-line {
+      flex-basis: 100%; order: 3; white-space: normal; overflow: visible; text-overflow: clip;
+      font-size: .82rem; padding: 0;
+    }
     .tagline-marketing { font-size: .64rem; padding: 0 16px 16px; }
   }
   .engage-row {
@@ -524,12 +529,12 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
         <svg class="brand-mark" viewBox="0 0 120 120" fill="none" aria-hidden="true"><rect x="4" y="4" width="112" height="112" rx="26" fill="var(--chrome-accent)"/><polyline points="30,42 54,62 30,82" stroke="var(--chrome-on-accent)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><rect x="62" y="74" width="30" height="14" rx="4" fill="var(--chrome-on-accent)"/></svg>
         <span><span class="b-nil">nil</span>universe</span>
       </a>
+      <p class="credit-line">Directed by <a href="https://www.nileshmohite.com">Nilesh Mohite</a> and Presented by AI</p>
       <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" title="Switch to light theme">
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       </button>
     </nav>
-    <p class="credit-line">Directed by <a href="https://www.nileshmohite.com">Nilesh Mohite</a> and Presented by AI</p>
     <p class="tagline-marketing">Cloud engineering, Kubernetes &amp; AI &mdash; told like cinema.</p>
   </div>
 </header>
