@@ -1,0 +1,17 @@
+{
+    "bindings": [
+          {
+                  "authLevel": "anonymous",
+                  "type": "httpTrigger",
+                  "direction": "in",
+                  "name": "req",
+                  "methods": ["get"],
+                  "route": "{resource:regex(^(likes|views|shares)$)}"
+          },
+          {
+                  "type": "http",
+                  "direction": "out",
+                  "name": "res"
+          }
+    ]
+}
