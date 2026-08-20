@@ -3,119 +3,94 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Nilesh Mohite — AI-Native Software Architect | niluniverse.com</title>
-<meta name="description" content="Nilesh Mohite — Lead Consultant at Xebia. AI-native software architect with 18+ years across .NET, Azure, Anthropic Claude, Kubernetes and microservices, serving e-commerce, healthcare, banking and insurance." />
-<meta property="og:title" content="Nilesh Mohite — AI-Native Software Architect" />
-<meta property="og:description" content="18+ years of enterprise architecture across .NET, Azure, AI agents, Databricks and cloud-native systems — Lead Consultant at Xebia." />
+<title>Writing — Nilesh Mohite | www.nileshmohite.com</title>
+<meta name="description" content="Cinematic engineering stories: distributed systems, observability and AI engineering, by Nilesh Mohite." />
+<meta property="og:title" content="Writing — Nilesh Mohite" />
+<meta property="og:description" content="Engineering patterns told cinematically — distributed systems, observability, AI engineering." />
 <meta property="og:url" content="https://niluniverse.com" />
 <meta property="og:type" content="website" />
-<link rel="icon" type="image/svg+xml" href="favicon.svg" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-<link rel="apple-touch-icon" href="favicon-180.png" />
+<meta property="og:image" content="https://niluniverse.com/keystone-mission-control-banner.jpg" />
+<meta property="og:image:width" content="1400" />
+<meta property="og:image:height" content="788" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Writing — Nilesh Mohite" />
+<meta name="twitter:description" content="Engineering patterns told cinematically — distributed systems, observability, AI engineering." />
+<meta name="twitter:image" content="https://niluniverse.com/keystone-mission-control-banner.jpg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/site.css" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon-180.png" />
 <style>
-  /* ============ THEMES ============ */
-  /* Cinema — cinematic professional, default. Elevated charcoal (not near-black), brass accent. */
-  :root, [data-theme="cinema"] {
-    --bg: #14171D;
-    --panel: #1B1F27;
-    --panel-2: #212630;
-    --line: #2E3440;
-    --accent: #C9A24B;
-    --accent-hi: #E6C06E;
-    --on-accent: #14171D;
-    --text: #CBD1DA;
-    --dim: #8891A0;
-    --head: #F3F5F8;
-    --ok: #7FBF8E;
+  .page-head { padding: 62px 0 6px; }
+  .page-head .tag { display:block; font-family:var(--mono); font-weight:500; font-size:clamp(15px,1.6vw,18px);
+    letter-spacing:.08em; color:var(--accent); text-transform:uppercase; margin-bottom:12px; }
+  .page-head h1 { font-family:var(--display-font); font-weight:var(--display-weight);
+    font-size:clamp(1.9rem,5vw,2.9rem); line-height:1.1; color:var(--head); margin-bottom:12px; }
+  .page-head p { color:var(--dim); max-width:600px; }
+
+  .toolbar { display:flex; align-items:center; justify-content:space-between; gap:16px;
+    flex-wrap:wrap; padding:30px 0 22px; }
+  .count { font-family:var(--mono); font-size:.76rem; color:var(--dim); }
+  .count b { color:var(--accent); font-weight:500; }
+  .view-switch { display:flex; border:1px solid var(--line); border-radius:var(--radius-btn);
+    overflow:hidden; background:var(--panel); }
+  .view-switch button { display:flex; align-items:center; gap:7px; font-family:var(--mono);
+    font-size:.72rem; background:none; border:none; color:var(--dim); padding:9px 14px;
+    cursor:pointer; transition:color .2s, background .2s; }
+  .view-switch button.on { background:var(--panel-2); color:var(--accent); }
+  .view-switch button:not(.on):hover { color:var(--head); }
+  .view-switch svg { width:13px; height:13px; fill:currentColor; }
+
+  .posts { display:grid; gap:18px; padding-bottom:70px; }
+  .posts.tiles { grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); }
+  .posts.list  { grid-template-columns:1fr; }
+
+  .post { display:flex; flex-direction:column; border:1px solid var(--line); border-radius:6px;
+    background:var(--panel); overflow:hidden; transition:transform .25s cubic-bezier(.2,.7,.2,1),
+    border-color .25s, box-shadow .25s; animation:postIn .35s ease both; }
+  .post:hover { transform:translateY(-3px); border-color:var(--accent);
+    box-shadow:0 18px 40px -22px var(--shadow); }
+  @keyframes postIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+
+  .post-banner { height:104px; flex:none; display:flex; align-items:center; justify-content:center;
+    border-bottom:1px solid var(--line); background:var(--panel-2); position:relative; overflow:hidden; }
+  .post-banner span { font-size:2rem; transition:transform .3s; }
+  .post:hover .post-banner span { transform:scale(1.12); }
+  .post-banner img { width:100%; height:100%; object-fit:cover; object-position:center; display:block; transition:transform .4s ease; }
+  .post:hover .post-banner img { transform:scale(1.06); }
+
+  .post-body { padding:16px 18px 18px; display:flex; flex-direction:column; gap:8px; flex:1; }
+  .post-kicker { font-family:var(--mono); font-size:.62rem; letter-spacing:.2em;
+    text-transform:uppercase; color:var(--accent); }
+  .post h2 { font-family:var(--sans); font-size:1.02rem; font-weight:600; line-height:1.36; color:var(--head); }
+  .post:hover h2 { color:var(--accent); }
+  .post p { font-size:.87rem; color:var(--dim); flex:1; line-height:1.6; }
+  .post-meta { display:flex; align-items:center; gap:12px; flex-wrap:wrap; font-family:var(--mono);
+    font-size:.66rem; color:var(--dim); padding-top:9px; border-top:1px dashed var(--line); }
+  .post-meta .likes { color:#D9695A; }
+  .post-meta .rt { margin-left:auto; color:var(--accent); }
+
+  .posts.list .post { flex-direction:row; align-items:stretch; }
+  .posts.list .post-banner { width:140px; height:108px; border-bottom:none;
+    border-right:1px solid var(--line); }
+  .posts.list .post-banner span { font-size:1.6rem; }
+  .posts.list .post p { flex:initial; }
+  @media (max-width:560px){
+    .posts.list .post-banner { width:78px; height:88px; }
+    .posts.list .post-banner span { font-size:1.35rem; }
+  }
+  /* ==== Cinema theme (new default) + toggle button — shared with www.nileshmohite.com ==== */
+  [data-theme="cinema"] {
+    --bg: #14171D; --panel: #1B1F27; --panel-2: #212630; --line: #2E3440;
+    --accent: #C9A24B; --accent-hi: #E6C06E; --on-accent: #14171D;
+    --text: #CBD1DA; --dim: #8891A0; --head: #F3F5F8; --ok: #7FBF8E;
     --shadow: rgba(0,0,0,0.5);
-    --display-font: var(--serif);
-    --display-weight: 500;
-    --radius-btn: 4px;
-    --radius-chip: 4px;
-    --ls-label: 0.14em;
+    --display-font: var(--serif); --display-weight: 500;
+    --radius-btn: 4px; --radius-chip: 4px; --ls-label: 0.14em;
   }
-  [data-theme="linkedin"] {
-    --bg: #F4F2EE;
-    --panel: #FFFFFF;
-    --panel-2: #F8F8F7;
-    --line: #E0DFDC;
-    --accent: #0A66C2;
-    --accent-hi: #004182;
-    --on-accent: #FFFFFF;
-    --text: #3F3F3F;
-    --dim: #666666;
-    --head: #191919;
-    --ok: #44712E;
-    --shadow: rgba(0,0,0,0.08);
-    --display-font: var(--sans);
-    --display-weight: 600;
-    --radius-btn: 999px;
-    --radius-chip: 999px;
-  }
-  :root {
-    --mono: 'IBM Plex Mono', ui-monospace, monospace;
-    --sans: 'IBM Plex Sans', system-ui, sans-serif;
-    --serif: 'Fraunces', Georgia, serif;
-    --ls-label: 0.14em;
-  }
-
-  /* ============ BASE ============ */
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body {
-    background: var(--bg); color: var(--text);
-    font-family: var(--sans); font-size: 16px; line-height: 1.7;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-    font-feature-settings: "kern" 1, "liga" 1;
-    transition: background .25s, color .25s;
-  }
-  .mono, code, .term-body, .btn, .nav-links, .chip { font-feature-settings: "tnum" 1, "kern" 1; }
-  ::selection { background: var(--accent); color: var(--on-accent); }
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { color: var(--accent-hi); }
-  a:focus-visible, button:focus-visible {
-    outline: 2px solid var(--accent-hi); outline-offset: 3px; border-radius: 2px;
-  }
-  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
-
-  /* ============ HEADER / NAV ============ */
-  header {
-    position: sticky; top: 0; z-index: 50;
-    background: color-mix(in srgb, var(--bg) 92%, transparent);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--line);
-  }
-  nav { display: flex; align-items: center; justify-content: space-between; height: 62px; gap: 16px; }
-  .brand {
-    font-family: var(--mono); font-size: 14.5px; font-weight: 500; color: var(--head);
-    letter-spacing: 0.02em; white-space: nowrap;
-    display: inline-flex; align-items: center; gap: 9px;
-  }
-  .brand:hover { color: var(--head); }
-  .brand-mark { width: 26px; height: 26px; flex: none; }
-  .brand .b-nil { color: var(--accent); }
-  .nav-links { display: flex; gap: 24px; font-family: var(--mono); font-size: 13.5px; }
-  .nav-links a {
-    color: var(--dim); text-transform: capitalize; position: relative;
-    padding: 4px 1px 8px; transition: color .18s;
-  }
-  .nav-links a:hover { color: var(--accent-hi); }
-  .nav-links a::after {
-    content: ""; position: absolute; left: 0; right: 0; bottom: 0;
-    height: 2px; background: var(--accent);
-    transform: scaleX(0); transform-origin: left;
-    transition: transform .22s ease;
-  }
-  .nav-links a:hover::after { transform: scaleX(1); }
-  .nav-links a.active { color: var(--accent-hi); }
-  .nav-links a.active::after { transform: scaleX(1); }
-
-  /* Theme toggle (Cinema / LinkedIn) */
   .theme-toggle {
     display: flex; align-items: center; justify-content: center;
     width: 36px; height: 36px; flex: none;
@@ -128,364 +103,43 @@
   .theme-toggle .icon-sun, .theme-toggle .icon-moon { display: none; }
   html[data-theme="cinema"] .theme-toggle .icon-moon { display: block; }
   html[data-theme="linkedin"] .theme-toggle .icon-sun { display: block; }
-
-  /* ============ HERO ============ */
-  .hero { padding-top: 92px; padding-bottom: 48px; }
-  .eyebrow {
-    font-family: var(--mono); font-weight: 500;
-    font-size: clamp(1.5rem, 3.4vw, 2.35rem);
-    letter-spacing: 0.01em; line-height: 1.28;
-    color: var(--accent);
-    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  .share-row { display: flex; align-items: center; gap: 8px; }
+  .share-label {
+    font-family: var(--mono); font-size: .68rem; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--dim); margin-right: 2px;
   }
-  .eyebrow::before { content: ""; width: 44px; height: 2px; flex: none; background: var(--accent); }
-  h1 {
-    font-family: var(--display-font); font-weight: var(--display-weight);
-    font-size: clamp(1rem, 1.6vw, 1.28rem);
-    line-height: 1.55; color: var(--dim);
-    margin: 16px 0 24px; letter-spacing: 0; max-width: 520px;
-  }
-  h1 em { font-style: italic; color: var(--accent); }
-  .lede { max-width: 640px; font-size: 1.06rem; }
-  .hero-meta {
-    margin-top: 28px; display: flex; flex-wrap: wrap; gap: 10px 26px;
-    font-family: var(--mono); font-size: 12.5px; color: var(--dim);
-  }
-  .hero-meta span { display: inline-flex; align-items: center; gap: 8px; }
-  .hero-meta span::before {
-    content: ""; width: 6px; height: 6px; border-radius: 50%;
-    background: var(--accent); flex: none;
-  }
-  .hero-meta span b { color: var(--text); font-weight: 500; }
-  .cta-row { margin-top: 32px; display: flex; gap: 14px; flex-wrap: wrap; }
-  .btn {
-    font-family: var(--mono); font-size: 13.5px; padding: 12px 22px;
-    border: 1px solid var(--accent); color: var(--accent); border-radius: var(--radius-btn);
-    display: inline-flex; align-items: center; gap: 9px;
-    transition: background .18s, color .18s, border-color .18s;
-    background: transparent; cursor: pointer;
-  }
-  .btn svg { width: 16px; height: 16px; flex: none; }
-  .btn:hover { background: var(--accent); color: var(--on-accent); }
-  .btn.solid { background: var(--accent); color: var(--on-accent); }
-  .btn.solid:hover { background: var(--accent-hi); border-color: var(--accent-hi); }
-
-  /* ============ TERMINAL ============ */
-  .term-section { padding: 26px 0 76px; }
-  .terminal {
-    background: #201A13; border: 1px solid #362C1E; border-radius: 10px;
-    overflow: hidden; box-shadow: 0 24px 60px var(--shadow);
-  }
-  .term-bar {
-    display: flex; align-items: center; gap: 8px;
-    padding: 12px 16px; border-bottom: 1px solid #362C1E;
-    font-family: var(--mono); font-size: 12px; color: #9C9282;
-  }
-  .dot { width: 10px; height: 10px; border-radius: 50%; }
-  .dot.a { background: #5a4a2e; } .dot.b { background: #6b5a38; } .dot.c { background: #E8A33D; }
-  .term-title { margin-left: 10px; }
-  .term-body {
-    font-family: var(--mono); font-size: 13.5px; line-height: 1.85;
-    padding: 22px 24px 26px; min-height: 300px; white-space: pre-wrap;
-    color: #D3C9B8;
-  }
-  .term-body .p { color: #E8A33D; }
-  .term-body .c { color: #9C9282; }
-  .term-body .ok { color: #9BC77E; }
-  .term-body .hi { color: #FFC46B; }
-  .cursor {
-    display: inline-block; width: 8px; height: 16px;
-    background: #E8A33D; vertical-align: text-bottom;
-    animation: blink 1s steps(1) infinite;
-  }
-  @keyframes blink { 50% { opacity: 0; } }
-  .term-caption { margin-top: 14px; font-family: var(--mono); font-size: 12px; color: var(--dim); }
-  .work-terminal { margin-top: 26px; max-width: 640px; }
-  .work-terminal .terminal { box-shadow: 0 18px 40px -14px var(--shadow); }
-  .work-terminal .term-body { min-height: 220px; font-size: 12.5px; padding: 18px 20px 22px; }
-
-  /* ============ SECTIONS ============ */
-  section { padding: 76px 0; border-top: 1px solid var(--line); }
-  .sec-head { display: flex; align-items: baseline; gap: 18px; margin-bottom: 40px; flex-wrap: wrap; }
-  .sec-head h2 { font-family: var(--display-font); font-weight: var(--display-weight); font-size: 1.9rem; color: var(--head); }
-  .sec-head .tag {
-    font-family: var(--mono); font-weight: 500; font-size: clamp(15px, 1.6vw, 18px); color: var(--accent);
-    letter-spacing: 0.08em; text-transform: uppercase;
-  }
-  .sec-note { max-width: 680px; margin: -26px 0 36px; color: var(--dim); font-size: 14.5px; }
-
-  /* ============ TECHNOLOGIES (interactive tabs) ============ */
-  .tech-interactive { display: grid; grid-template-columns: 300px 1fr; gap: 26px; align-items: start; }
-  .tech-tabs {
-    display: flex; flex-direction: column; gap: 3px;
-    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
-    padding: 8px; position: sticky; top: 78px;
-  }
-  .tech-tab {
-    display: flex; align-items: center; gap: 13px; text-align: left;
-    background: transparent; border: none; border-radius: 8px;
-    padding: 12px 14px; cursor: pointer;
-    font-family: var(--sans); font-size: 0.87rem; color: var(--dim);
-    transition: background .16s, color .16s;
-    box-shadow: inset 3px 0 0 transparent;
-  }
-  .tech-tab svg { width: 18px; height: 18px; flex: none; color: var(--dim); transition: color .16s; }
-  .tech-tab span { line-height: 1.3; }
-  .tech-tab:hover { background: var(--panel-2); color: var(--head); }
-  .tech-tab.active {
-    background: var(--panel-2); color: var(--head);
-    box-shadow: inset 3px 0 0 var(--accent);
-  }
-  .tech-tab.active svg { color: var(--accent); }
-
-  .tech-panels {
-    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
-    padding: 34px; min-height: 300px;
-  }
-  .tech-panel { animation: techPanelIn .32s ease both; }
-  @keyframes techPanelIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-  .tech-panel h3 {
-    font-family: var(--display-font); font-weight: var(--display-weight);
-    font-size: 1.42rem; line-height: 1.24; letter-spacing: -0.01em;
-    color: var(--head); margin: 0 0 12px; position: relative;
-  }
-  .tech-panel > h3:first-child { padding-top: 20px; }
-  .tech-panel > h3:first-child::before {
-    content: ""; position: absolute; top: 0; left: 0;
-    width: 30px; height: 3px; border-radius: 2px; background: var(--accent);
-  }
-  .tech-panel p.sub { font-size: 14.5px; color: var(--dim); margin-bottom: 26px; max-width: 520px; }
-  .tech-panel .chips { gap: 10px; }
-  .tech-panel .chip {
-    font-size: 13px; padding: 7px 15px;
-    background: color-mix(in srgb, var(--accent) 8%, var(--panel-2));
-    border-color: color-mix(in srgb, var(--accent) 25%, var(--line));
-  }
-  @media (max-width: 860px) {
-    .tech-interactive { grid-template-columns: 1fr; }
-    .tech-tabs {
-      flex-direction: row; overflow-x: auto; position: static;
-      -webkit-overflow-scrolling: touch;
-      scroll-snap-type: x proximity; gap: 6px;
-    }
-    .tech-tab {
-      flex: none; white-space: nowrap; scroll-snap-align: start;
-      padding: 10px 14px; gap: 9px;
-    }
-    .tech-tab svg { width: 16px; height: 16px; }
-    .tech-tab span { font-size: 0.82rem; }
-    .work-tabs .wt-stack { flex-direction: row; align-items: center; gap: 8px; }
-    .work-tabs .wt-kind { display: none; }
-    .work-tabs .wt-title { font-size: 0.85rem; white-space: nowrap; }
-    .work-tabs .wt-logo { width: 26px; height: 26px; font-size: 9.5px; }
-    .tech-panels { padding: 24px; }
-  }
-  @media (max-width: 480px) {
-    .tech-tab span { max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
-    .work-tabs .wt-title { max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
-  }
-
-  /* section rhythm */
-  section.alt { background: var(--panel-2); }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip {
-    font-family: var(--mono); font-size: 12.5px; color: var(--text);
-    border: 1px solid var(--line); background: var(--bg);
-    padding: 4px 11px; border-radius: var(--radius-chip);
-  }
-
-  /* ============ WORK ============ */
-  .work-panels .work-kind {
-    font-family: var(--mono); font-size: 12px; color: var(--accent);
-    letter-spacing: var(--ls-label); text-transform: uppercase; margin-bottom: 10px;
-  }
-  .work-panels h3 { margin-bottom: 14px; }
-  .work-panels p { max-width: 660px; font-size: 15px; }
-  .work-panels .chips { margin-top: 16px; }
-  .work-link { font-family: var(--mono); font-size: 13px; display: inline-block; margin-top: 14px; color: var(--accent); }
-  .work-link::after { content: " ->"; }
-  .work-tabs .wt-stack { display: flex; flex-direction: column; gap: 4px; }
-  .work-tabs .wt-kind {
-    font-family: var(--mono); font-size: 10.5px; letter-spacing: var(--ls-label);
-    text-transform: uppercase; color: var(--accent);
-  }
-  .work-tabs .wt-title { font-family: var(--sans); font-size: 0.9rem; font-weight: 500; color: inherit; line-height: 1.3; }
-  .work-tabs .wt-logo {
-    width: 30px; height: 30px; border-radius: 50%; flex: none;
+  .share-btn {
     display: flex; align-items: center; justify-content: center;
-    background: var(--panel-2); border: 1px solid var(--line);
-    color: var(--accent); font-family: var(--sans); font-weight: 700; font-size: 10.5px;
-    letter-spacing: 0.01em; transition: border-color .16s, color .16s;
+    width: 30px; height: 30px; border-radius: 50%; flex: none;
+    border: 1px solid var(--line); background: var(--panel);
+    color: var(--dim); cursor: pointer; text-decoration: none;
+    transition: color .18s, border-color .18s, background .18s, transform .18s;
   }
-  .work-tabs .tech-tab.active .wt-logo { border-color: var(--accent); color: var(--accent-hi); background: var(--panel); }
-
-  /* ============ EXPERIENCE (tabs) ============ */
-  .panel-head-row { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
-  .panel-head-row .wt-logo.big {
-    width: 46px; height: 46px; font-size: 15px; margin-top: 2px;
+  .share-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--panel-2); transform: translateY(-1px); }
+  .share-btn svg { width: 14px; height: 14px; }
+  .share-btn.copied { color: var(--ok); border-color: var(--ok); }
+  .back-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .end-back { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .nav-tagline {
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .03em;
+    color: var(--dim); text-align: center; margin: 0 auto; white-space: nowrap;
   }
-  .panel-head-row h3 {
-    margin: 16px 0 3px; padding-top: 16px; position: relative;
+  .nav-tagline b { color: var(--accent); font-weight: 500; }
+  @media (max-width: 620px) {
+    nav { flex-wrap: wrap; row-gap: 6px; }
+    .nav-tagline { flex-basis: 100%; order: 3; white-space: normal; font-size: .68rem; }
   }
-  .panel-head-row h3::before {
-    content: ""; position: absolute; top: 0; left: 0;
-    width: 26px; height: 3px; border-radius: 2px; background: var(--accent);
-  }
-  .t-duration { color: var(--accent); font-weight: 500; }
-  .work-panels .t-when { font-family: var(--mono); font-size: 12px; color: var(--dim); margin-bottom: 6px; }
-  .work-panels .org { font-family: var(--mono); font-size: 13px; color: var(--accent); margin-bottom: 8px; }
-  .work-panels p { max-width: 700px; }
-
-  /* ============ APPROACH ============ */
-  .approach-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-  .approach-card {
-    background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 26px;
-  }
-  .approach-card .k { font-family: var(--mono); color: var(--accent); font-size: 12px; display: block; margin-bottom: 14px; }
-  .approach-card h3 { font-family: var(--display-font); font-weight: var(--display-weight); font-size: 1.12rem; color: var(--head); margin-bottom: 10px; }
-  .approach-card p { font-size: 14px; color: var(--dim); }
-
-  /* ============ ABOUT ============ */
-  /* ============ CERTIFICATIONS / TESTIMONIALS ============ */
-  .cert-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
-  .cert-card {
-    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
-    padding: 24px; display: flex; gap: 16px; align-items: flex-start;
-  }
-  .cert-card .badge-img {
-    width: 96px; height: 96px; flex: none; object-fit: contain;
-  }
-  .cert-card h3 { font-family: var(--sans); font-weight: 600; font-size: 1rem; color: var(--head); margin-bottom: 4px; }
-  .cert-card .issuer { font-family: var(--mono); font-size: 12.5px; color: var(--dim); margin-bottom: 10px; }
-  .cert-card .verify { font-family: var(--mono); font-size: 13px; }
-  .testi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
-  .testi-card {
-    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
-    padding: 26px; display: flex; flex-direction: column; gap: 16px;
-  }
-  .testi-card blockquote { font-size: 15px; color: var(--text); font-style: italic; }
-  .testi-card blockquote::before { content: "\201C"; color: var(--accent); font-family: var(--serif); font-size: 1.6em; line-height: 0; margin-right: 4px; }
-  .testi-card figcaption { display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; }
-  .testi-card figcaption strong { color: var(--head); font-weight: 600; }
-  .testi-card figcaption span { color: var(--dim); }
-  .testi-card figcaption a { font-family: var(--mono); font-size: 12.5px; margin-top: 8px; }
-
-  .about-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 48px; align-items: start; }
-  .about-grid p + p { margin-top: 16px; }
-  .cred-box { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 26px; }
-  .cred-box + .cred-box { margin-top: 18px; }
-  .cred-box h3 {
-    font-family: var(--mono); font-size: 12.5px; color: var(--accent);
-    letter-spacing: var(--ls-label); text-transform: uppercase; margin-bottom: 14px;
-  }
-  .cred-box ul { list-style: none; }
-  .cred-box li {
-    font-family: var(--mono); font-size: 13px; padding: 9px 0;
-    border-bottom: 1px solid var(--line); color: var(--text);
-  }
-  .cred-box li:last-child { border-bottom: none; }
-  .cred-box li span { color: var(--dim); }
-
-  /* ============ CONTACT / FOOTER ============ */
-  .contact h2 {
-    font-family: var(--display-font); font-weight: var(--display-weight);
-    font-size: clamp(1.8rem, 4.2vw, 2.8rem); color: var(--head); max-width: 720px;
-  }
-  .contact h2 em { font-style: italic; color: var(--accent); }
-  footer { border-top: 1px solid var(--line); padding: 26px 0 34px; }
-  .foot-inner {
-    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
-    font-family: var(--mono); font-size: 12px; color: var(--dim);
-  }
-
-  /* ============ RESPONSIVE ============ */
-  @media (max-width: 860px) {
-    .approach-grid, .cert-grid, .testi-grid { grid-template-columns: 1fr; }
-    .about-grid { grid-template-columns: 1fr; gap: 30px; }
-    .nav-links { display: none; }
-    section { padding: 58px 0; }
-    .hero { padding-top: 60px; padding-bottom: 36px; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
-    .cursor { animation: none; }
-    body { transition: none; }
-  }
-
-  /* ===== 07 Writing ===== */
-  .writing-head { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:28px; }
-  .view-switch { display:flex; border:1px solid var(--line); border-radius:var(--radius-btn); overflow:hidden; background:var(--panel); flex:none; }
-  .view-switch button { display:flex; align-items:center; gap:7px; font-family:var(--mono); font-size:.72rem; letter-spacing:.04em;
-    background:none; border:none; color:var(--dim); padding:9px 14px; cursor:pointer; transition:color .2s, background .2s; }
-  .view-switch button.on { background:var(--panel-2); color:var(--accent); }
-  .view-switch button:not(.on):hover { color:var(--head); }
-  .view-switch svg { width:13px; height:13px; fill:currentColor; }
-
-  .posts { display:grid; gap:18px; }
-  .posts.tiles { grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); }
-  .posts.list  { grid-template-columns:1fr; }
-
-  .post { --pc:var(--accent); display:flex; flex-direction:column; border:1px solid var(--line);
-    border-radius:6px; background:var(--panel); overflow:hidden; text-decoration:none;
-    transition:transform .25s cubic-bezier(.2,.7,.2,1), border-color .25s, box-shadow .25s;
-    animation:postIn .35s ease both; }
-  .post:hover { transform:translateY(-3px); border-color:var(--pc); box-shadow:0 18px 40px -22px var(--shadow); }
-  @keyframes postIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
-
-  .post-banner { height:104px; flex:none; display:flex; align-items:center; justify-content:center;
-    border-bottom:1px solid var(--line); position:relative; overflow:hidden; }
-  .post-banner span { font-size:2rem; transition:transform .3s; }
-  .post:hover .post-banner span { transform:scale(1.12); }
-  .post-banner img {
-    width:100%; height:100%; object-fit:cover; object-position:center;
-    display:block; transition:transform .4s ease;
-  }
-  .post:hover .post-banner img { transform:scale(1.06); }
-  .pb-outbox { background:radial-gradient(80% 120% at 50% 0%, #1B2C4E 0%, #0E1526 70%); }
-  .pb-noir   { background:radial-gradient(80% 120% at 50% 0%, #15272C 0%, #0B1315 70%); }
-  .pb-stage  { background:radial-gradient(80% 120% at 50% 110%, #4E1723 0%, #1B0E13 70%); }
-
-  .post-body { padding:16px 18px 18px; display:flex; flex-direction:column; gap:8px; flex:1; }
-  .post-kicker { font-family:var(--mono); font-size:.66rem; letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--pc); }
-  .post h3 { font-size:1.02rem; line-height:1.36; color:var(--head); }
-  .post:hover h3 { color:var(--pc); }
-  .post p { font-size:.87rem; color:var(--dim); flex:1; line-height:1.6; }
-  .post-meta { display:flex; align-items:center; gap:12px; flex-wrap:wrap; font-family:var(--mono);
-    font-size:.66rem; color:var(--dim); padding-top:9px; border-top:1px dashed var(--line); }
-  .post-meta .rt { margin-left:auto; color:var(--pc); }
-
-  .post[data-p="outbox"] { --pc:#E8A33D; }
-  .post[data-p="noir"]   { --pc:#3FD0C9; }
-  .post[data-p="stage"]  { --pc:#FFCF5C; }
-
-  .posts.list .post { flex-direction:row; align-items:stretch; }
-  .posts.list .post-banner { width:140px; height:108px; border-bottom:none; border-right:1px solid var(--line); }
-  .posts.list .post-banner span { font-size:1.6rem; }
-  .posts.list .post p { flex:initial; }
-  @media (max-width:560px){
-    .posts.list .post-banner { width:78px; height:88px; }
-    .posts.list .post-banner span { font-size:1.35rem; }
-  }
-
-  </style>
+</style>
 </head>
 <body>
-
-<header>
+<header class="site">
   <div class="wrap">
     <nav>
-      <a class="brand" href="#top">
+      <a class="brand" href="https://www.nileshmohite.com">
         <svg class="brand-mark" viewBox="0 0 120 120" fill="none" aria-hidden="true"><rect x="4" y="4" width="112" height="112" rx="26" fill="var(--accent)"/><polyline points="30,42 54,62 30,82" stroke="var(--on-accent)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><rect x="62" y="74" width="30" height="14" rx="4" fill="var(--on-accent)"/></svg>
         <span><span class="b-nil">nil</span>universe</span>
       </a>
-      <div class="nav-links">
-        <a href="#about">about</a>
-        <a href="#experience">experience</a>
-        <a href="#technologies">technologies</a>
-        <a href="#work">work</a>
-        <a href="https://blog.niluniverse.com" target="_blank" rel="noopener" data-section="writing">blog</a>
-        <a href="#contact">contact</a>
-      </div>
+      <span class="nav-tagline">Directed by <b>Nilesh Mohite</b> and Presented by AI</span>
       <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" title="Switch to light theme">
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -494,747 +148,169 @@
   </div>
 </header>
 
-<main id="top">
+<div class="wrap">
+  <div class="page-head">
+    <span class="tag">Writing</span>
+    <h1>Engineering, told cinematically</h1>
+    <p>Distributed systems, observability and AI engineering &mdash; each pattern gets a genre: a silent hero, a noir detective, a night at the theater.</p>
+    <div class="share-row"><span class="share-label">Share</span><a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fniluniverse.com%2F" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a><a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fniluniverse.com%2F&text=Writing%20%E2%80%94%20Nilesh%20Mohite%20%7C%20Engineering%2C%20told%20cinematically" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a><a class="share-btn" href="mailto:?subject=Writing%20%E2%80%94%20Nilesh%20Mohite%20%7C%20Engineering%2C%20told%20cinematically&body=https%3A%2F%2Fniluniverse.com%2F" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a><button class="share-btn" type="button" data-copy-url="https://niluniverse.com/" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button></div>
+  </div>
 
-  <!-- ============ HERO ============ -->
-  <div class="wrap hero">
-    <div class="eyebrow">Lead Consultant · AI-Native Software Architect</div>
-    <h1>Software architecture,<br /><em>rebuilt for the agentic era.</em></h1>
-    <p class="lede">
-      I'm Nilesh Mohite — Lead Consultant at Xebia and an AI-native software architect with
-      18+ years across .NET, Azure, and cloud-native systems. I design platforms where
-      microservices and AI agents work as one architecture — proven in e-commerce,
-      healthcare, banking, and insurance.
-    </p>
-    <div class="hero-meta">
-      <span><b>Lead Consultant</b> · Xebia</span>
-      <span><b>18+ yrs</b> enterprise engineering</span>
-      <span><b>AZ-204</b> Azure Certified Developer</span>
-    </div>
-    <div class="cta-row">
-      <a class="btn solid" href="#work">View selected work</a>
-      <a class="btn" href="#contact">Get in touch</a>
+  <div class="toolbar">
+    <span class="count"><b>7</b> stories &middot; updated Aug 2026</span>
+    <div class="view-switch" role="group" aria-label="Switch between tile and list view">
+      <button type="button" id="vTiles" class="on" aria-pressed="true">
+        <svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        tiles
+      </button>
+      <button type="button" id="vList" aria-pressed="false">
+        <svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/></svg>
+        list
+      </button>
     </div>
   </div>
 
-  <!-- ============ ABOUT ============ -->
-  <section id="about">
-    <div class="wrap">
-      <div class="sec-head"><span class="tag">01 — About</span><h2>One throughline: production software</h2></div>
-      <div class="about-grid">
-        <div>
-          <p>
-            I started in .NET in 2008, when service-oriented architecture was the frontier, and
-            I've carried enterprise systems through every shift since — into the cloud, into
-            containers, into event-driven microservices, and now into the agentic era.
-          </p>
-          <p>
-            Along the way I've worked on teams that shipped treasury and insurance systems for leading
-            Indian financial institutions, FHIR-compliant healthcare platforms, a global
-            film-pricing tool for a major entertainment studio, and a global medical-device
-            manufacturer's production microservices. Today, as a Lead Consultant at Xebia, I lead
-            development on a large event-driven commerce platform on Azure — and build AI agents
-            where Claude acts as a reliable component inside well-governed systems. Not demos:
-            production software.
-          </p>
-          <p>
-            Outside client work I build in public — open-source agents, multi-agent experiments
-            with BMAD, and writing about what actually works when AI meets enterprise constraints.
-          </p>
-        </div>
-        <div>
-          <div class="cred-box">
-            <h3>Education</h3>
-            <ul>
-              <li>M.Sc. Computer Science <span>· University of Mumbai, 2007</span></li>
-              <li>B.Sc. Physics <span>· University of Mumbai, 2005</span></li>
-            </ul>
-          </div>
-          <div class="cred-box">
-            <h3>Languages</h3>
-            <ul>
-              <li>English <span>· Professional</span></li>
-              <li>Hindi <span>· Professional</span></li>
-              <li>Marathi <span>· Native</span></li>
-            </ul>
-          </div>
-        </div>
+  <div class="posts tiles" id="postGrid">
+    <a class="post" href="keystone-mission-control.html">
+      <div class="post-banner"><img src="keystone-mission-control-banner.jpg" alt="A stone arch with a glowing keystone at its apex, load lines flowing through it to three lit service markers, beside a mission-control go/no-go poll" loading="lazy" /></div>
+      <div class="post-body">
+        <div class="post-kicker">Platform Engineering &middot; Mission Control</div>
+        <h2>Project Keystone: Designing Azure DevOps Pipelines for a Microservice Ecosystem</h2>
+        <p>Four services, six repositories, and one configuration that holds them all together. An architect's walkthrough of the launch sequence &mdash; plus an honest interrogation of where configuration should actually live, and why the answer decides how your worst night goes.</p>
+        <div class="post-meta"><span>Aug 2026</span><span>Azure DevOps &middot; AKS</span><span class="likes" data-slug="keystone-mission-control">&hearts; &ndash;</span><span class="rt">24 min &rarr;</span></div>
       </div>
-    </div>
-  </section>
+    </a>
 
-  <!-- ============ EXPERIENCE ============ -->
-  <section id="experience" class="alt">
-    <div class="wrap">
-      <div class="sec-head"><span class="tag">02 — Experience</span><h2>Eighteen years in production</h2></div>
-
-      <div class="tech-interactive" id="experienceInteractive">
-        <div class="tech-tabs work-tabs" role="tablist" aria-label="Career history">
-          <button class="tech-tab active" type="button" role="tab" aria-selected="true" aria-controls="expPanel-0" id="expTab-0" data-index="0">
-            <span class="wt-logo">X</span>
-            <span class="wt-stack"><span class="wt-kind">Mar 2024 — Present</span><span class="wt-title">Lead Consultant · Xebia</span></span>
-          </button>
-          <button class="tech-tab" type="button" role="tab" aria-selected="false" aria-controls="expPanel-1" id="expTab-1" data-index="1">
-            <span class="wt-logo">K</span>
-            <span class="wt-stack"><span class="wt-kind">Dec 2022 — Nov 2023</span><span class="wt-title">Technical Consultant · Kaara</span></span>
-          </button>
-          <button class="tech-tab" type="button" role="tab" aria-selected="false" aria-controls="expPanel-2" id="expTab-2" data-index="2">
-            <span class="wt-logo">PS</span>
-            <span class="wt-stack"><span class="wt-kind">Feb 2022 — Jun 2022</span><span class="wt-title">Lead Developer · Sumeru Solutions</span></span>
-          </button>
-          <button class="tech-tab" type="button" role="tab" aria-selected="false" aria-controls="expPanel-3" id="expTab-3" data-index="3">
-            <span class="wt-logo">PT</span>
-            <span class="wt-stack"><span class="wt-kind">Jun 2018 — Nov 2021</span><span class="wt-title">Lead Developer / Sr. Engineer · Periscope</span></span>
-          </button>
-          <button class="tech-tab" type="button" role="tab" aria-selected="false" aria-controls="expPanel-4" id="expTab-4" data-index="4">
-            <span class="wt-logo">LT</span>
-            <span class="wt-stack"><span class="wt-kind">Nov 2016 — Jun 2018</span><span class="wt-title">Senior Software Engineer · LTI</span></span>
-          </button>
-          <button class="tech-tab" type="button" role="tab" aria-selected="false" aria-controls="expPanel-5" id="expTab-5" data-index="5">
-            <span class="wt-logo">CI</span>
-            <span class="wt-stack"><span class="wt-kind">May 2014 — Oct 2016</span><span class="wt-title">Sr. Engineer / Team Lead · Clover Infotech</span></span>
-          </button>
-          <button class="tech-tab" type="button" role="tab" aria-selected="false" aria-controls="expPanel-6" id="expTab-6" data-index="6">
-            <span class="wt-logo">DS</span>
-            <span class="wt-stack"><span class="wt-kind">2008 — 2014</span><span class="wt-title">Software Developer &amp; Engineer</span></span>
-          </button>
-        </div>
-
-        <div class="tech-panels work-panels">
-          <div class="tech-panel active" role="tabpanel" id="expPanel-0" aria-labelledby="expTab-0">
-            <div class="panel-head-row">
-              <span class="wt-logo big">X</span>
-              <div>
-                <div class="t-when">Mar 2024 — Present <span class="t-duration">· 2 yrs 6 mos</span></div>
-                <h3>Lead Consultant</h3>
-                <div class="org">Xebia · Pune</div>
-              </div>
-            </div>
-            <p>Leading a microservices, event-based e-commerce platform for a 40+ member program on Azure — and building autonomous AI agents with the Claude API and BMAD multi-agent framework.</p>
-          </div>
-          <div class="tech-panel" role="tabpanel" id="expPanel-1" aria-labelledby="expTab-1" hidden>
-            <div class="panel-head-row">
-              <span class="wt-logo big">K</span>
-              <div>
-                <div class="t-when">Dec 2022 — Nov 2023 <span class="t-duration">· 1 yr</span></div>
-                <h3>Technical Consultant</h3>
-                <div class="org">Kaara · Hyderabad</div>
-              </div>
-            </div>
-            <p>Designed .NET 6 microservices for a health-benefits catalog platform using CQRS with per-service PostgreSQL schemas, on Azure with API Management, Service Bus, Redis, and SignalR.</p>
-          </div>
-          <div class="tech-panel" role="tabpanel" id="expPanel-2" aria-labelledby="expTab-2" hidden>
-            <div class="panel-head-row">
-              <span class="wt-logo big">PS</span>
-              <div>
-                <div class="t-when">Feb 2022 — Jun 2022 <span class="t-duration">· 5 mos</span></div>
-                <h3>Lead Developer</h3>
-                <div class="org">Sumeru Solutions (Publicis Sapient)</div>
-              </div>
-            </div>
-            <p>Led support for a global medical-device manufacturer's distributed microservices systems — .NET Core, NServiceBus, Elasticsearch, SAP Hybris, OpenID.</p>
-          </div>
-          <div class="tech-panel" role="tabpanel" id="expPanel-3" aria-labelledby="expTab-3" hidden>
-            <div class="panel-head-row">
-              <span class="wt-logo big">PT</span>
-              <div>
-                <div class="t-when">Jun 2018 — Nov 2021 <span class="t-duration">· 3 yrs 6 mos</span></div>
-                <h3>Lead Developer / Senior Software Engineer</h3>
-                <div class="org">Periscope Technologies · Mumbai</div>
-              </div>
-            </div>
-            <p>Designed a FHIR-standards healthcare API system and a real-time QA analytics platform on Azure — with security via Azure AD, OAuth 2.0, and RSA encryption.</p>
-          </div>
-          <div class="tech-panel" role="tabpanel" id="expPanel-4" aria-labelledby="expTab-4" hidden>
-            <div class="panel-head-row">
-              <span class="wt-logo big">LT</span>
-              <div>
-                <div class="t-when">Nov 2016 — Jun 2018 <span class="t-duration">· 1 yr 8 mos</span></div>
-                <h3>Senior Software Engineer</h3>
-                <div class="org">Larsen &amp; Toubro Infotech (LTI) · Mumbai</div>
-              </div>
-            </div>
-            <p>Built microservices for a Fortune 500 technology distributor and a global film-pricing tool for a major entertainment studio on Azure PaaS, with Okta authentication for Fortune 50 clients.</p>
-          </div>
-          <div class="tech-panel" role="tabpanel" id="expPanel-5" aria-labelledby="expTab-5" hidden>
-            <div class="panel-head-row">
-              <span class="wt-logo big">CI</span>
-              <div>
-                <div class="t-when">May 2014 — Oct 2016 <span class="t-duration">· 2 yrs 6 mos</span></div>
-                <h3>Senior Software Engineer / Team Lead</h3>
-                <div class="org">Clover Infotech · Thane</div>
-              </div>
-            </div>
-            <p>Delivered a Centralized Accounting System for a leading private-sector bank's treasury and SOA services for a major life-insurance provider.</p>
-          </div>
-          <div class="tech-panel" role="tabpanel" id="expPanel-6" aria-labelledby="expTab-6" hidden>
-            <div class="panel-head-row">
-              <span class="wt-logo big">DS</span>
-              <div>
-                <div class="t-when">2008 — 2014 <span class="t-duration">· 7 yrs</span></div>
-                <h3>Software Developer &amp; Engineer</h3>
-                <div class="org">Duce Software · Dreams Softtech · Flexcel</div>
-              </div>
-            </div>
-            <p>ERP, financial accounting, and inventory systems on .NET, WPF, and SQL Server — where the foundations were laid.</p>
-          </div>
-        </div>
+    <a class="post" href="adf-night-dispatcher.html">
+      <div class="post-banner"><img src="adf-night-dispatcher-banner.jpg" alt="A night freight yard under a full moon: signal lamps, gantries and streams of data moving along converging rails toward a lit dispatcher's tower" loading="lazy" /></div>
+      <div class="post-body">
+        <div class="post-kicker">Data Integration &middot; The Night Shift</div>
+        <h2>The Night Dispatcher: How Azure Data Factory Moves Data While You Sleep</h2>
+        <p>340 stores, 200 suppliers, and one dashboard that has to be right by 06:00. What Azure Data Factory actually does, the mess it was invented to replace, and why rerunning a failed pipeline is either boring or catastrophic depending on a decision you made weeks earlier.</p>
+        <div class="post-meta"><span>Aug 2026</span><span>Azure &middot; Data Factory</span><span class="likes" data-slug="adf-night-dispatcher">&hearts; &ndash;</span><span class="rt">17 min &rarr;</span></div>
       </div>
-    </div>
-  </section>
+    </a>
 
-  <!-- ============ TECHNOLOGIES (interactive) ============ -->
-  <section id="technologies">
-    <div class="wrap">
-      <div class="sec-head"><span class="tag">03 — Technologies</span><h2>The stack I build with — in production, today</h2></div>
-
-      <div class="tech-interactive" id="techInteractive">
-        <div class="tech-tabs" role="tablist" aria-label="Technology categories">
-          <button class="tech-tab active" type="button" role="tab" aria-selected="true" aria-controls="techPanel-0" id="techTab-0" data-index="0">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg>
-            <span>System Design &amp; Architecture</span>
-          </button>
-          <button class="tech-tab" type="button" role="tab" aria-selected="false" aria-controls="techPanel-1" id="techTab-1" data-index="1">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-            <span>Design Patterns</span>
-          </button>
-          <button class="tech-tab" type="button" role="tab" aria-selected="false" aria-controls="techPanel-2" id="techTab-2" data-index="2">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-            <span>Frameworks &amp; Languages</span>
-          </button>
-          <button class="tech-tab" type="button" role="tab" aria-selected="false" aria-controls="techPanel-3" id="techTab-3" data-index="3">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19a4.5 4.5 0 1 0-1.4-8.8A6 6 0 1 0 6 16.7"/><path d="M6 19h11.5"/></svg>
-            <span>Cloud — Microsoft Azure</span>
-          </button>
-          <button class="tech-tab" type="button" role="tab" aria-selected="false" aria-controls="techPanel-4" id="techTab-4" data-index="4">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 9h6v6H9z"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg>
-            <span>AI Engineering</span>
-          </button>
-          <button class="tech-tab" type="button" role="tab" aria-selected="false" aria-controls="techPanel-5" id="techTab-5" data-index="5">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="7" rx="2"/><rect x="2" y="14" width="20" height="7" rx="2"/><line x1="6" y1="6.5" x2="6.01" y2="6.5"/><line x1="6" y1="17.5" x2="6.01" y2="17.5"/></svg>
-            <span>Infrastructure &amp; DevOps</span>
-          </button>
-          <button class="tech-tab" type="button" role="tab" aria-selected="false" aria-controls="techPanel-6" id="techTab-6" data-index="6">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.7-4 3-9 3s-9-1.3-9-3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/></svg>
-            <span>Databases &amp; Data</span>
-          </button>
-          <button class="tech-tab" type="button" role="tab" aria-selected="false" aria-controls="techPanel-7" id="techTab-7" data-index="7">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-            <span>Domain-Specific &amp; Integrations</span>
-          </button>
-        </div>
-
-        <div class="tech-panels">
-          <div class="tech-panel active" role="tabpanel" id="techPanel-0" aria-labelledby="techTab-0">
-            <h3>System Design &amp; Architecture</h3>
-            <p class="sub">How I structure large systems so they stay maintainable.</p>
-            <div class="chips">
-              <span class="chip">Microservices</span><span class="chip">Event-Driven Architecture</span>
-              <span class="chip">CQRS</span><span class="chip">Domain-Driven Design</span>
-              <span class="chip">SOA</span><span class="chip">REST API Design</span>
-            </div>
-          </div>
-          <div class="tech-panel" role="tabpanel" id="techPanel-1" aria-labelledby="techTab-1" hidden>
-            <h3>Design Patterns</h3>
-            <p class="sub">Applied with intent, not by habit.</p>
-            <div class="chips">
-              <span class="chip">Mediator</span><span class="chip">Repository</span>
-              <span class="chip">Dependency Injection</span><span class="chip">Strategy</span>
-              <span class="chip">Abstract Factory</span><span class="chip">Singleton</span>
-            </div>
-          </div>
-          <div class="tech-panel" role="tabpanel" id="techPanel-2" aria-labelledby="techTab-2" hidden>
-            <h3>Frameworks &amp; Languages</h3>
-            <p class="sub">The core toolset for services and front ends.</p>
-            <div class="chips">
-              <span class="chip">C#</span><span class="chip">.NET 8 / .NET Core</span><span class="chip">ASP.NET MVC</span>
-              <span class="chip">EF Core</span><span class="chip">LINQ</span><span class="chip">NServiceBus</span>
-              <span class="chip">Angular</span><span class="chip">JavaScript</span><span class="chip">Node.js</span>
-              <span class="chip">xUnit</span>
-            </div>
-          </div>
-          <div class="tech-panel" role="tabpanel" id="techPanel-3" aria-labelledby="techTab-3" hidden>
-            <h3>Cloud — Microsoft Azure</h3>
-            <p class="sub">The top 20 Azure services I reach for — compute, data, integration, security, and delivery.</p>
-            <div class="chips">
-              <span class="chip">AKS</span><span class="chip">App Services</span><span class="chip">Azure Functions</span>
-              <span class="chip">Virtual Machines</span><span class="chip">API Management</span><span class="chip">Service Bus</span>
-              <span class="chip">Event Grid</span><span class="chip">Logic Apps</span><span class="chip">Key Vault</span>
-              <span class="chip">Entra ID</span><span class="chip">SignalR</span><span class="chip">App Configuration</span>
-              <span class="chip">Application Insights</span><span class="chip">Azure Monitor</span><span class="chip">Azure Data Factory (ADF)</span>
-              <span class="chip">Azure SQL Database</span><span class="chip">Cosmos DB</span><span class="chip">Blob Storage</span>
-              <span class="chip">Azure DevOps</span><span class="chip">Container Registry</span>
-            </div>
-          </div>
-          <div class="tech-panel" role="tabpanel" id="techPanel-4" aria-labelledby="techTab-4" hidden>
-            <h3>AI Engineering</h3>
-            <p class="sub">Agentic systems built for production, not demos.</p>
-            <div class="chips">
-              <span class="chip">Claude API</span><span class="chip">BMAD Multi-Agent</span><span class="chip">MCP</span>
-              <span class="chip">AI Developer Automation</span><span class="chip">Azure AI Foundry</span>
-              <span class="chip">Databricks</span>
-            </div>
-          </div>
-          <div class="tech-panel" role="tabpanel" id="techPanel-5" aria-labelledby="techTab-5" hidden>
-            <h3>Infrastructure &amp; DevOps</h3>
-            <p class="sub">The delivery pipeline behind every release.</p>
-            <div class="chips">
-              <span class="chip">Docker</span><span class="chip">Kubernetes</span><span class="chip">Terraform</span>
-              <span class="chip">Azure DevOps</span><span class="chip">CI/CD</span><span class="chip">Git</span>
-              <span class="chip">Bitbucket</span><span class="chip">SonarQube</span><span class="chip">Postman</span>
-              <span class="chip">Swagger / OpenAPI</span>
-            </div>
-          </div>
-          <div class="tech-panel" role="tabpanel" id="techPanel-6" aria-labelledby="techTab-6" hidden>
-            <h3>Databases &amp; Data</h3>
-            <p class="sub">Relational, document, cache, and search — chosen per workload.</p>
-            <div class="chips">
-              <span class="chip">SQL Server</span><span class="chip">Azure SQL Managed Instance</span>
-              <span class="chip">PostgreSQL</span><span class="chip">Cosmos DB</span>
-              <span class="chip">Elasticsearch</span><span class="chip">Redis Cache</span>
-            </div>
-          </div>
-          <div class="tech-panel" role="tabpanel" id="techPanel-7" aria-labelledby="techTab-7" hidden>
-            <h3>Domain-Specific &amp; Integrations</h3>
-            <p class="sub">Industry platforms integrated in production, across regulated and commercial domains.</p>
-            <div class="chips">
-              <span class="chip">FHIR (Healthcare)</span><span class="chip">Commerce Tools</span><span class="chip">Talon.one</span>
-              <span class="chip">Optimove</span><span class="chip">Contentful</span><span class="chip">BazaarVoice</span>
-              <span class="chip">Zendesk</span><span class="chip">Okta</span><span class="chip">SAP Hybris</span>
-              <span class="chip">Banking &amp; Insurance</span><span class="chip">E-Commerce</span><span class="chip">ERP</span>
-            </div>
-          </div>
-        </div>
+    <a class="post" href="terraform-kubernetes-theatre.html">
+      <div class="post-banner"><img src="terraform-kubernetes-theatre-banner.jpg" alt="Two heroes: a giant builds a stone theatre labelled Terraform while a robed conductor made of Kubernetes containers directs the show on stage" loading="lazy" /></div>
+      <div class="post-body">
+        <div class="post-kicker">Cloud Infrastructure &middot; Two Heroes, Five Acts</div>
+        <h2>Terraform Builds the Theatre, Kubernetes Conducts the Show</h2>
+        <p>A .NET monolith becomes four microservices on Azure. One hero builds the cluster from a text file; the other keeps the show running at 3 AM. Six live diagrams, real Terraform and YAML, and an approval gate you can actually approve or reject.</p>
+        <div class="post-meta"><span>Aug 2026</span><span>Terraform &middot; AKS</span><span class="likes" data-slug="terraform-kubernetes-theatre">&hearts; &ndash;</span><span class="rt">18 min &rarr;</span></div>
       </div>
-    </div>
-  </section>
+    </a>
 
-  <!-- ============ WORK (interactive) ============ -->
-  <section id="work" class="alt">
-    <div class="wrap">
-      <div class="sec-head"><span class="tag">04 — Selected work</span><h2>Systems I've helped build</h2></div>
-
-      <div class="tech-interactive" id="workInteractive">
-        <div class="tech-tabs work-tabs" role="tablist" aria-label="Selected work projects">
-          <button class="tech-tab active" type="button" role="tab" aria-selected="true" aria-controls="workPanel-0" id="workTab-0" data-index="0">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 9h6v6H9z"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg>
-            <span class="wt-stack"><span class="wt-kind">Open source · AI agent</span><span class="wt-title">Autonomous AI Coding Agent</span></span>
-          </button>
-          <button class="tech-tab" type="button" role="tab" aria-selected="false" aria-controls="workPanel-1" id="workTab-1" data-index="1">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.5 3h2l2.4 12.4a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.6L21 8H6"/></svg>
-            <span class="wt-stack"><span class="wt-kind">E-commerce · Xebia</span><span class="wt-title">Event-Driven Commerce Platform</span></span>
-          </button>
-          <button class="tech-tab" type="button" role="tab" aria-selected="false" aria-controls="workPanel-2" id="workTab-2" data-index="2">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.6a5 5 0 0 0 0-7.1z"/><path d="M8 12h2l1.5-3L13 15l1.5-3H16"/></svg>
-            <span class="wt-stack"><span class="wt-kind">Healthcare · FHIR</span><span class="wt-title">FHIR Healthcare API Platform</span></span>
-          </button>
-          <button class="tech-tab" type="button" role="tab" aria-selected="false" aria-controls="workPanel-3" id="workTab-3" data-index="3">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m10 9 5 3-5 3z"/></svg>
-            <span class="wt-stack"><span class="wt-kind">Media &amp; Entertainment</span><span class="wt-title">Global Film-Pricing Platform</span></span>
-          </button>
-          <button class="tech-tab" type="button" role="tab" aria-selected="false" aria-controls="workPanel-4" id="workTab-4" data-index="4">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 6v2h18V6z"/><path d="M4 10v8M9 10v8M15 10v8M20 10v8"/><path d="M2 21h20"/></svg>
-            <span class="wt-stack"><span class="wt-kind">Banking · Insurance</span><span class="wt-title">Financial Systems at Scale</span></span>
-          </button>
-        </div>
-
-        <div class="tech-panels work-panels">
-          <div class="tech-panel active" role="tabpanel" id="workPanel-0" aria-labelledby="workTab-0">
-            <div class="work-kind">Open source · AI agent</div>
-            <h3>Autonomous AI Coding Agent</h3>
-            <p>
-              A personal open-source project: an autonomous .NET agent built on the Claude API that reads Jira stories, generates
-              production-ready code, and raises GitHub pull requests end to end — no manual
-              intervention. Interchangeable execution strategies (single-shot, MCP tool-use loop,
-              mock mode), with the orchestration library open-sourced. Now extended with the BMAD
-              framework to coordinate planning, coding, and review agents across the delivery lifecycle.
-            </p>
-            <div class="chips">
-              <span class="chip">.NET</span><span class="chip">Claude API</span><span class="chip">BMAD</span>
-              <span class="chip">Multi-agent</span><span class="chip">GitHub API</span><span class="chip">Jira</span>
-            </div>
-            <a class="work-link" href="https://github.com/" rel="noopener">Explore the architecture</a>
-
-            <div class="work-terminal">
-              <div class="terminal" aria-label="Animated replay of an autonomous coding agent run">
-                <div class="term-bar">
-                  <span class="dot a"></span><span class="dot b"></span><span class="dot c"></span>
-                  <span class="term-title">agent — jira-github-automation — replay</span>
-                </div>
-                <div class="term-body" id="term"><noscript><span class="p">$</span> agent run --story PROJ-142
-<span class="c"># reading Jira story… planning… generating code… tests passing…</span>
-<span class="ok">✓ Pull request opened:</span> <span class="hi">github.com/…/pull/87</span></noscript></div>
-              </div>
-              <p class="term-caption">// live replay: an autonomous .NET agent reads a Jira story, writes the code, and opens the PR. I built it. <a href="https://github.com/" rel="noopener">Source on GitHub -></a></p>
-            </div>
-          </div>
-
-          <div class="tech-panel" role="tabpanel" id="workPanel-1" aria-labelledby="workTab-1" hidden>
-            <div class="work-kind">E-commerce · Xebia</div>
-            <h3>Event-Driven Commerce Platform</h3>
-            <p>
-              Part of a 40+ member program delivering a microservices-driven, event-based e-commerce
-              platform, where I lead development across .NET 8 domain APIs for Payment, Checkout,
-              Loyalty, Review, and Consumer Engagement on Azure AKS. The platform integrates Commerce
-              Tools, Talon.one, Optimove, Contentful, Zendesk, and BazaarVoice — provisioned with
-              Terraform and Azure DevOps CI/CD.
-            </p>
-            <div class="chips">
-              <span class="chip">.NET 8</span><span class="chip">AKS</span><span class="chip">Service Bus</span>
-              <span class="chip">Commerce Tools</span><span class="chip">Terraform</span><span class="chip">Entra ID</span>
-            </div>
-          </div>
-
-          <div class="tech-panel" role="tabpanel" id="workPanel-2" aria-labelledby="workTab-2" hidden>
-            <div class="work-kind">Healthcare · FHIR</div>
-            <h3>FHIR Healthcare API Platform</h3>
-            <p>
-              Contributed to the design of a highly scalable, standards-compliant healthcare REST API
-              system on FHIR, built with .NET Core and Azure — Functions, Key Vault, SQL Database,
-              and Storage — secured with Azure AD, OAuth 2.0, and RSA asymmetric encryption. Within
-              the same team I led the real-time QA analytics workstream, with an Angular / D3.js
-              front end on AKS and SignalR.
-            </p>
-            <div class="chips">
-              <span class="chip">FHIR</span><span class="chip">.NET Core</span><span class="chip">Azure Functions</span>
-              <span class="chip">OAuth 2.0</span><span class="chip">Key Vault</span><span class="chip">SignalR</span>
-            </div>
-          </div>
-
-          <div class="tech-panel" role="tabpanel" id="workPanel-3" aria-labelledby="workTab-3" hidden>
-            <div class="work-kind">Media &amp; Entertainment</div>
-            <h3>Global Film-Pricing Platform</h3>
-            <p>
-              Worked within the team that delivered a VOD/EST pricing tool for a global film &amp;
-              entertainment studio, supporting major digital channel partners worldwide — ASP.NET
-              Core and Angular on Azure PaaS with Okta authentication. Also contributed
-              microservices for a Fortune 500 technology distributor.
-            </p>
-            <div class="chips">
-              <span class="chip">ASP.NET Core</span><span class="chip">Angular</span><span class="chip">Azure PaaS</span>
-              <span class="chip">Okta</span><span class="chip">Logic Apps</span>
-            </div>
-          </div>
-
-          <div class="tech-panel" role="tabpanel" id="workPanel-4" aria-labelledby="workTab-4" hidden>
-            <div class="work-kind">Banking · Insurance</div>
-            <h3>Financial Systems at Scale</h3>
-            <p>
-              Part of the teams behind a Centralized Accounting System for the treasury division of a
-              leading private-sector bank, a risk-assessment and cost-benefit reporting platform, and
-              SOA services for a major life-insurance provider across Dev, UAT, and Production — the
-              regulated-industry foundation behind how I design auditable systems today.
-            </p>
-            <div class="chips">
-              <span class="chip">SOA</span><span class="chip">WCF</span><span class="chip">MVC</span>
-              <span class="chip">SQL Server</span><span class="chip">AngularJS</span>
-            </div>
-          </div>
-        </div>
+    <a class="post" href="outbox-pattern.html">
+      <div class="post-banner"><img src="outbox-pattern-banner.jpg" alt="The Outbox Pattern illustration: dual-write failure vs. the outbox relay guaranteeing delivery" loading="lazy" /></div>
+      <div class="post-body">
+        <div class="post-kicker">Distributed Systems &middot; Hero Story</div>
+        <h2>The Outbox Pattern: The Silent Hero of Distributed Services</h2>
+        <p>How one database table and one transaction can absorb broker outages, retries, and traffic spikes, so your microservices do not have to. It is a pattern that never trends, yet it quietly keeps production systems running.</p>
+        <div class="post-meta"><span>Aug 2026</span><span>.NET &middot; Azure</span><span class="likes" data-slug="outbox-pattern">&hearts; &ndash;</span><span class="rt">9 min &rarr;</span></div>
       </div>
-    </div>
-  </section>
+    </a>
 
-  <!-- ============ CERTIFICATIONS ============ -->
-  <section id="certifications">
-    <div class="wrap">
-      <div class="sec-head"><span class="tag">05 — Certifications</span><h2>Verified credentials</h2></div>
-      <div class="cert-grid">
-        <div class="cert-card">
-          <img class="badge-img" src="badge-microsoft.png" alt="Microsoft Certified Associate badge" loading="lazy" />
-          <div>
-            <h3>Microsoft Certified: Azure Developer Associate</h3>
-            <p class="issuer">AZ-204 · Microsoft</p>
-            <a class="verify" href="https://learn.microsoft.com/api/credentials/share/en-in/NileshRaghunathMohite-0500/9FFC77A9128EB934" rel="noopener" target="_blank">Verify on Microsoft Learn -></a>
-          </div>
-        </div>
-        <div class="cert-card">
-          <img class="badge-img" src="badge-databricks.png" alt="Databricks Fundamentals accreditation badge" loading="lazy" />
-          <div>
-            <h3>Databricks Fundamentals</h3>
-            <p class="issuer">Academy Accreditation · Databricks</p>
-            <a class="verify" href="https://credentials.databricks.com/f23e861e-1d12-4266-aaab-ad88a049a6dc" rel="noopener" target="_blank">Verify on Databricks -></a>
-          </div>
-        </div>
+    <a class="post" href="observability-detective.html">
+      <div class="post-banner"><img src="observability-detective-banner.jpg" alt="Detective-noir illustration of an engineer tracing a request through a server rack" loading="lazy" /></div>
+      <div class="post-body">
+        <div class="post-kicker">Observability &middot; Detective Noir</div>
+        <h2>The Case of the Vanishing Request: Distributed Tracing</h2>
+        <p>A request died somewhere across forty services, with no clear cause and no witness. Using three signals and one shared trace ID, a single waterfall chart can crack the case in one screen.</p>
+        <div class="post-meta"><span>Aug 2026</span><span>OpenTelemetry</span><span class="likes" data-slug="observability-detective">&hearts; &ndash;</span><span class="rt">10 min &rarr;</span></div>
       </div>
-    </div>
-  </section>
+    </a>
 
-  <!-- ============ APPROACH ============ -->
-  <section id="approach" class="alt">
-    <div class="wrap">
-      <div class="sec-head"><span class="tag">06 — Approach</span><h2>How I think about architecture</h2></div>
-      <div class="approach-grid">
-        <div class="approach-card">
-          <span class="k">primitives &gt; products</span>
-          <h3>Platform-agnostic by design</h3>
-          <p>Compute/storage separation, identity federation, messaging, orchestration — the primitives outlive any vendor. I architect on primitives so clouds become deployment details.</p>
-        </div>
-        <div class="approach-card">
-          <span class="k">guardrails &gt; vibes</span>
-          <h3>AI you can put in production</h3>
-          <p>Agents are only as trustworthy as their constraints. I treat guardrails, tool-permission design, and multi-agent orchestration as first-class architecture, not afterthoughts.</p>
-        </div>
-        <div class="approach-card">
-          <span class="k">compliance as code</span>
-          <h3>Built for regulated reality</h3>
-          <p>FHIR standards, OAuth 2.0, RSA encryption, auditable treasury systems — in healthcare, banking and insurance, compliance is a design constraint from day one. I've shipped under it.</p>
-        </div>
+    <a class="post" href="deterministic-ai-systems.html">
+      <div class="post-banner"><img src="deterministic-ai-systems-banner.jpg" alt="A stage director watches a robot performer rehearse under a spotlight" loading="lazy" /></div>
+      <div class="post-body">
+        <div class="post-kicker">AI Engineering &middot; Comedy in Five Acts</div>
+        <h2>Same Show Every Night: Deterministic Systems from Non-Deterministic AI</h2>
+        <p>You have hired a brilliant improv actor for a role that must be performed the same way, eight shows a week. This article covers schemas, validators, a deterministic orchestration pattern, and evals, with a live interactive demo.</p>
+        <div class="post-meta"><span>Aug 2026</span><span>LLM &middot; Evals</span><span class="likes" data-slug="deterministic-ai-systems">&hearts; &ndash;</span><span class="rt">11 min &rarr;</span></div>
       </div>
-    </div>
-  </section>
+    </a>
 
-  <!-- ============ TESTIMONIALS ============ -->
-  <section id="testimonials">
-    <div class="wrap">
-      <div class="sec-head"><span class="tag">07 — Testimonials</span><h2>What colleagues say</h2></div>
-      <div class="testi-grid">
-
-        <figure class="testi-card">
-          <blockquote>You will come across Nilesh Mohite as a very mature, level headed and knowledgeable person. I worked with him in my last project for around 1.5 year. He is one such technical colleague who keeps himself updated and upgraded with every change in technology relating to his field as well outside it. A calm and composed employee who puts forward his views and suggestions quantitatively leaving no space for questioning his answer/knowledge. He is an asset for every team. I personally am impressed with his time management skills. The way he manages his work and up-scales his technical and professional skills is commendable. Extremely knowledgeable in Azure, .Net and Cloud computing. He is a great asset for any team.</blockquote>
-          <figcaption>
-            <strong>Rajesh Shetty</strong>
-            <span>Agile Project Manager &amp; Agile Coach · worked with Nilesh on the same team</span>
-            <a href="https://www.linkedin.com/in/nileshmohite/details/recommendations/" rel="noopener" target="_blank">View on LinkedIn -></a>
-          </figcaption>
-        </figure>
-
-        <figure class="testi-card">
-          <blockquote>Nilesh is a good person in nature. I have been working with him since last 2 years. He has got ample of knowledge in the field of Dot net development. He keep himself updated to new technologies and his skills are not only restricted to Dot.net but also knows the other technologies&hellip;</blockquote>
-          <figcaption>
-            <strong>Ridhdesh Shelar</strong>
-            <span>Associate Technical Architect, 6x Azure Certified · worked with Nilesh on the same team</span>
-            <a href="https://www.linkedin.com/in/nileshmohite/details/recommendations/" rel="noopener" target="_blank">Read the full recommendation on LinkedIn -></a>
-          </figcaption>
-        </figure>
-
+    <a class="post" href="spark-magician.html">
+      <div class="post-banner"><img src="spark-magician-banner.jpg" alt="A robed data magician conjures streams of binary light out of a mountain range toward the Gurukul Databricks castle" loading="lazy" /></div>
+      <div class="post-body">
+        <div class="post-kicker">Data Engineering &middot; A Story for Data Engineers</div>
+        <h2>The Magician of Mahadata: How Apache Spark Got Its Superpowers</h2>
+        <p>A village once drowned in its own ledgers, until a magician named Apache Spark learned to move mountains of data at once. A simple, illustrated story about how Spark works, and how Databricks trained him.</p>
+        <div class="post-meta"><span>Aug 2026</span><span>Spark &middot; Databricks</span><span class="likes" data-slug="spark-magician">&hearts; &ndash;</span><span class="rt">14 min &rarr;</span></div>
       </div>
-    </div>
-  </section>
-
-  <!-- ============ WRITING ============ -->
-  <section id="writing" class="alt">
-    <div class="wrap">
-      <div class="writing-head">
-        <div class="sec-head" style="margin-bottom:0">
-          <span class="tag">08 — Writing</span>
-          <h2>Engineering, told cinematically</h2>
-        </div>
-        <div class="view-switch" role="group" aria-label="Switch between tile and list view">
-          <button type="button" id="vTiles" class="on" aria-pressed="true">
-            <svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
-            tiles
-          </button>
-          <button type="button" id="vList" aria-pressed="false">
-            <svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/></svg>
-            list
-          </button>
-        </div>
-      </div>
-
-      <p style="margin:-12px 0 22px;font-family:var(--mono);font-size:.75rem;color:var(--dim)">
-        All stories live at <a href="https://blog.niluniverse.com" target="_blank" rel="noopener" style="color:var(--accent)">blog.niluniverse.com</a> &nearr;
-      </p>
-
-      <div class="posts tiles" id="postGrid">
-        <a class="post" target="_blank" rel="noopener" data-p="outbox" href="https://blog.niluniverse.com/outbox-pattern.html">
-          <div class="post-banner"><img src="outbox-pattern-banner.jpg" alt="The Outbox Pattern illustration: dual-write failure vs. the outbox relay guaranteeing delivery" loading="lazy" /></div>
-          <div class="post-body">
-            <div class="post-kicker">Distributed Systems &middot; Hero Story</div>
-            <h3>The Outbox Pattern: The Silent Hero of Distributed Services</h3>
-            <p>How one table and one transaction absorb broker outages, retries, and traffic spikes so your microservices don't have to &mdash; the pattern that never trends, yet quietly holds up production.</p>
-            <div class="post-meta"><span>Aug 2026</span><span>.NET &middot; Azure &middot; K8s</span><span class="rt">9 min &rarr;</span></div>
-          </div>
-        </a>
-
-        <a class="post" target="_blank" rel="noopener" data-p="noir" href="https://blog.niluniverse.com/observability-detective.html">
-          <div class="post-banner"><img src="observability-detective-banner.jpg" alt="Detective-noir illustration of an engineer tracing a request through a server rack" loading="lazy" /></div>
-          <div class="post-body">
-            <div class="post-kicker">Observability &middot; Detective Noir</div>
-            <h3>The Case of the Vanishing Request: Distributed Tracing</h3>
-            <p>A request died somewhere across forty services &mdash; no body, no witness. Three witnesses (logs, metrics, traces), one thread (the trace ID), and the waterfall exhibit that cracks the case in one screen.</p>
-            <div class="post-meta"><span>Aug 2026</span><span>OpenTelemetry &middot; Azure Monitor</span><span class="rt">10 min &rarr;</span></div>
-          </div>
-        </a>
-
-        <a class="post" target="_blank" rel="noopener" data-p="stage" href="https://blog.niluniverse.com/deterministic-ai-systems.html">
-          <div class="post-banner"><img src="deterministic-ai-systems-banner.jpg" alt="A stage director watches a robot performer rehearse under a spotlight" loading="lazy" /></div>
-          <div class="post-body">
-            <div class="post-kicker">AI Engineering &middot; Comedy in Five Acts</div>
-            <h3>Same Show Every Night: Deterministic Systems from Non-Deterministic AI</h3>
-            <p>You've hired a brilliant improv actor for a role that must be identical eight shows a week. Schemas, validators, a deterministic orchestration sandwich, and evals &mdash; with a live interactive demo.</p>
-            <div class="post-meta"><span>Aug 2026</span><span>LLM &middot; Evals &middot; Guardrails</span><span class="rt">11 min &rarr;</span></div>
-          </div>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ CONTACT ============ -->
-  <section id="contact" class="contact">
-    <div class="wrap">
-      <div class="sec-head"><span class="tag">09 — Contact</span></div>
-      <h2>Building something where enterprise rigor meets AI? <em>Let's talk.</em></h2>
-      <div class="cta-row" style="margin-top: 36px;">
-        <a class="btn solid" href="mailto:niluniverse@gmail.com"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>niluniverse@gmail.com</a>
-        <a class="btn" href="https://www.linkedin.com/in/nileshmohite" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>LinkedIn</a>
-        <a class="btn" href="https://github.com/" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55v-2.15c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.75 2.69 1.25 3.34.95.1-.74.4-1.25.72-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.59.24 2.76.12 3.05.74.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.04.77 2.1v3.11c0 .3.21.66.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>GitHub</a>
-      </div>
-    </div>
-  </section>
-
-</main>
+    </a>
+  </div>
+</div>
 
 <footer>
   <div class="wrap foot-inner">
-    <span>© 2026 Nilesh Mohite — niluniverse.com &nbsp;|&nbsp; <a href="https://blog.niluniverse.com" target="_blank" rel="noopener" style="color:var(--accent)">Blog</a></span>
+    <span>&copy; 2026 Nilesh Mohite &mdash; <a href="https://www.nileshmohite.com" style="color:var(--accent)">www.nileshmohite.com</a></span>
     <span>Written between deployments &middot; Amalner, India</span>
   </div>
 </footer>
 
 <script>
-(function () {
-  /* ---------- Active nav link: highlight on click + on scroll ---------- */
-  var navLinks = Array.prototype.slice.call(document.querySelectorAll('.nav-links a'))
-    .filter(function (a) { return a.getAttribute('href').indexOf('#') === 0 || a.hasAttribute('data-section'); });
-  if (navLinks.length) {
-    function sectionIdFor(a) { return a.getAttribute('data-section') || a.getAttribute('href').slice(1); }
-
-    var sections = navLinks
-      .map(function (a) { return document.getElementById(sectionIdFor(a)); })
-      .filter(Boolean);
-
-    function setActive(id) {
-      navLinks.forEach(function (a) {
-        a.classList.toggle('active', sectionIdFor(a) === id);
-      });
-    }
-
-    navLinks.forEach(function (a) {
-      a.addEventListener('click', function () {
-        setActive(sectionIdFor(a));
-      });
-    });
-
-    if ('IntersectionObserver' in window && sections.length) {
-      var observer = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) setActive(entry.target.id);
-        });
-      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
-      sections.forEach(function (s) { observer.observe(s); });
-    }
-  }
-
-  /* ---------- Theme toggle (Cinema / LinkedIn) ---------- */
-  var themeToggle = document.getElementById('themeToggle');
-  if (themeToggle) {
-    themeToggle.addEventListener('click', function () {
-      var isLight = document.documentElement.getAttribute('data-theme') === 'linkedin';
-      var next = isLight ? 'cinema' : 'linkedin';
-      document.documentElement.setAttribute('data-theme', next);
-      themeToggle.setAttribute('aria-pressed', next === 'linkedin' ? 'true' : 'false');
-      themeToggle.setAttribute('title', next === 'linkedin' ? 'Switch to dark theme' : 'Switch to light theme');
-    });
-  }
-
-  /* ---------- Terminal replay ---------- */
-  var el = document.getElementById('term');
-  if (!el) return;
-  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  var lines = [
-    ['<span class="p">nilesh@atelier:~$</span> agent run --story PROJ-142', 700],
-    ['<span class="c"># fetching story from Jira…</span>', 500],
-    ['  <span class="hi">PROJ-142</span> — "Add partial-capture support to payment service"', 650],
-    ['<span class="c"># planning with Claude · strategy: mcp-tool-loop</span>', 800],
-    ['  -> read  src/Payments/CaptureHandler.cs', 350],
-    ['  -> edit  src/Payments/CaptureHandler.cs  <span class="c">(+41 −6)</span>', 350],
-    ['  -> write tests/Payments/PartialCaptureTests.cs', 500],
-    ['<span class="c"># running test suite…</span>', 700],
-    ['  <span class="ok">✓ 128 passed</span>  · 0 failed · 3.2s', 600],
-    ['<span class="c"># opening pull request…</span>', 700],
-    ['<span class="ok">✓ PR #87 opened:</span> <span class="hi">feat: partial capture with idempotency guard</span>', 900],
-    ['<span class="p">nilesh@atelier:~$</span> <span class="c"># from Jira story to reviewed PR — no human keystrokes.</span>', 400]
-  ];
-
-  function render(upTo, withCursor) {
-    var html = '';
-    for (var i = 0; i < upTo; i++) html += lines[i][0] + '\n';
-    if (withCursor) html += '<span class="cursor"></span>';
-    el.innerHTML = html;
-  }
-
-  if (reduce) { render(lines.length, false); return; }
-
-  var idx = 0;
-  function step() {
-    idx++;
-    render(idx, idx < lines.length);
-    if (idx < lines.length) {
-      setTimeout(step, lines[idx - 1][1]);
-    } else {
-      setTimeout(function () { idx = 0; render(0, true); setTimeout(step, 600); }, 6000);
-    }
-  }
-  render(0, true);
-  setTimeout(step, 800);
-})();
-</script>
-
-<script>
 (function(){
   var g=document.getElementById('postGrid'), t=document.getElementById('vTiles'), l=document.getElementById('vList');
-  if(!g||!t||!l) return;
   function set(tiles){
     g.classList.toggle('tiles',tiles); g.classList.toggle('list',!tiles);
     t.classList.toggle('on',tiles); l.classList.toggle('on',!tiles);
     t.setAttribute('aria-pressed',tiles); l.setAttribute('aria-pressed',!tiles);
     var c=g.querySelectorAll('.post');
-    for(var i=0;i<c.length;i++){ c[i].style.animation='none'; void c[i].offsetHeight; c[i].style.animation=''; c[i].style.animationDelay=(i*60)+'ms'; }
+    for(var i=0;i<c.length;i++){c[i].style.animation='none';void c[i].offsetHeight;c[i].style.animation='';c[i].style.animationDelay=(i*60)+'ms';}
   }
   t.addEventListener('click',function(){set(true)});
   l.addEventListener('click',function(){set(false)});
+  document.querySelectorAll('.likes[data-slug]').forEach(function(el){
+    fetch('/api/likes?slug='+encodeURIComponent(el.dataset.slug))
+      .then(function(r){return r.ok?r.json():Promise.reject();})
+      .then(function(d){el.textContent='\u2665 '+(d.count||0);})
+      .catch(function(){el.textContent='';});
+  });
 })();
 </script>
-
 <script>
-(function () {
-  function initTabs(container) {
-    var tabs = container.querySelectorAll('.tech-tab');
-    var panels = container.querySelectorAll('.tech-panel');
-    if (!tabs.length || !panels.length) return;
-
-    function activate(index) {
-      tabs.forEach(function (t, i) {
-        var on = i === index;
-        t.classList.toggle('active', on);
-        t.setAttribute('aria-selected', on ? 'true' : 'false');
-        t.tabIndex = on ? 0 : -1;
-      });
-      panels.forEach(function (p, i) {
-        var on = i === index;
-        p.classList.toggle('active', on);
-        p.hidden = !on;
-      });
-    }
-
-    tabs.forEach(function (tab, i) {
-      tab.addEventListener('click', function () { activate(i); });
-      tab.addEventListener('keydown', function (e) {
-        var last = tabs.length - 1;
-        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-          e.preventDefault(); var n = i === last ? 0 : i + 1; tabs[n].focus(); activate(n);
-        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-          e.preventDefault(); var p = i === 0 ? last : i - 1; tabs[p].focus(); activate(p);
-        }
-      });
-    });
+(function(){
+  var KEY='nu-theme';
+  var toggle=document.getElementById('themeToggle');
+  if(!toggle) return;
+  function apply(t){
+    document.documentElement.setAttribute('data-theme',t);
+    toggle.setAttribute('aria-pressed', t==='linkedin' ? 'true':'false');
+    toggle.setAttribute('title', t==='linkedin' ? 'Switch to dark theme' : 'Switch to light theme');
   }
-
-  ['experienceInteractive', 'techInteractive', 'workInteractive'].forEach(function (id) {
-    var el = document.getElementById(id);
-    if (el) initTabs(el);
+  var saved=null; try{saved=localStorage.getItem(KEY);}catch(e){}
+  if(saved==='linkedin' || saved==='cinema') apply(saved);
+  toggle.addEventListener('click',function(){
+    var isLight=document.documentElement.getAttribute('data-theme')==='linkedin';
+    var next=isLight?'cinema':'linkedin';
+    apply(next);
+    try{localStorage.setItem(KEY,next);}catch(e){}
+  });
+})();
+</script>
+<script>
+(function(){
+  document.querySelectorAll('[data-copy-url]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var url = btn.getAttribute('data-copy-url');
+      var done = function(){
+        var original = btn.getAttribute('aria-label');
+        btn.classList.add('copied');
+        btn.setAttribute('aria-label','Copied!');
+        setTimeout(function(){ btn.classList.remove('copied'); btn.setAttribute('aria-label', original); }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function(){});
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = url; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch(e){}
+        document.body.removeChild(ta);
+      }
+    });
   });
 })();
 </script>

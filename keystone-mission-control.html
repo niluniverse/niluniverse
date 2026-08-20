@@ -1,0 +1,2360 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cinema">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project Keystone — Designing Azure DevOps Pipelines for a Microservice Ecosystem | Nilesh Mohite</title>
+<meta name="description" content="Six repositories, four services, one configuration that holds them all together. An architect's walkthrough of Azure DevOps pipelines on AKS with Terraform, Key Vault and App Insights — and an honest interrogation of how configuration should actually reach a microservice.">
+<meta name="author" content="Nilesh Mohite">
+<meta property="og:title" content="Project Keystone — Designing Azure DevOps Pipelines for a Microservice Ecosystem">
+<meta property="og:description" content="Four services, one configuration that holds them all together, and the Azure DevOps launch sequence that ships it without anyone holding their breath.">
+<meta property="og:url" content="https://niluniverse.com/keystone-mission-control.html">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://niluniverse.com/keystone-mission-control-banner.jpg">
+<meta property="og:image:width" content="1400">
+<meta property="og:image:height" content="788">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Project Keystone — Designing Azure DevOps Pipelines for a Microservice Ecosystem">
+<meta name="twitter:description" content="Four services, one configuration that holds them all together, and the Azure DevOps launch sequence that ships it without anyone holding their breath.">
+<meta name="twitter:image" content="https://niluniverse.com/keystone-mission-control-banner.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="favicon-180.png">
+<style>
+/* ============================================================
+   PROJECT KEYSTONE — mission control console
+   ============================================================ */
+:root{
+  --bg:#06080d;
+  --bg-2:#0a0e15;
+  --panel:#111722;
+  --panel-2:#161e2b;
+  --line:#242f40;
+  --line-soft:#19212e;
+  --ink:#e7edf5;
+  --ink-dim:#9fadc0;
+  --ink-faint:#67758a;
+  --go:#5fe3a1;
+  --go-soft:#2b6b4c;
+  --tel:#63d8ff;
+  --caution:#ffb454;
+  --abort:#ff5c66;
+  --stone:#d4b483;
+  --steel:#8b98ad;
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:17px;line-height:1.75;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%}
+a{color:var(--go);text-decoration:none;border-bottom:1px solid rgba(95,227,161,.28)}
+a:hover{border-bottom-color:var(--go)}
+
+.wrap{max-width:800px;margin:0 auto;padding:0 24px}
+.wide{max-width:1080px;margin:0 auto;padding:0 24px}
+
+/* ---------- hero ---------- */
+.hero{position:relative;min-height:92vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;overflow:hidden;border-bottom:1px solid var(--line-soft)}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%}
+.hero .veil{position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 55%,transparent 0%,rgba(6,8,13,.6) 58%,var(--bg) 90%)}
+.hero-in{position:relative;z-index:2;padding:0 24px;max-width:900px}
+.kicker{font-family:var(--mono);font-size:11.5px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--go);margin-bottom:26px}
+.hero h1{font-family:var(--serif);font-size:clamp(2.5rem,7.4vw,5rem);line-height:1.02;
+  margin:0 0 20px;font-weight:500;letter-spacing:-.025em}
+.hero h1 em{font-style:italic;
+  background:linear-gradient(100deg,var(--go) 8%,#c8f5dd 48%,var(--tel));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .dek{font-size:19px;color:var(--ink-dim);max-width:640px;margin:0 auto 32px;line-height:1.65}
+.hero .meta{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);letter-spacing:.07em}
+.scrollcue{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:2;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;color:var(--ink-faint);
+  animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translate(-50%,0);opacity:.45}50%{transform:translate(-50%,7px);opacity:1}}
+
+/* ---------- acts ---------- */
+section.act{padding:92px 0 16px;position:relative}
+.actmark{font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--go);margin-bottom:14px;display:flex;align-items:center;gap:14px}
+.actmark:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,var(--line),transparent)}
+h2{font-family:var(--serif);font-weight:500;font-size:clamp(1.9rem,4.4vw,2.9rem);line-height:1.14;
+  margin:0 0 20px;letter-spacing:-.02em}
+h3{font-size:1.18rem;margin:44px 0 12px;font-weight:600;letter-spacing:-.01em;color:#fff}
+h4{font-size:.97rem;margin:26px 0 8px;font-weight:600;color:var(--ink)}
+p{margin:0 0 20px;color:#ced7e3}
+.lede{font-size:19.5px;color:var(--ink);line-height:1.68}
+.lede:first-letter{float:left;font-family:var(--serif);font-size:62px;line-height:.82;
+  padding:7px 12px 0 0;color:var(--go);font-weight:600}
+strong{color:#fff;font-weight:600}
+em.term{font-style:normal;color:var(--tel);font-family:var(--mono);font-size:.9em}
+ul,ol{margin:0 0 20px;padding-left:1.2rem;color:#ced7e3}
+li{margin-bottom:.5rem}
+li::marker{color:var(--go-soft)}
+
+.scene{border-left:2px solid var(--go);
+  background:linear-gradient(90deg,rgba(95,227,161,.07),transparent 72%);
+  padding:22px 26px;margin:34px 0;border-radius:0 8px 8px 0}
+.scene .slug{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--go);margin-bottom:10px}
+.scene p{font-family:var(--serif);font-size:18.5px;line-height:1.6;color:#dee6f0;margin:0 0 12px}
+.scene p:last-child{margin-bottom:0}
+
+.note{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:18px 20px;margin:28px 0}
+.note .t{font-size:11.5px;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--go);margin-bottom:8px}
+.note p{margin:0;font-size:15.5px;color:var(--ink-dim)}
+.note.tl .t{color:var(--tel)}
+.note.ca .t{color:var(--caution)}
+.note.ab .t{color:var(--abort)}
+.note.st .t{color:var(--stone)}
+
+/* ADR block */
+.adr{border:1px solid var(--line);border-left:3px solid var(--stone);border-radius:0 10px 10px 0;
+  background:var(--panel);padding:18px 22px;margin:30px 0}
+.adr .adrh{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--stone);margin-bottom:10px}
+.adr h4{margin:0 0 12px;font-size:1.02rem;color:#fff}
+.adr dl{margin:0;font-size:14.5px}
+.adr dt{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-faint);margin-top:12px}
+.adr dd{margin:3px 0 0;color:var(--ink-dim)}
+
+details.hood{border:1px solid var(--line);border-radius:12px;margin:26px 0;background:var(--panel);overflow:hidden}
+details.hood>summary{cursor:pointer;list-style:none;padding:15px 20px;font-family:var(--mono);
+  font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim);
+  display:flex;align-items:center;gap:11px;transition:color .2s}
+details.hood>summary::-webkit-details-marker{display:none}
+details.hood>summary:hover{color:var(--ink)}
+details.hood>summary:before{content:"▸";color:var(--go);transition:transform .2s;display:inline-block;font-size:14px}
+details.hood[open]>summary:before{transform:rotate(90deg)}
+details.hood[open]>summary{border-bottom:1px solid var(--line-soft)}
+.hoodbody{padding:6px 20px 20px}
+.hoodbody p{font-size:15.5px}
+
+pre{background:#04060a;border:1px solid var(--line-soft);border-radius:10px;padding:16px 18px;
+  overflow-x:auto;font-family:var(--mono);font-size:12.6px;line-height:1.68;margin:16px 0;color:#c1cbd9}
+code{font-family:var(--mono);font-size:.87em;background:rgba(95,227,161,.1);padding:2px 6px;
+  border-radius:4px;color:#9fe9c4}
+pre code{background:none;padding:0;color:inherit;font-size:12.6px}
+.cm{color:#55607289;color:#556072}
+.kw{color:#c79ae0}
+.st{color:#8fc98f}
+.nm{color:#7fbde0}
+.nu{color:var(--caution)}
+.fn{color:#f0a0bc}
+.filetag{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);letter-spacing:.1em;
+  margin:18px 0 -8px;text-transform:uppercase}
+
+table{width:100%;border-collapse:collapse;margin:24px 0;font-size:14.5px}
+th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--go);padding:10px 12px;border-bottom:1px solid var(--line)}
+td{padding:12px;border-bottom:1px solid var(--line-soft);color:var(--ink-dim);vertical-align:top}
+td:first-child{color:var(--ink);font-weight:500}
+@media(max-width:640px){
+  table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    border:1px solid var(--line-soft);border-radius:10px;padding:0 10px;font-size:13.5px}
+  th,td{min-width:120px}
+  th:first-child,td:first-child{min-width:98px}
+}
+
+/* ============================================================
+   MODULES
+   ============================================================ */
+.module{border:1px solid var(--line);border-radius:16px;
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));margin:44px 0;overflow:hidden;
+  box-shadow:0 24px 60px -30px rgba(0,0,0,.9)}
+.module-head{padding:16px 20px;border-bottom:1px solid var(--line-soft);
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.module-head .ttl{font-size:14px;font-weight:600;letter-spacing:-.01em}
+.module-head .hint{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);
+  letter-spacing:.08em;margin-left:auto}
+.chip{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--ink-faint)}
+.mbody{padding:22px 20px 26px}
+
+.btn{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;
+  background:var(--go);color:#052015;border:0;border-radius:7px;padding:9px 16px;cursor:pointer;
+  font-weight:600;transition:all .18s}
+.btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink-dim);font-weight:400}
+.btn.ghost:hover{border-color:var(--go);color:var(--go)}
+.btn.abort{background:var(--abort);color:#2a0407}
+.btn.caut{background:var(--caution);color:#241700}
+.btn.tel{background:var(--tel);color:#03212e}
+.ctl{display:flex;gap:10px;align-items:center;margin-top:18px;flex-wrap:wrap}
+.ctl .msg{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  padding:8px 12px;border-radius:6px;border:1px solid var(--line);background:transparent;
+  color:var(--ink-faint);cursor:pointer;transition:all .18s}
+.seg button.on{border-color:var(--go);color:var(--go);background:rgba(95,227,161,.1)}
+.seglabel{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-faint);margin-bottom:9px}
+
+.statrow{display:flex;gap:26px;flex-wrap:wrap;margin-top:18px;font-family:var(--mono);
+  font-size:10.5px;color:var(--ink-faint);letter-spacing:.06em}
+.statrow b{display:block;font-size:19px;color:var(--ink);font-weight:600;margin-top:2px}
+.statrow .good b{color:var(--go)}
+.statrow .bad b{color:var(--abort)}
+.statrow .warn b{color:var(--caution)}
+
+.svgtxt{font-family:var(--mono);font-size:9.5px;fill:#96a4b8;letter-spacing:.03em;pointer-events:none}
+.svgtxt.b{fill:#fff;font-size:10.5px;font-weight:600}
+.svgtxt.s{font-size:8px;fill:#63718a}
+
+/* ---- M1 anatomy ---- */
+.anat{display:grid;grid-template-columns:1.28fr 1fr;min-height:420px}
+@media(max-width:860px){.anat{grid-template-columns:1fr}}
+.anat-map{padding:18px;border-right:1px solid var(--line-soft)}
+@media(max-width:860px){.anat-map{border-right:0;border-bottom:1px solid var(--line-soft)}}
+.anat-info{padding:22px 22px 26px;background:rgba(4,6,10,.45)}
+.anat-info h5{margin:0 0 4px;font-size:16px;font-weight:600}
+.anat-info .role{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--go);margin-bottom:14px}
+.anat-info p{font-size:14.5px;color:var(--ink-dim);margin:0 0 12px;line-height:1.65}
+.anat-info .facts{list-style:none;padding:0;margin:14px 0 0;font-size:13px}
+.anat-info .facts li{padding:7px 0;border-top:1px solid var(--line-soft);color:var(--ink-faint);display:flex;gap:10px}
+.anat-info .facts li b{color:var(--ink);font-weight:500;flex:none;width:88px;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;padding-top:2px}
+.node-g{cursor:pointer}
+.node-g rect,.node-g path{transition:all .22s}
+.node-g:hover .box{stroke-width:1.9}
+.node-g.sel .box{stroke-width:2.3;filter:url(#glowK)}
+
+/* ---- M2 models x scenarios ---- */
+.mx-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:820px){.mx-grid{grid-template-columns:1fr}}
+.mx-out{border:1px solid var(--line);border-radius:10px;padding:16px 18px;background:#04060a;min-height:196px}
+.mx-out .vh{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-faint);margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed var(--line)}
+.mx-out .verdict{font-family:var(--mono);font-size:15px;font-weight:600;margin-bottom:10px}
+.mx-out p{font-size:14px;color:var(--ink-dim);margin:0 0 10px;line-height:1.6}
+.mx-out .sev{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;padding:3px 9px;border-radius:20px;margin-bottom:12px}
+.sev.ok{background:rgba(95,227,161,.14);color:var(--go);border:1px solid rgba(95,227,161,.4)}
+.sev.warn{background:rgba(255,180,84,.13);color:var(--caution);border:1px solid rgba(255,180,84,.4)}
+.sev.bad{background:rgba(255,92,102,.13);color:var(--abort);border:1px solid rgba(255,92,102,.4)}
+
+/* ---- M3 sorter ---- */
+.sorter{display:grid;grid-template-columns:1fr;gap:16px}
+.sort-item{border:1px solid var(--line);border-radius:10px;padding:16px 18px;background:var(--panel)}
+.sort-item .q{font-size:16px;color:var(--ink);margin-bottom:4px}
+.sort-item .qs{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);margin-bottom:14px}
+.bins{display:flex;gap:8px;flex-wrap:wrap}
+.bins button{flex:1;min-width:132px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;
+  text-transform:uppercase;padding:11px 8px;border-radius:8px;border:1px solid var(--line);
+  background:transparent;color:var(--ink-dim);cursor:pointer;transition:all .18s;line-height:1.4}
+.bins button:hover{border-color:var(--ink-faint);color:var(--ink)}
+.bins button.right{border-color:var(--go);background:rgba(95,227,161,.14);color:var(--go)}
+.bins button.wrong{border-color:var(--abort);background:rgba(255,92,102,.13);color:var(--abort)}
+.bins button:disabled{cursor:default}
+.why{margin-top:12px;font-size:14px;color:var(--ink-dim);border-left:2px solid var(--go-soft);
+  padding-left:12px;display:none;line-height:1.6}
+.why.show{display:block}
+.score{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-faint)}
+.score b{color:var(--go);font-size:16px}
+
+/* ---- M4 repo topology ---- */
+.repo-wrap{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:860px){.repo-wrap{grid-template-columns:1fr}}
+.filelist{background:#04060a;border:1px solid var(--line-soft);border-radius:10px;padding:14px;
+  font-family:var(--mono);font-size:11.5px}
+.filelist .fh{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);
+  margin-bottom:10px}
+.fitem{padding:7px 9px;border-radius:6px;cursor:pointer;color:var(--ink-dim);transition:all .16s;
+  display:flex;gap:8px;align-items:center}
+.fitem:hover{background:var(--panel-2);color:var(--ink)}
+.fitem.on{background:rgba(95,227,161,.12);color:var(--go);border-left:2px solid var(--go)}
+.pipelist{display:flex;flex-direction:column;gap:8px}
+.pl2{border:1px solid var(--line);border-radius:9px;padding:11px 13px;background:var(--panel);
+  transition:all .3s;opacity:.35}
+.pl2.fire{opacity:1;border-color:var(--go);background:rgba(95,227,161,.07)}
+.pl2 .pn{font-family:var(--mono);font-size:11.5px;color:var(--ink);display:flex;
+  justify-content:space-between;gap:10px;align-items:center}
+.pl2 .pw{font-family:var(--mono);font-size:9.5px;color:var(--ink-faint);margin-top:4px}
+.pl2.fire .pw{color:var(--go)}
+.pl2 .badge{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;
+  padding:2px 7px;border-radius:20px;border:1px solid var(--line);color:var(--ink-faint)}
+.pl2.fire .badge{border-color:var(--go);color:var(--go)}
+
+/* ---- M5 launch sequence ---- */
+.lseq{display:flex;flex-direction:column;gap:10px}
+.lstage{display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:10px;
+  padding:13px 16px;background:var(--panel);transition:all .35s}
+.lstage.run{border-color:var(--caution);background:rgba(255,180,84,.07)}
+.lstage.done{border-color:rgba(95,227,161,.4);background:rgba(95,227,161,.05)}
+.lstage.hold{border-color:var(--tel);background:rgba(99,216,255,.07)}
+.lstage.fail{border-color:var(--abort);background:rgba(255,92,102,.08)}
+.lstage .ln{font-family:var(--mono);font-size:11.5px;color:var(--ink);flex:none;width:96px}
+.lstage .lst{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-faint);flex:none;width:78px}
+.lstage.run .lst{color:var(--caution)}
+.lstage.done .lst{color:var(--go)}
+.lstage.hold .lst{color:var(--tel)}
+.lstage.fail .lst{color:var(--abort)}
+.lstage .ldig{font-family:var(--mono);font-size:10px;color:var(--ink-faint);margin-left:auto;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lstage .ldig b{color:var(--tel);font-weight:500}
+.digest-note{margin-top:14px;font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);
+  letter-spacing:.05em;text-align:center}
+.holdbox{margin-top:16px;border:1px solid var(--tel);border-radius:12px;padding:16px 18px;
+  background:rgba(99,216,255,.06);display:none}
+.holdbox.show{display:block}
+.holdbox .hh{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tel);margin-bottom:8px}
+.holdbox p{font-size:14px;color:var(--ink-dim);margin:0 0 14px}
+
+/* ---- M6 rollback race ---- */
+.race-lane{margin-bottom:16px}
+.race-lane .rl{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px}
+.race-lane .rn{font-family:var(--mono);font-size:11px;color:var(--ink);letter-spacing:.05em}
+.race-lane .rt{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+.race-track{height:30px;border:1px solid var(--line-soft);border-radius:8px;background:#04060a;
+  position:relative;overflow:hidden}
+.race-fill{position:absolute;left:0;top:0;bottom:0;width:0;transition:width .25s linear;
+  display:flex;align-items:center;padding-left:10px;font-family:var(--mono);font-size:9.5px;
+  color:#04060a;white-space:nowrap;font-weight:600}
+.race-fill.m1{background:linear-gradient(90deg,#ff5c66,#ff8a91)}
+.race-fill.m2{background:linear-gradient(90deg,#ffb454,#ffd08a)}
+.race-fill.m3{background:linear-gradient(90deg,#5fe3a1,#a4f0c9)}
+.race-step{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+.race-done{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-family:var(--mono);
+  font-size:10px;color:var(--go)}
+
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+hr.soft{border:0;border-top:1px solid var(--line-soft);margin:52px 0}
+
+/* ============================================================
+   SITE CHROME — namespaced --chrome-*, do not rename
+   ============================================================ */
+:root{
+  --chrome-bg:#14171D; --chrome-panel:#1B1F27; --chrome-panel-2:#212630; --chrome-line:#2E3440;
+  --chrome-accent:#C9A24B; --chrome-accent-hi:#E6C06E; --chrome-on-accent:#14171D;
+  --chrome-head:#F3F5F8; --chrome-dim:#8891A0; --chrome-ok:#7FBF8E;
+  --chrome-shadow:rgba(0,0,0,.5);
+}
+.nu-shell{max-width:1100px;margin:0 auto;padding:0 24px}
+header.site{border-bottom:1px solid var(--chrome-line);background:var(--chrome-bg);position:relative;z-index:30}
+header.site nav{display:flex;align-items:center;justify-content:space-between;gap:20px;height:64px}
+header.site .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--chrome-head);
+  font-family:var(--mono);font-weight:600;font-size:15px;border-bottom:none}
+header.site .brand-mark{width:28px;height:28px;flex:none}
+header.site .b-nil{color:var(--chrome-accent)}
+.theme-toggle{display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex:none;
+  border:1px solid var(--chrome-line);border-radius:50%;background:var(--chrome-panel);
+  color:var(--chrome-accent);cursor:pointer;transition:background .18s,border-color .18s,transform .18s}
+.theme-toggle:hover{background:var(--chrome-panel-2);border-color:var(--chrome-accent);transform:rotate(-8deg)}
+.theme-toggle svg{width:18px;height:18px}
+.theme-toggle .icon-sun,.theme-toggle .icon-moon{display:none}
+html[data-theme="cinema"] .theme-toggle .icon-moon{display:block}
+html[data-theme="linkedin"] .theme-toggle .icon-sun{display:block}
+
+.back-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:16px 24px}
+.back-link{font-family:var(--mono);font-size:.76rem;letter-spacing:.03em;color:var(--chrome-dim);
+  text-decoration:none;border-bottom:none;display:inline-flex;align-items:center;gap:7px;transition:color .2s,gap .2s}
+.back-link:hover{color:var(--chrome-accent);gap:10px;border-bottom:none}
+.share-row{display:flex;align-items:center;gap:8px}
+.share-label{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--chrome-dim);margin-right:2px}
+.share-btn{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;
+  flex:none;border:1px solid var(--chrome-line);background:var(--chrome-panel);color:var(--chrome-dim);
+  cursor:pointer;text-decoration:none;transition:color .18s,border-color .18s,background .18s,transform .18s}
+.share-btn:hover{color:var(--chrome-accent);border-color:var(--chrome-accent);background:var(--chrome-panel-2);
+  transform:translateY(-1px);border-bottom:none}
+.share-btn svg{width:14px;height:14px}
+.share-btn.copied{color:var(--chrome-ok);border-color:var(--chrome-ok)}
+
+.tags-row{max-width:800px;margin:0 auto;padding:0 24px 8px;display:flex;flex-wrap:wrap;gap:.5rem}
+.tags-row .tagchip{font-size:.72rem;letter-spacing:.05em;color:var(--ink-dim);background:var(--panel);
+  border:1px solid var(--line-soft);padding:.28rem .6rem;border-radius:20px;font-family:var(--mono)}
+
+.end-back{display:flex;flex-direction:column;align-items:center;gap:16px;padding:10px 24px 60px}
+.end-back .back-link{justify-content:center;font-size:.82rem}
+
+footer.sitefoot{border-top:1px solid var(--chrome-line);background:var(--chrome-bg)}
+footer.sitefoot .foot-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  flex-wrap:wrap;padding:26px 24px;font-family:var(--mono);font-size:.76rem;color:var(--chrome-dim)}
+footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
+
+.rp-bar{position:fixed;top:0;left:0;width:100%;height:3px;background:transparent;z-index:9999;pointer-events:none}
+.rp-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--go),var(--tel));transition:width .1s linear}
+.rp-toc{position:fixed;right:20px;bottom:20px;z-index:9998;font-family:var(--mono)}
+.rp-toggle{width:52px;height:52px;border-radius:50%;flex:none;background:var(--chrome-panel);
+  border:1px solid var(--chrome-line);display:flex;align-items:center;justify-content:center;position:relative;
+  cursor:pointer;box-shadow:0 8px 24px var(--chrome-shadow);padding:0}
+.rp-ring{position:absolute;inset:0;width:52px;height:52px;transform:rotate(-90deg)}
+.rp-ring-bg{fill:none;stroke:var(--chrome-line);stroke-width:2.5}
+.rp-ring-fg{fill:none;stroke:var(--chrome-accent);stroke-width:2.5;stroke-linecap:round;
+  stroke-dasharray:97.4;stroke-dashoffset:97.4;transition:stroke-dashoffset .15s linear}
+.rp-pct{font-size:10.5px;color:var(--chrome-head);font-weight:600;position:relative;z-index:1}
+.rp-panel{position:absolute;right:0;bottom:64px;width:260px;max-height:60vh;overflow-y:auto;
+  background:var(--chrome-panel);border:1px solid var(--chrome-line);border-radius:10px;padding:14px;
+  box-shadow:0 20px 50px var(--chrome-shadow);opacity:0;transform:translateY(8px);pointer-events:none;
+  transition:opacity .18s,transform .18s}
+.rp-toc.open .rp-panel{opacity:1;transform:none;pointer-events:auto}
+.rp-panel-head{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--chrome-accent);
+  margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed var(--chrome-line)}
+.rp-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.rp-list li a{display:block;padding:7px 8px;border-radius:6px;font-size:12.5px;line-height:1.4;
+  color:var(--chrome-dim);text-decoration:none;transition:background .15s,color .15s;border-bottom:none}
+.rp-list li a:hover{background:var(--chrome-bg);color:var(--chrome-head)}
+.rp-list li.active a{color:var(--chrome-accent);background:var(--chrome-bg);font-weight:600}
+@media(max-width:640px){
+  .rp-toc{right:14px;bottom:14px}
+  .rp-toggle,.rp-ring{width:46px;height:46px}
+  .rp-panel{width:min(78vw,280px)}
+}
+  .nav-tagline {
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .03em;
+    color: var(--dim); text-align: center; margin: 0 auto; white-space: nowrap;
+  }
+  .nav-tagline b { color: var(--accent); font-weight: 500; }
+  @media (max-width: 620px) {
+    nav { flex-wrap: wrap; row-gap: 6px; }
+    .nav-tagline { flex-basis: 100%; order: 3; white-space: normal; font-size: .68rem; }
+  }
+</style>
+</head>
+<body>
+<div class="rp-bar" id="rpBar"><div class="rp-fill" id="rpFill"></div></div>
+<div class="rp-toc" id="rpToc">
+  <button class="rp-toggle" id="rpToggle" type="button" aria-expanded="false" aria-label="Reading progress and section list">
+    <svg class="rp-ring" viewBox="0 0 36 36"><circle class="rp-ring-bg" cx="18" cy="18" r="15.5"/><circle class="rp-ring-fg" id="rpRing" cx="18" cy="18" r="15.5"/></svg>
+    <span class="rp-pct" id="rpPct">0%</span>
+  </button>
+  <div class="rp-panel" id="rpPanel">
+    <div class="rp-panel-head" id="rpStatus">0% read</div>
+    <ol class="rp-list" id="rpList"></ol>
+  </div>
+</div>
+
+<header class="site">
+  <div class="nu-shell">
+    <nav>
+      <a class="brand" href="https://www.nileshmohite.com">
+        <svg class="brand-mark" viewBox="0 0 120 120" fill="none" aria-hidden="true"><rect x="4" y="4" width="112" height="112" rx="26" fill="var(--chrome-accent)"/><polyline points="30,42 54,62 30,82" stroke="var(--chrome-on-accent)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><rect x="62" y="74" width="30" height="14" rx="4" fill="var(--chrome-on-accent)"/></svg>
+        <span><span class="b-nil">nil</span>universe</span>
+      </a>
+      <span class="nav-tagline">Directed by <b>Nilesh Mohite</b> and Presented by AI</span>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" title="Switch to light theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<div class="nu-shell back-bar">
+  <a class="back-link" href="index.html">&larr; All stories</a>
+  <div class="share-row">
+    <a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fniluniverse.com%2Fkeystone-mission-control.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a>
+    <a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fniluniverse.com%2Fkeystone-mission-control.html&text=Project%20Keystone%3A%20designing%20Azure%20DevOps%20pipelines%20for%20a%20microservice%20ecosystem" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a>
+    <a class="share-btn" href="mailto:?subject=Project%20Keystone&body=https%3A%2F%2Fniluniverse.com%2Fkeystone-mission-control.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a>
+    <button class="share-btn" type="button" data-copy-url="https://niluniverse.com/keystone-mission-control.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+  </div>
+</div>
+
+<header class="hero">
+  <canvas id="consoleCanvas"></canvas>
+  <div class="veil"></div>
+  <div class="hero-in">
+    <div class="kicker">Azure DevOps · Terraform · AKS</div>
+    <h1>Project <em>Keystone</em></h1>
+    <p class="dek">Four services, six repositories, and one configuration that holds them all
+      together. An architect's walkthrough of the launch sequence — and an honest argument about
+      where configuration should actually live.</p>
+    <div class="meta">16 August 2026 &middot; 24 min read &middot; Nilesh Mohite</div>
+  </div>
+  <div class="scrollcue">SCROLL</div>
+</header>
+
+<div class="tags-row">
+  <span class="tagchip">Azure DevOps</span>
+  <span class="tagchip">Terraform</span>
+  <span class="tagchip">AKS</span>
+  <span class="tagchip">Key Vault</span>
+  <span class="tagchip">App Configuration</span>
+  <span class="tagchip">Platform Engineering</span>
+</div>
+
+<!-- ============================ COLD OPEN ============================ -->
+<section class="act" id="cold">
+<div class="wrap reveal">
+  <div class="actmark">Cold open · T–00:10:00</div>
+  <h2>The go/no-go poll</h2>
+
+  <div class="scene">
+    <div class="slug">INT. RELEASE CHANNEL — THURSDAY, 14:50</div>
+    <p>Four names in a thread. The flight director asks the only question that matters, one desk
+      at a time.</p>
+    <p><span style="color:var(--go)">PILLAR — go.</span>
+       <span style="color:var(--go)">GATEHOUSE — go.</span>
+       <span style="color:var(--go)">FACADE — go.</span>
+       <span style="color:var(--go)">KEYSTONE — go.</span></p>
+    <p>Nobody is nervous. Nobody has a rollback script open in another window. Nobody has said
+      the words "as long as nothing else changed." At 15:00 the release goes, and at 15:04 four
+      services are running a version of themselves that did not exist this morning.</p>
+  </div>
+
+  <p class="lede">A room that can say <em>go</em> without flinching is not a room with better
+    people in it. It is a room where somebody, months earlier, made a series of unglamorous
+    architectural decisions about repositories, artifacts, gates and configuration — and where
+    every one of those decisions was made so that on release day there is simply less to be
+    afraid of.</p>
+
+  <p>This article builds that room. We're designing <strong>Project Keystone</strong>: a four-service
+    ecosystem on AKS, delivered by Azure DevOps, provisioned by Terraform, with Key Vault holding
+    the secrets and Application Insights watching the patient. We'll design it the way an architect
+    actually does — brief first, then the decisions the brief didn't mention, then the one decision
+    everybody gets wrong.</p>
+
+  <h3>The brief</h3>
+  <table>
+    <tr><th>Service</th><th>Responsibility</th><th>Why it's separate</th></tr>
+    <tr><td><strong>Keystone</strong></td><td>Configuration for the whole ecosystem</td><td>The stone at the apex of an arch. Every other stone leans on it; remove it and the arch is rubble.</td></tr>
+    <tr><td><strong>Pillar</strong></td><td>Domain service — the business logic</td><td>Load-bearing. Owns the model, the rules, the database. Changes deliberately.</td></tr>
+    <tr><td><strong>Gatehouse</strong></td><td>Integration gateway — third parties</td><td>The fortified entrance. Everything foreign comes through here and is made safe before it goes further.</td></tr>
+    <tr><td><strong>Facade</strong></td><td>Backend-for-frontend</td><td>The visible face. Shaped entirely by what the UI needs, and changes as often as the UI does.</td></tr>
+  </table>
+
+  <p>Four services, four repositories. That is the brief as handed over, and it is a perfectly
+    reasonable brief. It is also, as we'll see in Act III, two repositories short — and the two
+    that are missing are the ones that decide whether this thing is still maintainable in
+    eighteen months.</p>
+
+  <div class="note tl">
+    <div class="t">How to read this</div>
+    <p>The main text is the design conversation — plain English, no prerequisites. Every
+      <strong>Under the hood</strong> panel opens onto the real YAML, HCL and C#. The
+      <strong>Decision</strong> blocks are architecture decision records: the call, the
+      alternatives, and what it costs. Read only the decisions and you still get the design.</p>
+  </div>
+</div>
+</section>
+
+<!-- ============================ ACT I ============================ -->
+<section class="act" id="act1">
+<div class="wrap reveal">
+  <div class="actmark">Act I · The vehicle</div>
+  <h2>What we are actually launching</h2>
+
+  <p class="lede">Before you can design a pipeline you have to be honest about the shape of the
+    thing it delivers. Four services is not one system deployed four times; it's four systems with
+    four different change rates, four different blast radii, and four different answers to
+    "what happens if this is wrong at 3am."</p>
+
+  <p>Those differences are the whole design. A pipeline that treats Facade and Pillar identically
+    is either too slow for Facade or too reckless for Pillar. So we start by writing down how
+    they actually differ.</p>
+
+  <table>
+    <tr><th>Service</th><th>Deploys</th><th>If it's wrong</th><th>Gate</th></tr>
+    <tr><td>Facade</td><td>Several times a day</td><td>A screen looks odd. Reversible in minutes.</td><td>Automated only</td></tr>
+    <tr><td>Gatehouse</td><td>Weekly</td><td>A partner integration breaks. Recoverable, embarrassing.</td><td>Automated + contract tests</td></tr>
+    <tr><td>Pillar</td><td>Weekly, carefully</td><td>Wrong data written. Possibly unrecoverable.</td><td>Human approval</td></tr>
+    <tr><td>Keystone</td><td>Hourly, in theory</td><td><strong style="color:var(--abort)">All three at once.</strong></td><td>Depends entirely on Act II</td></tr>
+  </table>
+
+  <p>Look at that last row. Configuration has the highest change frequency <em>and</em> the widest
+    blast radius in the entire system. That combination is unusual and it is dangerous, and it is
+    why configuration — not the pipeline, not the cluster — is the real architectural problem here.</p>
+
+  <p>Click through the system. Every box is something you'll provision in Terraform, deploy from a
+    pipeline, or stare at during an incident.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--go);border-color:rgba(95,227,161,.4)">Diagram 1</span>
+    <span class="ttl">The Keystone arch</span>
+    <span class="hint">click any block &rarr;</span>
+  </div>
+  <div class="anat">
+    <div class="anat-map">
+      <svg viewBox="0 0 540 430" width="100%" style="display:block">
+        <defs>
+          <filter id="glowK"><feGaussianBlur stdDeviation="3.2" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <marker id="arK" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <polygon points="0 0, 7 3.5, 0 7" fill="#3a4759"/></marker>
+        </defs>
+
+        <text class="svgtxt s" x="20" y="18">THE ARCH — WHAT USERS TOUCH</text>
+
+        <!-- keystone at apex -->
+        <g class="node-g" data-k="keystone">
+          <path class="box" d="M212 30 L328 30 L344 84 L196 84 Z" fill="#2b2415" stroke="#d4b483" stroke-width="1.6"/>
+          <text class="svgtxt b" x="270" y="52" text-anchor="middle">KEYSTONE</text>
+          <text class="svgtxt s" x="270" y="66" text-anchor="middle">configuration</text>
+          <text class="svgtxt s" x="270" y="77" text-anchor="middle">source of truth</text>
+        </g>
+
+        <!-- the two shoulders of the arch -->
+        <g class="node-g" data-k="facade">
+          <rect class="box" x="26" y="98" width="150" height="72" rx="8" fill="#0f2230" stroke="#63d8ff"/>
+          <text class="svgtxt b" x="40" y="120">FACADE</text>
+          <text class="svgtxt" x="40" y="136">backend-for-frontend</text>
+          <text class="svgtxt s" x="40" y="152">the visible face</text>
+          <text class="svgtxt s" x="40" y="163">ships daily</text>
+        </g>
+        <g class="node-g" data-k="gatehouse">
+          <rect class="box" x="194" y="98" width="152" height="72" rx="8" fill="#0f2230" stroke="#63d8ff"/>
+          <text class="svgtxt b" x="208" y="120">GATEHOUSE</text>
+          <text class="svgtxt" x="208" y="136">integration gateway</text>
+          <text class="svgtxt s" x="208" y="152">third parties in,</text>
+          <text class="svgtxt s" x="208" y="163">made safe</text>
+        </g>
+        <g class="node-g" data-k="pillar">
+          <rect class="box" x="364" y="98" width="150" height="72" rx="8" fill="#0f2230" stroke="#63d8ff"/>
+          <text class="svgtxt b" x="378" y="120">PILLAR</text>
+          <text class="svgtxt" x="378" y="136">domain service</text>
+          <text class="svgtxt s" x="378" y="152">owns the model</text>
+          <text class="svgtxt s" x="378" y="163">and the database</text>
+        </g>
+
+        <line x1="270" y1="86" x2="270" y2="96" stroke="#3a4759" stroke-width="1.4"/>
+        <line x1="101" y1="172" x2="101" y2="196" stroke="#3a4759" stroke-width="1.3" marker-end="url(#arK)"/>
+        <line x1="270" y1="172" x2="270" y2="196" stroke="#3a4759" stroke-width="1.3" marker-end="url(#arK)"/>
+        <line x1="439" y1="172" x2="439" y2="196" stroke="#3a4759" stroke-width="1.3" marker-end="url(#arK)"/>
+
+        <!-- runtime platform -->
+        <text class="svgtxt s" x="20" y="216">THE PLATFORM — WHAT HOLDS IT UP</text>
+        <rect x="14" y="224" width="512" height="80" rx="12" fill="rgba(95,227,161,.04)"
+              stroke="#25422f" stroke-dasharray="4 4"/>
+        <g class="node-g" data-k="aks">
+          <rect class="box" x="26" y="236" width="150" height="56" rx="8" fill="#0d2018" stroke="#5fe3a1"/>
+          <text class="svgtxt b" x="40" y="258">AKS</text>
+          <text class="svgtxt" x="40" y="274">one cluster,</text>
+          <text class="svgtxt s" x="40" y="286">namespace per env</text>
+        </g>
+        <g class="node-g" data-k="acr">
+          <rect class="box" x="194" y="236" width="152" height="56" rx="8" fill="#0d2018" stroke="#5fe3a1"/>
+          <text class="svgtxt b" x="208" y="258">ACR</text>
+          <text class="svgtxt" x="208" y="274">immutable images,</text>
+          <text class="svgtxt s" x="208" y="286">promoted by digest</text>
+        </g>
+        <g class="node-g" data-k="appconfig">
+          <rect class="box" x="364" y="236" width="150" height="56" rx="8" fill="#2b2415" stroke="#d4b483"/>
+          <text class="svgtxt b" x="378" y="258">App Config</text>
+          <text class="svgtxt" x="378" y="274">runtime store,</text>
+          <text class="svgtxt s" x="378" y="286">immutable snapshots</text>
+        </g>
+
+        <!-- security + observability -->
+        <text class="svgtxt s" x="20" y="326">GUARD RAILS</text>
+        <g class="node-g" data-k="kv">
+          <rect class="box" x="26" y="334" width="150" height="62" rx="8" fill="#2a1520" stroke="#ff8fa3"/>
+          <text class="svgtxt b" x="40" y="356">Key Vault</text>
+          <text class="svgtxt" x="40" y="372">secrets, referenced</text>
+          <text class="svgtxt s" x="40" y="388">never copied</text>
+        </g>
+        <g class="node-g" data-k="insights">
+          <rect class="box" x="194" y="334" width="152" height="62" rx="8" fill="#1b1a2e" stroke="#a99bf0"/>
+          <text class="svgtxt b" x="208" y="356">App Insights</text>
+          <text class="svgtxt" x="208" y="372">traces across all four</text>
+          <text class="svgtxt s" x="208" y="388">and gates the deploy</text>
+        </g>
+        <g class="node-g" data-k="devops">
+          <rect class="box" x="364" y="334" width="150" height="62" rx="8" fill="#0d2018" stroke="#5fe3a1"/>
+          <text class="svgtxt b" x="378" y="356">Azure DevOps</text>
+          <text class="svgtxt" x="378" y="372">repos, pipelines,</text>
+          <text class="svgtxt s" x="378" y="388">environments, checks</text>
+        </g>
+      </svg>
+    </div>
+    <div class="anat-info" id="anatInfo"></div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <div class="note st">
+    <div class="t">Why "Keystone"</div>
+    <p>A keystone is the wedge at the apex of an arch. It carries almost no weight itself — but
+      every other stone transfers its load through it, and until it is set the arch cannot stand
+      on its own. It is simultaneously the least substantial piece and the one you cannot remove.
+      That is configuration exactly: a few kilobytes of text on which the entire structure
+      silently depends.</p>
+  </div>
+</div>
+</section>
+<!-- ============================ ACT II ============================ -->
+<section class="act" id="act2">
+<div class="wrap reveal">
+  <div class="actmark">Act II · The fuel problem</div>
+  <h2>How does configuration actually reach a service?</h2>
+
+  <p class="lede">The brief says Keystone "serves configuration to the other three." That sentence
+    is doing an enormous amount of hidden work, and how you interpret it determines more about
+    this system's reliability than any other decision you will make. So let's not interpret it.
+    Let's interrogate it.</p>
+
+  <p>There are three honest answers, and the industry has shipped all three at scale. They are not
+    equally good, but none of them is stupid — they trade different things away.</p>
+
+  <table>
+    <tr><th>Model</th><th>What it means</th><th>Config change takes</th></tr>
+    <tr><td>A · Runtime service</td><td>Keystone runs as a pod. The other three call it at startup and refresh periodically.</td><td>Seconds</td></tr>
+    <tr><td>B · Baked at deploy</td><td>The Keystone repo publishes versioned artifacts; pipelines render them into ConfigMaps and deploy them with the image.</td><td>A full deploy</td></tr>
+    <tr><td>C · Managed store</td><td>The Keystone repo is source of truth, synced into Azure App Configuration. Services read from there.</td><td>Seconds</td></tr>
+  </table>
+
+  <p>Everyone compares these on the happy path, where they look nearly identical. The only useful
+    comparison is on a bad night. Pick a model, then break it four different ways.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--caution);border-color:rgba(255,180,84,.4)">Diagram 2</span>
+    <span class="ttl">Three models, four bad nights</span>
+    <span class="hint">pick a model, then a scenario &rarr;</span>
+  </div>
+  <div class="mbody">
+    <div style="margin-bottom:16px">
+      <div class="seglabel">Configuration model</div>
+      <div class="seg" id="modelSeg">
+        <button data-m="a" class="on">A · Runtime config service</button>
+        <button data-m="b">B · Baked at deploy time</button>
+        <button data-m="c">C · Azure App Configuration</button>
+      </div>
+    </div>
+    <div style="margin-bottom:18px">
+      <div class="seglabel">What goes wrong tonight</div>
+      <div class="seg" id="scenSeg">
+        <button data-s="restart" class="on">Cluster-wide restart</button>
+        <button data-s="bad">A bad value ships</button>
+        <button data-s="flip">Flip a flag at 02:00</button>
+        <button data-s="audit">"What config ran on Tuesday?"</button>
+      </div>
+    </div>
+    <div class="mx-grid">
+      <div class="mx-out">
+        <div class="vh">What happens</div>
+        <div id="mxSev"></div>
+        <div class="verdict" id="mxVerdict"></div>
+        <p id="mxBody"></p>
+      </div>
+      <div class="mx-out">
+        <div class="vh">What it costs you</div>
+        <p id="mxCost"></p>
+        <div class="statrow" style="margin-top:6px">
+          <div id="mxTtrW"><span>time to recover</span><b id="mxTtr">—</b></div>
+          <div id="mxBrW"><span>blast radius</span><b id="mxBr">—</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <h3>The failure that decides it</h3>
+  <p>Work through the "cluster-wide restart" scenario on model A and you find the argument that
+    settles this. It is not a hypothetical — it is an ordinary Tuesday on AKS. A node pool
+    upgrades. A zone blips. Somebody drains a node. Suddenly a large fraction of your pods restart
+    at once.</p>
+
+  <div class="scene">
+    <div class="slug">THE COLD START STAMPEDE</div>
+    <p>Every Pillar, Gatehouse and Facade pod comes up at the same moment and immediately asks
+      Keystone for its configuration.</p>
+    <p>Keystone is also restarting. It has one or two replicas. It is now receiving every
+      startup request in the cluster, simultaneously, from services that cannot proceed without
+      an answer.</p>
+    <p>You have made the availability of every service in the system conditional on one service,
+      at precisely the moment when everything is already degraded.</p>
+  </div>
+
+  <p><strong>Be fair to model A here, because the sloppy version of this argument is wrong.</strong>
+    A configuration call that blocks startup should be gated by a <em>readiness</em> probe, not a
+    liveness probe, and a <code>startupProbe</code> exists precisely so that a slow-starting pod
+    isn't killed and restarted into a death spiral. Configure those correctly and the stampede
+    degrades into "everything starts slowly" rather than "nothing starts at all." Anyone who tells
+    you a runtime config service inevitably melts down is describing a probe misconfiguration.</p>
+
+  <p>The real argument is quieter and harder to escape: <strong>you now own a tier</strong>. Cache
+    last-known-good on disk. Stagger startup. Size replicas for a cold-start thundering herd rather
+    than steady-state reads. Add a PodDisruptionBudget. Make reads non-blocking with sane defaults.
+    Keep all of it working as the system grows. Every one of those is real, permanent engineering —
+    spent replicating what a managed configuration store does on its first day, for a service whose
+    entire job is to return a few kilobytes of text.</p>
+
+  <div class="adr">
+    <div class="adrh">Decision 01</div>
+    <h4>Keystone is a repository and a pipeline. It is not a pod.</h4>
+    <dl>
+      <dt>Decision</dt>
+      <dd>There is no Keystone service running in the cluster. <code>keystone-config</code> is the
+        git source of truth; its pipeline validates configuration and publishes it to two
+        destinations — versioned artifacts for deploy-time baking, and Azure App Configuration
+        snapshots for runtime reads.</dd>
+      <dt>Alternatives rejected</dt>
+      <dd><strong>Model A</strong> — a runtime config service. Rejected because it converts a
+        static asset into a runtime dependency and creates a correlated failure mode at cold start.
+        <strong>Model B alone</strong> — baking everything. Rejected because it makes it impossible
+        to change a rate limit during an incident without a deploy.</dd>
+      <dt>Cost of this decision</dt>
+      <dd>Two mechanisms instead of one, so engineers must know which is which. We pay that down
+        with the classification rule below — and by making the wrong choice hard to express in code.</dd>
+      <dt>When we'd revisit</dt>
+      <dd>If configuration ever needs per-tenant resolution with inheritance and computed values —
+        genuine logic rather than lookup — a real service starts to earn its keep. Four services
+        and three environments is nowhere near that line.</dd>
+    </dl>
+  </div>
+
+  <h3>So which mechanism for which setting?</h3>
+  <p>Here is the rule that makes the two-mechanism design livable, and it is the single most useful
+    idea in this article:</p>
+
+  <div class="scene">
+    <div class="slug">THE CLASSIFICATION RULE</div>
+    <p>Don't ask "where does config live?" Ask two questions about each setting:
+      <em>how fast might I need to change this</em>, and <em>what happens if it's wrong?</em></p>
+    <p>Anything you might need to change <strong>during</strong> an incident must not require a
+      deploy. Anything that must be <strong>reproducible</strong> must be immutable and versioned
+      with the code it configures. Anything that is a <strong>secret</strong> is neither — it is
+      referenced, never stored.</p>
+  </div>
+
+  <p>That gives three classes, and every setting in the system belongs to exactly one. Try it —
+    the boundaries are less obvious than they look.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--tel);border-color:rgba(99,216,255,.4)">Diagram 3</span>
+    <span class="ttl">Sort the configuration</span>
+    <span class="hint">pick a home for each setting &rarr;</span>
+  </div>
+  <div class="mbody">
+    <div class="sorter" id="sorter"></div>
+    <div class="ctl">
+      <span class="score">scored <b id="scoreN">0</b> / <span id="scoreT">7</span></span>
+      <button class="btn ghost" id="sortReset" style="margin-left:auto">reset</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <p>The two that catch almost everybody are the connection string and the log level. A connection
+    string looks structural — it points at infrastructure Terraform provisioned and changes only
+    when that infrastructure changes. But the moment a credential appears anywhere in the value,
+    the <em>whole value</em> is promoted to secret, because a string is only as classifiable as its
+    most sensitive component. The server name is structural; the string containing the password is
+    not. A log level runs the other way: it feels trivial and permanent, but the entire reason it
+    exists is so you can turn it up at 02:00 while staring at a problem. That's operational, and
+    baking it makes it useless at exactly the moment you reach for it.</p>
+
+  <div class="note ab">
+    <div class="t">The one rule with no exceptions</div>
+    <p>Secrets go in Key Vault and are <strong>referenced</strong>, never copied. Not into a
+      ConfigMap, not into App Configuration as a literal, not into a pipeline variable marked
+      secret and then echoed into a manifest. App Configuration stores a <em>reference</em> to a
+      Key Vault secret; the pod resolves it at runtime using its own workload identity. If a
+      secret value ever appears in a git diff, a pipeline log or a <code>kubectl get configmap</code>,
+      the design has failed regardless of how carefully everything else was built.</p>
+  </div>
+
+  <details class="hood">
+    <summary>Under the hood · the three mechanisms, wired</summary>
+    <div class="hoodbody">
+      <h4>Structural — baked into a ConfigMap by the pipeline</h4>
+      <p>The Keystone repo holds plain YAML per service per environment. The deploy pipeline renders
+        it, hashes it, and names the ConfigMap after the hash — so a config change forces a new
+        ConfigMap and therefore a genuine rollout, rather than silently mutating one in place:</p>
+<pre><code><span class="cm"># keystone-config/services/pillar/prod.yaml</span>
+<span class="nm">database</span>:
+  <span class="nm">commandTimeoutSeconds</span>: <span class="nu">30</span>
+  <span class="nm">maxPoolSize</span>: <span class="nu">200</span>
+<span class="nm">endpoints</span>:
+  <span class="nm">gatehouse</span>: <span class="st">"http://gatehouse.keystone-prod.svc.cluster.local"</span>
+<span class="nm">telemetry</span>:
+  <span class="nm">cloudRoleName</span>: <span class="st">"pillar"</span>
+  <span class="nm">samplingPercentage</span>: <span class="nu">25</span></code></pre>
+<pre><code><span class="cm"># rendered by the pipeline — note the content hash in the name</span>
+<span class="nm">apiVersion</span>: v1
+<span class="nm">kind</span>: ConfigMap
+<span class="nm">metadata</span>:
+  <span class="nm">name</span>: pillar-config-<span class="st">7f3a91c</span>     <span class="cm"># changes when content changes</span>
+  <span class="nm">namespace</span>: keystone-prod
+<span class="nm">immutable</span>: <span class="kw">true</span>                  <span class="cm"># Kubernetes will refuse edits</span>
+<span class="nm">data</span>:
+  <span class="nm">appsettings.Production.json</span>: |
+    { <span class="st">"Database"</span>: { <span class="st">"CommandTimeoutSeconds"</span>: 30, ... } }</code></pre>
+      <p><code>immutable: true</code> makes Kubernetes reject in-place updates to
+        <code>data</code>, so "somebody edited the ConfigMap at 3am" needs a delete-and-recreate
+        rather than a quiet <code>kubectl edit</code> — visible in an audit log instead of
+        invisible. Not impossible; conspicuous, which is most of the value.</p>
+      <p>Two things the hash-naming trick needs to actually work. The Deployment's pod spec must be
+        re-rendered to reference the new ConfigMap name — a new ConfigMap nobody references changes
+        nothing, and this is the step teams forget. And because old ConfigMaps accumulate forever,
+        you need a pruning job that skips any still referenced by a retained ReplicaSet, or you'll
+        eventually prune the thing a rollback needed.</p>
+
+      <h4>Operational — Azure App Configuration with refresh</h4>
+      <p>Read with a sentinel key so the app makes one cheap check rather than watching every
+        setting, and only reloads when the sentinel changes:</p>
+<pre><code><span class="cm">// Program.cs — Pillar, Gatehouse and Facade all do this identically</span>
+<span class="kw">var</span> env = builder.Environment.EnvironmentName;
+
+builder.Configuration.<span class="fn">AddAzureAppConfiguration</span>(options =&gt;
+{
+    options.<span class="fn">Connect</span>(<span class="kw">new</span> <span class="fn">Uri</span>(appConfigEndpoint), <span class="kw">new</span> <span class="fn">DefaultAzureCredential</span>())
+           .<span class="fn">Select</span>(<span class="st">"Pillar:*"</span>, labelFilter: env)
+           <span class="cm">// Key Vault references resolve with the pod's own identity</span>
+           .<span class="fn">ConfigureKeyVault</span>(kv =&gt; kv.<span class="fn">SetCredential</span>(<span class="kw">new</span> <span class="fn">DefaultAzureCredential</span>()))
+           .<span class="fn">ConfigureRefresh</span>(refresh =&gt;
+           {
+               <span class="cm">// ← the label MUST match Select's. Register without it and you</span>
+               <span class="cm">//   watch a null-label sentinel nobody ever bumps: refresh</span>
+               <span class="cm">//   silently never fires. This is the classic mistake.</span>
+               refresh.<span class="fn">Register</span>(<span class="st">"Pillar:Sentinel"</span>, env, refreshAll: <span class="kw">true</span>)
+                      .<span class="fn">SetRefreshInterval</span>(TimeSpan.<span class="fn">FromSeconds</span>(<span class="nu">30</span>));
+           });
+},
+<span class="cm">// ← without optional:true an unreachable store throws at Build()</span>
+optional: <span class="kw">true</span>);
+
+<span class="cm">// the middleware needs this registration or UseAzureAppConfiguration throws</span>
+builder.Services.<span class="fn">AddAzureAppConfiguration</span>();
+<span class="kw">var</span> app = builder.<span class="fn">Build</span>();
+app.<span class="fn">UseAzureAppConfiguration</span>();   <span class="cm">// drives the refresh check per request</span></code></pre>
+      <p>Change ten related values, then bump <code>Pillar:Sentinel</code> once. Every pod picks up
+        all ten together within the refresh interval — no partial application, no deploy.</p>
+
+      <h4>Secret — Key Vault, referenced</h4>
+      <p>The pod authenticates as itself via workload identity; no secret is ever written to the
+        cluster. In App Configuration the value is a reference, not a literal:</p>
+<pre><code><span class="cm"># stored in App Configuration as a Key Vault reference</span>
+key   : Pillar:ConnectionStrings:Sql
+label : Production
+value : {"uri":"https://kv-keystone-prod.vault.azure.net/secrets/pillar-sql-connection"}
+type  : application/vnd.microsoft.appconfig.keyvaultref+json</code></pre>
+      <p>The SDK sees the reference, calls Key Vault with the pod's managed identity, and hands the
+        application a resolved string it never persists. Rotating the secret in Key Vault changes
+        every consumer with no deploy and no config change at all.</p>
+    </div>
+  </details>
+
+  <details class="hood">
+    <summary>Under the hood · what makes App Configuration safe to depend on</summary>
+    <div class="hoodbody">
+      <p>Model C still puts a network call on your startup path, so it deserves the same scrutiny
+        we gave model A. Three things make it a materially different risk:</p>
+      <ul>
+        <li><strong>Snapshots are immutable.</strong> A snapshot is a named, frozen subset of the
+          store. It can be created, archived and recovered — but never edited or deleted. Pin a
+          release to a snapshot and you get exactly the reproducibility of baked config, with a
+          managed service doing the serving.</li>
+        <li><strong>The provider caches.</strong> Configuration is loaded once at startup and then
+          only re-checked on the refresh interval. A blip in the store does not take running pods
+          down; it means they keep serving the values they already have.</li>
+        <li><strong>It isn't your uptime.</strong> The failure mode is a managed regional service
+          having a bad day, not a two-replica deployment you wrote being stampeded by its own
+          dependents. Those are not the same risk, even when the availability numbers look similar.</li>
+      </ul>
+      <p>The honest caveat: a pod still needs the store on the startup path unless you say
+        otherwise. Layer the providers so structural values come from the baked ConfigMap first and
+        App Configuration improves on them when reachable — and mark it <code>optional</code>, which
+        is the single argument that turns "the store is down so nothing starts" into "the store is
+        down so we run on last-deployed values":</p>
+<pre><code>builder.Configuration
+    .<span class="fn">AddJsonFile</span>(<span class="st">"appsettings.json"</span>, optional: <span class="kw">false</span>)
+    .<span class="fn">AddJsonFile</span>($<span class="st">"/config/appsettings.{env}.json"</span>, optional: <span class="kw">true</span>)   <span class="cm">// baked ConfigMap</span>
+    .<span class="fn">AddAzureAppConfiguration</span>(o =&gt; { ... }, optional: <span class="kw">true</span>);       <span class="cm">// wins if reachable</span></code></pre>
+      <p>Later providers win, so the cluster can always start. Note that
+        <code>WebApplicationBuilder</code> has already registered <code>appsettings.json</code> and
+        environment variables before you touch it — re-adding them moves them to the end of the
+        chain and changes precedence, which is worth knowing before you copy this into an app that
+        relies on the defaults.</p>
+      <p>One thing not to claim: an environment variable is not really a break-glass lever here.
+        Changing one means editing the Deployment, which is a rollout — the exact deploy that
+        model B was just criticised for needing.</p>
+    </div>
+  </details>
+</div>
+</section>
+<!-- ============================ ACT III ============================ -->
+<section class="act" id="act3">
+<div class="wrap reveal">
+  <div class="actmark">Act III · The launch pad</div>
+  <h2>Six repositories, not four</h2>
+
+  <p class="lede">The brief said four repositories. The brief was describing the product, not the
+    system, and there are two more things here that change on their own schedule, carry their own
+    blast radius, and need their own reviewers. Giving them a home is not bureaucracy — it is the
+    difference between a platform and a pile.</p>
+
+  <p><strong>Terraform needs a repository.</strong> The cluster, the registry, the vault, the
+    configuration store and the Application Insights workspace are not features of any one service.
+    They change weekly rather than hourly, a mistake takes down all four services rather than one,
+    and the person who should approve "resize the node pool" is not the person who should approve
+    "change a button label." Putting infrastructure in a service repo means every routine deploy
+    carries the latent risk of recreating a node pool.</p>
+
+  <p><strong>Pipeline templates need a repository.</strong> Four services means four pipelines, and
+    without a shared template that means four copies of the build steps, the security scan, the
+    image tagging convention and the deployment logic. Fix a vulnerability in the scan step and you
+    fix it four times, badly, at four different times. Worse, a service team can quietly drop the
+    scan step from their own pipeline and nobody notices.</p>
+
+  <div class="adr">
+    <div class="adrh">Decision 02</div>
+    <h4>Six repositories, with the platform and the templates separated from the services.</h4>
+    <dl>
+      <dt>Decision</dt>
+      <dd><code>keystone-config</code>, <code>pillar-domain</code>, <code>gatehouse-integration</code>,
+        <code>facade-bff</code>, plus <code>keystone-platform</code> (Terraform) and
+        <code>keystone-pipelines</code> (shared YAML templates, tagged and versioned).</dd>
+      <dt>Alternatives rejected</dt>
+      <dd><strong>A monorepo</strong> — genuinely defensible, and if the four services shipped
+        together as one unit I would choose it. They don't: Facade ships daily and Pillar weekly,
+        and a monorepo makes that difference harder to express, not easier.
+        <strong>Terraform inside each service repo</strong> — rejected outright; shared
+        infrastructure with four owners has no owner.</dd>
+      <dt>Cost of this decision</dt>
+      <dd>Cross-repo changes need coordination, and a developer touching config and code together
+        opens two pull requests. We accept that; the alternative couples release cadences that
+        should stay independent.</dd>
+    </dl>
+  </div>
+
+  <h3>Which pipeline runs when you change a file?</h3>
+  <p>This is where the folder layout stops being cosmetic. Inside <code>keystone-config</code>,
+    configuration is layered — and <strong>the layout is the blast-radius model</strong>. A change
+    under <code>services/facade/</code> can only ever affect Facade. A change under
+    <code>global/</code> affects everything, so it should be rare, obvious in a diff, and gated
+    harder.</p>
+
+  <p>Change a file and watch what fires.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--go);border-color:rgba(95,227,161,.4)">Diagram 4</span>
+    <span class="ttl">Change a file, see what builds</span>
+    <span class="hint">click a path &rarr;</span>
+  </div>
+  <div class="mbody">
+    <div class="repo-wrap">
+      <div class="filelist" id="fileList"></div>
+      <div>
+        <div class="filelist" style="background:transparent;border:0;padding:0">
+          <div class="fh">Pipelines triggered</div>
+        </div>
+        <div class="pipelist" id="pipeList"></div>
+        <div class="statrow">
+          <div id="brWrap"><span>blast radius</span><b id="brVal">—</b></div>
+          <div><span>gate required</span><b id="gateVal">—</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="ctl"><span class="msg" id="repoMsg">Pick a file to see the trigger cascade.</span></div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <p>Two things worth noticing. First, a change to <code>global/</code> fans out to three pipelines
+    and therefore three deploys — which is exactly why it deserves an approval that a
+    service-scoped change does not. Second, editing the README triggers nothing at all. That sounds
+    trivial; on a busy repo, path filters are the difference between a CI system people trust and
+    one they've learned to ignore.</p>
+
+  <div class="note tl">
+    <div class="t">Everything shown here triggers on main — and that's only half a CI story</div>
+    <p>Every trigger in this design fires after a merge, which is the moment a mistake becomes
+      production's problem. The cheapest gate in the whole system is the one that runs
+      <em>before</em> the merge: a build validation policy on each repository so pull requests must
+      build and pass tests; JSON-schema validation of every changed config file; and
+      <code>terraform plan</code> posted as a comment on the platform repo's pull requests. For a
+      change under <code>global/</code> that would otherwise fan out to three production deploys,
+      catching it at review time costs minutes and catches most of what the later gates exist to
+      survive.</p>
+  </div>
+
+  <div class="note ca">
+    <div class="t">The trap in shared templates</div>
+    <p>Referencing a template repository without pinning a version means every service silently
+      rebuilds on whatever <code>main</code> happens to be at that moment. One bad commit to the
+      template repo breaks all four pipelines simultaneously, including the pipeline you'd use to
+      fix it. Pin to a tag — <code>ref: refs/tags/v3.2.0</code> — and bump it deliberately, service
+      by service.</p>
+  </div>
+
+  <details class="hood">
+    <summary>Under the hood · repository layout and the shared template contract</summary>
+    <div class="hoodbody">
+      <div class="filetag">keystone-config/</div>
+<pre><code>config/
+├── global/                      <span class="cm"># affects all three services</span>
+│   ├── telemetry.yaml
+│   └── resilience.yaml
+├── environments/
+│   ├── dev.yaml
+│   ├── test.yaml
+│   └── prod.yaml                <span class="cm"># stricter gate on this path</span>
+└── services/
+    ├── pillar/{dev,test,prod}.yaml
+    ├── gatehouse/{dev,test,prod}.yaml
+    └── facade/{dev,test,prod}.yaml
+schema/
+└── config.schema.json           <span class="cm"># every file validated against this</span></code></pre>
+
+      <p>A service pipeline is deliberately tiny. It declares what it is and hands everything
+        else to the template — note <code>extends</code> rather than <code>template</code>:</p>
+      <div class="filetag">pillar-domain/azure-pipelines.yml</div>
+<pre><code><span class="nm">trigger</span>:
+  <span class="nm">branches</span>: { <span class="nm">include</span>: [main] }
+  <span class="cm"># note the globs: 'docs/*' and '*.md' match one level only</span>
+  <span class="nm">paths</span>: { <span class="nm">exclude</span>: [<span class="st">'docs/**'</span>, <span class="st">'**/*.md'</span>] }
+
+<span class="nm">resources</span>:
+  <span class="nm">repositories</span>:
+    - <span class="nm">repository</span>: templates
+      <span class="nm">type</span>: git
+      <span class="nm">name</span>: Keystone/keystone-pipelines
+      <span class="nm">ref</span>: refs/tags/v3.2.0        <span class="cm"># pinned, never a moving branch</span>
+  <span class="cm"># REDEPLOY (not rebuild) when shared configuration changes. A config-only</span>
+  <span class="cm"># change must not produce a new image: rebuilding from unchanged source</span>
+  <span class="cm"># yields a different digest, which is the exact thing Act IV forbids.</span>
+  <span class="nm">pipelines</span>:
+    - <span class="nm">pipeline</span>: config
+      <span class="nm">source</span>: keystone-config-publish
+      <span class="nm">trigger</span>: { <span class="nm">branches</span>: { <span class="nm">include</span>: [main] } }
+
+<span class="cm"># extends, not template: the service CANNOT add arbitrary steps</span>
+<span class="nm">extends</span>:
+  <span class="nm">template</span>: service-pipeline.yml@templates
+  <span class="nm">parameters</span>:
+    <span class="nm">serviceName</span>: pillar
+    <span class="nm">projectPath</span>: src/Pillar.Api/Pillar.Api.csproj
+    <span class="cm"># selects WHICH pre-configured environment this lands on.</span>
+    <span class="cm"># The checks on that environment are owned by the platform team.</span>
+    <span class="nm">riskTier</span>: <span class="nu">1</span>
+    <span class="nm">runContractTests</span>: <span class="kw">true</span></code></pre>
+
+      <p>And the template that defines what a pipeline is <em>allowed</em> to be:</p>
+      <div class="filetag">keystone-pipelines/service-pipeline.yml</div>
+<pre><code><span class="nm">parameters</span>:
+  - { <span class="nm">name</span>: serviceName,  <span class="nm">type</span>: string }
+  - { <span class="nm">name</span>: projectPath,  <span class="nm">type</span>: string }
+  - { <span class="nm">name</span>: riskTier,     <span class="nm">type</span>: number, <span class="nm">default</span>: <span class="nu">3</span> }
+  - { <span class="nm">name</span>: runContractTests, <span class="nm">type</span>: boolean, <span class="nm">default</span>: <span class="kw">false</span> }
+
+<span class="nm">stages</span>:
+  <span class="cm"># skip the build entirely when the run was started by the config pipeline —</span>
+  <span class="cm"># we redeploy the digest already in production, with new config beside it</span>
+  - <span class="nm">stage</span>: build
+    <span class="nm">condition</span>: ne(variables['Build.Reason'], 'ResourceTrigger')
+    <span class="nm">jobs</span>:
+      - <span class="nm">job</span>: build_scan_push
+        <span class="nm">steps</span>:
+          - <span class="nm">template</span>: steps/dotnet-build.yml
+          - <span class="nm">template</span>: steps/unit-test.yml
+          - ${{ <span class="kw">if</span> eq(parameters.runContractTests, <span class="kw">true</span>) }}:
+            - <span class="nm">template</span>: steps/contract-test.yml
+          - <span class="nm">template</span>: steps/container-scan.yml   <span class="cm"># not optional, by construction</span>
+          - <span class="nm">template</span>: steps/push-acr.yml
+
+  <span class="cm"># one build, three deployments of the SAME digest</span>
+  - <span class="nm">template</span>: stages/deploy.yml
+    <span class="nm">parameters</span>: { <span class="nm">env</span>: dev,  <span class="nm">serviceName</span>: ${{ parameters.serviceName }} }
+  - <span class="nm">template</span>: stages/deploy.yml
+    <span class="nm">parameters</span>: { <span class="nm">env</span>: test, <span class="nm">serviceName</span>: ${{ parameters.serviceName }} }
+  - <span class="nm">template</span>: stages/deploy.yml
+    <span class="nm">parameters</span>: { <span class="nm">env</span>: prod, <span class="nm">serviceName</span>: ${{ parameters.serviceName }} }</code></pre>
+      <p><strong>Why <code>extends</code> and not a plain template include.</strong> An include is
+        a convenience — the calling pipeline can still do whatever else it likes alongside it. An
+        <code>extends</code> template defines the <em>schema</em> of the pipeline: the service repo
+        can only supply the parameters the template accepts. Combine that with a
+        <strong>required template check</strong> on the production environment and a pipeline that
+        does not extend this template simply cannot deploy to production. The security scan stops
+        being a step people are trusted to include and becomes a property of the system.</p>
+    </div>
+  </details>
+
+  <details class="hood">
+    <summary>Under the hood · Terraform, and the identity that has no password</summary>
+    <div class="hoodbody">
+      <p>The platform repo provisions everything shared. The detail worth copying is the service
+        connection: <strong>workload identity federation</strong>, so Azure DevOps authenticates to
+        Azure with a short-lived federated token instead of a client secret somebody has to rotate.</p>
+<pre><code><span class="cm"># keystone-platform — the pieces the pipelines depend on</span>
+<span class="kw">resource</span> <span class="st">"azurerm_container_registry"</span> <span class="st">"main"</span> {
+  <span class="nm">name</span>                = <span class="st">"acrkeystone"</span>
+  <span class="nm">sku</span>                 = <span class="st">"Premium"</span>
+  <span class="nm">resource_group_name</span> = azurerm_resource_group.platform.name
+  <span class="nm">location</span>            = azurerm_resource_group.platform.location
+}
+
+<span class="cm"># App Configuration data-plane RBAC has NO key or label scoping: Data Reader</span>
+<span class="cm"># on the store grants read on EVERY key-value in it. Labels are a client-side</span>
+<span class="cm"># convenience, not a security boundary — so one store PER ENVIRONMENT, or dev</span>
+<span class="cm"># pods can read production values and production Key Vault reference URIs.</span>
+<span class="kw">resource</span> <span class="st">"azurerm_app_configuration"</span> <span class="st">"main"</span> {
+  <span class="nm">for_each</span>            = toset([<span class="st">"dev"</span>, <span class="st">"test"</span>, <span class="st">"prod"</span>])
+  <span class="nm">name</span>                = <span class="st">"appcs-keystone-${each.key}"</span>
+  <span class="nm">sku</span>                 = <span class="st">"standard"</span>   <span class="cm"># snapshots + 30-day revision history</span>
+  <span class="nm">resource_group_name</span> = azurerm_resource_group.platform.name
+  <span class="nm">location</span>            = azurerm_resource_group.platform.location
+}
+
+<span class="cm"># the cluster must opt in to workload identity — both are off by default</span>
+<span class="kw">resource</span> <span class="st">"azurerm_kubernetes_cluster"</span> <span class="st">"main"</span> {
+  <span class="cm"># ... sku_tier, node pools, network profile ...</span>
+  <span class="nm">oidc_issuer_enabled</span>       = <span class="kw">true</span>
+  <span class="nm">workload_identity_enabled</span> = <span class="kw">true</span>
+}
+
+<span class="cm"># one identity per (service, environment) — dev and prod must not share one</span>
+<span class="kw">locals</span> {
+  <span class="nm">svc_env</span> = {
+    <span class="kw">for</span> pair <span class="kw">in</span> setproduct([<span class="st">"pillar"</span>, <span class="st">"gatehouse"</span>, <span class="st">"facade"</span>], [<span class="st">"dev"</span>, <span class="st">"test"</span>, <span class="st">"prod"</span>]) :
+    <span class="st">"${pair[0]}-${pair[1]}"</span> =&gt; { <span class="nm">svc</span> = pair[<span class="nu">0</span>], <span class="nm">env</span> = pair[<span class="nu">1</span>] }
+  }
+}
+
+<span class="kw">resource</span> <span class="st">"azurerm_user_assigned_identity"</span> <span class="st">"service"</span> {
+  <span class="nm">for_each</span>            = local.svc_env
+  <span class="nm">name</span>                = <span class="st">"id-${each.key}"</span>
+  <span class="nm">location</span>            = azurerm_resource_group.platform.location
+  <span class="nm">resource_group_name</span> = azurerm_resource_group.platform.name
+}
+
+<span class="cm"># a federated credential carries exactly ONE subject — no wildcards.</span>
+<span class="cm"># One FIC per namespace, or dev pods fail with AADSTS70021.</span>
+<span class="kw">resource</span> <span class="st">"azurerm_federated_identity_credential"</span> <span class="st">"service"</span> {
+  <span class="nm">for_each</span>            = local.svc_env
+  <span class="nm">name</span>                = <span class="st">"fic-${each.key}"</span>
+  <span class="nm">resource_group_name</span> = azurerm_resource_group.platform.name
+  <span class="nm">parent_id</span>           = azurerm_user_assigned_identity.service[each.key].id
+  <span class="nm">audience</span>            = [<span class="st">"api://AzureADTokenExchange"</span>]
+  <span class="nm">issuer</span>              = azurerm_kubernetes_cluster.main.oidc_issuer_url
+  <span class="nm">subject</span>             = <span class="st">"system:serviceaccount:keystone-${each.value.env}:${each.value.svc}"</span>
+}
+
+<span class="cm"># read its own environment's store — the isolation is the store, not the label</span>
+<span class="kw">resource</span> <span class="st">"azurerm_role_assignment"</span> <span class="st">"appconfig_read"</span> {
+  <span class="nm">for_each</span>             = local.svc_env
+  <span class="nm">scope</span>                = azurerm_app_configuration.main[each.value.env].id
+  <span class="nm">role_definition_name</span> = <span class="st">"App Configuration Data Reader"</span>
+  <span class="nm">principal_id</span>         = azurerm_user_assigned_identity.service[each.key].principal_id
+}
+
+<span class="cm"># without this the Key Vault references resolve to nothing at runtime</span>
+<span class="kw">resource</span> <span class="st">"azurerm_role_assignment"</span> <span class="st">"kv_read"</span> {
+  <span class="nm">for_each</span>             = local.svc_env
+  <span class="nm">scope</span>                = azurerm_key_vault.main[each.value.env].id
+  <span class="nm">role_definition_name</span> = <span class="st">"Key Vault Secrets User"</span>
+  <span class="nm">principal_id</span>         = azurerm_user_assigned_identity.service[each.key].principal_id
+}
+
+<span class="cm"># and the cluster needs to be able to pull the images it is asked to run</span>
+<span class="kw">resource</span> <span class="st">"azurerm_role_assignment"</span> <span class="st">"acr_pull"</span> {
+  <span class="nm">scope</span>                = azurerm_container_registry.main.id
+  <span class="nm">role_definition_name</span> = <span class="st">"AcrPull"</span>
+  <span class="nm">principal_id</span>         = azurerm_kubernetes_cluster.main.kubelet_identity[<span class="nu">0</span>].object_id
+}</code></pre>
+
+      <p>The Kubernetes half is easy to forget and fails silently without it — the ServiceAccount
+        must be annotated with the client id, and the pod labelled to opt in:</p>
+<pre><code><span class="nm">apiVersion</span>: v1
+<span class="nm">kind</span>: ServiceAccount
+<span class="nm">metadata</span>:
+  <span class="nm">name</span>: pillar
+  <span class="nm">namespace</span>: keystone-prod
+  <span class="nm">annotations</span>:
+    <span class="nm">azure.workload.identity/client-id</span>: <span class="st">"&lt;id-pillar-prod client id&gt;"</span>
+---
+<span class="cm"># and on the pod template</span>
+<span class="nm">metadata</span>:
+  <span class="nm">labels</span>:
+    <span class="nm">azure.workload.identity/use</span>: <span class="st">"true"</span></code></pre>
+      <p>Every credential in this system is federated or managed. There is no client secret in a
+        variable group, no connection string in a pipeline, and nothing to rotate at 2am because
+        somebody left. That is not a security nicety — it removes an entire category of incident.</p>
+      <p>Two things this snippet still leaves open, because they are decisions rather than
+        oversights. Key Vault and App Configuration are shown with default public network access;
+        in a regulated environment you'd put private endpoints in front of both and pay for the
+        DNS complexity. And the platform pipeline itself needs the discipline the
+        <a href="terraform-kubernetes-theatre.html">Terraform piece</a> argues for: remote state
+        with locking, plan on the pull request, and apply the <em>saved</em> plan rather than a
+        fresh one.</p>
+    </div>
+  </details>
+</div>
+</section>
+
+<!-- ============================ ACT IV ============================ -->
+<section class="act" id="act4">
+<div class="wrap reveal">
+  <div class="actmark">Act IV · The countdown</div>
+  <h2>Build once, fly three times</h2>
+
+  <p class="lede">Here is the principle that separates a delivery pipeline from a build script, and
+    it is violated constantly: <strong>the artifact that reaches production must be the exact
+    artifact you tested.</strong> Not an equivalent one. Not one rebuilt from the same commit with
+    the same Dockerfile. The same bytes.</p>
+
+  <p>Rebuilding per environment feels harmless — same source, same steps, surely the same result.
+    It isn't. Base images move. Transitive dependencies resolve differently an hour later. A
+    scanner that passed at 14:00 passes on an image that no longer exists at 15:00. The thing you
+    approved and the thing you shipped are two different artifacts that merely look alike.</p>
+
+  <div class="scene">
+    <div class="slug">THE RULE</div>
+    <p>Build produces one immutable image, identified by its digest. Every environment after that
+      is a <em>deployment</em>, not a build. The digest is the flight number, and it does not
+      change between the pad and orbit.</p>
+  </div>
+
+  <p>Run the sequence. Watch the digest, and notice what stays constant.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--tel);border-color:rgba(99,216,255,.4)">Diagram 5</span>
+    <span class="ttl">Launch sequence · one artifact, three environments</span>
+    <span class="hint">run it &rarr;</span>
+  </div>
+  <div class="mbody">
+    <div class="lseq" id="lseq"></div>
+    <div class="digest-note" id="digestNote">no build yet</div>
+    <div class="holdbox" id="holdBox">
+      <div class="hh">⏸ Hold — production approval required</div>
+      <p id="holdTxt"></p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="holdGo">✓ Go for launch</button>
+        <button class="btn abort" id="holdNo">✕ Hold / abort</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <button class="btn" id="lRun">▶ start countdown</button>
+      <button class="btn ghost" id="lReset">reset</button>
+      <span class="msg" id="lMsg"></span>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <p>Two gates in that sequence deserve a closer look, because they're the ones that make the
+    go/no-go poll from the cold open possible.</p>
+
+  <p>The <strong>approval</strong> is not in the YAML. It's configured on the <em>environment</em>
+    by the platform team, and the pipeline author cannot modify it — which is the entire point.
+    A gate that the person being gated can edit is not a gate. The same mechanism gives you
+    branch control, business-hours windows, and an exclusive lock so two releases can't deploy to
+    production concurrently.</p>
+
+  <p>The <strong>Azure Monitor check</strong> is the one most teams never wire up, and it's the one
+    that turns Application Insights from a dashboard into a participant. It queries your alert
+    rules and refuses to let a stage start while the service is firing alerts.</p>
+
+  <p>There is a detail here that trips up almost everyone, including plenty of published examples.
+    <strong>Every environment check in Azure Pipelines is a pre-deployment gate.</strong> There is
+    no post-deployment check in YAML pipelines — that existed in classic release pipelines and did
+    not survive the move. So an Azure Monitor check on your production environment does not watch
+    the deployment you just did; it stops you deploying <em>onto</em> a service that is already
+    unhealthy, which is valuable but different.</p>
+
+  <p>To actually verify after a rollout, add a second stage that targets its own environment and
+    depends on the deploy stage. That stage's <em>pre-deployment</em> check then evaluates once the
+    rollout has landed and had time to soak — which is post-deploy verification built out of the
+    only primitive the platform gives you. It's a small trick and it is the difference between
+    "the pods started" and "the service is still healthy."</p>
+
+  <div class="adr">
+    <div class="adrh">Decision 03</div>
+    <h4>The deployable unit is a pair: image digest plus config snapshot.</h4>
+    <dl>
+      <dt>Decision</dt>
+      <dd>Every release <em>records</em> the pair <code>(image@sha256:…, appconfig-snapshot-id)</code>.
+        The digest is what runs; the snapshot is an immutable record of the configuration that ran
+        beside it. Rolling back means restoring both — the digest by redeploying it, the
+        configuration by a point-in-time restore to that snapshot's moment.</dd>
+      <dt>Why</dt>
+      <dd>Rolling back code while leaving configuration forward — or vice versa — produces a
+        combination that has never been tested anywhere. Most "the rollback made it worse"
+        stories are this.</dd>
+      <dt>Important nuance</dt>
+      <dd>Pods read <em>live</em> key-values with sentinel refresh, not the pinned snapshot — if
+        they read the snapshot directly it would be frozen and refresh could never fire, which
+        would defeat the whole operational tier. The snapshot is the record, not the source.
+        Choosing otherwise is defensible, but you cannot have both.</dd>
+      <dt>Cost</dt>
+      <dd>Snapshots accumulate and consume quota, so archive them on a schedule. And the 30-day
+        revision-history window is a real limit: it is a rollback lever, not an archive.</dd>
+    </dl>
+  </div>
+
+  <h3>The thing that does not roll back</h3>
+  <p>Everything above assumes rollback is possible. For Pillar it frequently isn't, and any design
+    for a domain service that owns its database has to say so out loud.</p>
+
+  <p>Once a migration has run, "restore the previous digest" restores code that may not understand
+    the schema now in front of it. The pair from Decision 03 silently becomes a triple —
+    image, config, and schema version — and the third one is the only one that refuses to go
+    backwards. A dropped column does not come back because you redeployed yesterday's container.</p>
+
+  <div class="scene">
+    <div class="slug">THE ONLY SAFE SHAPE</div>
+    <p><strong>Expand, migrate, contract</strong> — and never in one release. Add the new column
+      nullable and deploy code that writes both. Backfill. Deploy code that reads the new one.
+      Only in a <em>later</em> release, once you are certain you will not roll back past it, drop
+      the old column.</p>
+    <p>Every step is independently reversible. The release that removes your ability to roll back
+      happens on a calm afternoon, deliberately, and not on the same day as the feature.</p>
+  </div>
+
+  <p>Practically: migrations run as a separate step before the rollout, they are forward-only and
+    additive within a release, and the pipeline records the schema version alongside the digest and
+    the snapshot. And the deployment gate for Pillar should be honest about what it is really
+    approving — not "ship this code" but "accept that from this point, rollback is a restore from
+    backup rather than a redeploy."</p>
+
+  <details class="hood">
+    <summary>Under the hood · the deploy stage, and the gates that live outside it</summary>
+    <div class="hoodbody">
+<pre><code><span class="cm"># keystone-pipelines/stages/deploy.yml</span>
+<span class="nm">parameters</span>:
+  - { <span class="nm">name</span>: env, <span class="nm">type</span>: string }
+  - { <span class="nm">name</span>: serviceName, <span class="nm">type</span>: string }
+  <span class="cm"># passed in explicitly — variables do NOT flow across stages implicitly.</span>
+  <span class="cm"># $(imageDigest) set in the build stage renders as empty string here.</span>
+  - { <span class="nm">name</span>: imageDigest, <span class="nm">type</span>: string }
+
+<span class="nm">stages</span>:
+- <span class="nm">stage</span>: deploy_${{ parameters.env }}
+  <span class="cm"># sequential: two releases never touch the same environment at once</span>
+  <span class="nm">lockBehavior</span>: sequential
+  <span class="nm">jobs</span>:
+  - <span class="nm">deployment</span>: deploy
+    <span class="cm"># ↓ PER SERVICE, not one shared environment. Environment checks apply to</span>
+    <span class="cm">#   every pipeline targeting that environment — one shared keystone-prod</span>
+    <span class="cm">#   would force Facade's daily deploys through Pillar's 2-approver gate.</span>
+    <span class="cm">#   The ".keystone-${env}" suffix binds the Kubernetes resource.</span>
+    <span class="nm">environment</span>: keystone-${{ parameters.env }}-${{ parameters.serviceName }}.keystone-${{ parameters.env }}
+    <span class="nm">strategy</span>:
+      <span class="nm">runOnce</span>:
+        <span class="nm">deploy</span>:
+          <span class="nm">steps</span>:
+          <span class="cm"># the rendered ConfigMap comes from the CONFIG pipeline, not this one</span>
+          - <span class="nm">download</span>: config
+            <span class="nm">artifact</span>: rendered-config
+
+          - <span class="nm">task</span>: KubernetesManifest@1
+            <span class="nm">inputs</span>:
+              <span class="nm">action</span>: deploy
+              <span class="nm">namespace</span>: keystone-${{ parameters.env }}
+              <span class="nm">manifests</span>: |
+                $(Pipeline.Workspace)/config/rendered-config/${{ parameters.serviceName }}/*.yaml
+                $(Pipeline.Workspace)/manifests/*.yaml
+              <span class="cm"># digest, never a tag — a tag can be moved, a digest cannot</span>
+              <span class="nm">containers</span>: acrkeystone.azurecr.io/${{ parameters.serviceName }}@${{ parameters.imageDigest }}
+
+          - <span class="nm">task</span>: AzureCLI@2
+            <span class="nm">displayName</span>: Annotate the release in App Insights
+            <span class="nm">inputs</span>:
+              <span class="nm">azureSubscription</span>: sc-keystone-wif   <span class="cm"># workload identity federation</span>
+              <span class="nm">scriptType</span>: bash
+              <span class="nm">inlineScript</span>: |
+                <span class="cm"># puts a marker on every latency chart at this exact moment</span>
+                az monitor app-insights component update ...
+
+<span class="cm"># a SEPARATE stage on the same environment, so its pre-deployment</span>
+<span class="cm"># Azure Monitor check evaluates AFTER the rollout above has landed.</span>
+<span class="cm"># This is the only way to get post-deploy verification from a check.</span>
+- <span class="nm">stage</span>: verify_${{ parameters.env }}
+  <span class="nm">dependsOn</span>: deploy_${{ parameters.env }}
+  <span class="nm">jobs</span>:
+  - <span class="nm">deployment</span>: verify
+    <span class="nm">environment</span>: keystone-${{ parameters.env }}-${{ parameters.serviceName }}-verify
+    <span class="nm">strategy</span>:
+      <span class="nm">runOnce</span>:
+        <span class="nm">deploy</span>:
+          <span class="nm">steps</span>:
+          - <span class="nm">script</span>: echo "Alert rules were quiet for the soak window."</code></pre>
+      <p>Checks configured on the <code>keystone-prod</code> environment, in the UI, by the platform
+        team:</p>
+      <table>
+        <tr><th>Check</th><th>Configuration</th><th>Stops</th></tr>
+        <tr><td>Approval</td><td>2 reviewers from Platform; requester may not approve</td><td>Shipping unreviewed</td></tr>
+        <tr><td>Branch control</td><td><code>refs/heads/main</code> only, protection required</td><td>Shipping from a feature branch</td></tr>
+        <tr><td>Business hours</td><td>09:00–16:00 Mon–Thu</td><td>Friday-evening heroics</td></tr>
+        <tr><td>Required template</td><td>Must extend <code>service-pipeline.yml</code></td><td>Skipping the security scan</td></tr>
+        <tr><td>Exclusive lock</td><td>On; ordering set by <code>lockBehavior</code> in YAML</td><td>Two releases colliding</td></tr>
+        <tr><td>Azure Monitor</td><td>No firing alerts on the service's App Insights rules</td><td>Deploying onto an already-unhealthy service</td></tr>
+      </table>
+      <p>Notice that none of these appear in any YAML file a service developer can edit. That
+        separation — pipeline logic in code, deployment permission in the platform — is what makes
+        this governable rather than merely automated. (The one honest exception is the exclusive
+        lock, where the check turns locking on but the <code>runLatest</code>-versus-sequential
+        behaviour is chosen in YAML.)</p>
+
+      <h4>Risk tiers, and how not to let a service grade its own homework</h4>
+      <p>Because checks bind to environments rather than to pipelines, a single shared
+        <code>keystone-prod</code> would apply Pillar's two-approver gate to Facade's daily
+        deploys. So each service gets its own environment — <code>keystone-prod-facade</code>,
+        <code>keystone-prod-pillar</code> — pre-configured by the platform team with the checks
+        that tier deserves. The <code>riskTier</code> parameter in a service pipeline selects
+        <em>which</em> environment it lands on; it does not define what that environment demands.
+        A team can change their tier and find themselves in a stricter room, but they cannot
+        weaken the room they are standing in.</p>
+
+      <h4>The break-glass path</h4>
+      <p>A business-hours check that runs 09:00–16:00 is exactly right for planned work and exactly
+        wrong at 02:14, so the design needs a documented way through. Give the on-call rota a
+        dedicated emergency environment with a single-approver check and no business-hours
+        restriction, reachable only from a pipeline run with an explicit reason parameter — and
+        alert on every use. A gate system with no emergency path doesn't get respected; it gets
+        bypassed by someone with permissions nobody remembered they had.</p>
+    </div>
+  </details>
+</div>
+</section>
+
+<!-- ============================ ACT V ============================ -->
+<section class="act" id="act5">
+<div class="wrap reveal">
+  <div class="actmark">Act V · 02:14</div>
+  <h2>Abort</h2>
+
+  <p class="lede">A configuration value is wrong in production. Not catastrophically wrong —
+    a retry budget set to 0 instead of 3 — but Gatehouse is now failing every transient partner
+    timeout instead of retrying it, and the error rate is climbing through the alert threshold.</p>
+
+  <p>Everything about the previous four acts was rehearsal for the next four minutes. And the only
+    question that matters now is the one we designed for in Act II: <strong>how fast can this be
+    made right?</strong></p>
+
+  <p>Same incident, three architectures. Start the clock.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--abort);border-color:rgba(255,92,102,.4)">Diagram 6</span>
+    <span class="ttl">Rollback race · time to recovery</span>
+    <span class="hint">start the clock &rarr;</span>
+  </div>
+  <div class="mbody">
+    <div class="race-lane">
+      <div class="rl"><span class="rn">A · Runtime config service</span><span class="rt" id="rt1">—</span></div>
+      <div class="race-track" id="tr1"><div class="race-fill m1" id="rf1"></div></div>
+    </div>
+    <div class="race-lane">
+      <div class="rl"><span class="rn">B · Baked at deploy time</span><span class="rt" id="rt2">—</span></div>
+      <div class="race-track" id="tr2"><div class="race-fill m2" id="rf2"></div></div>
+    </div>
+    <div class="race-lane">
+      <div class="rl"><span class="rn">C · App Configuration + snapshot</span><span class="rt" id="rt3">—</span></div>
+      <div class="race-track" id="tr3"><div class="race-fill m3" id="rf3"></div></div>
+    </div>
+    <div class="statrow">
+      <div><span>elapsed</span><b id="raceClock">00:00</b></div>
+      <div class="bad"><span>extra failed requests vs. snapshot restore</span><b id="raceFails">—</b></div>
+    </div>
+    <div class="ctl">
+      <button class="btn abort" id="raceGo">▶ 02:14 — alert fires</button>
+      <button class="btn ghost" id="raceReset">reset</button>
+      <span class="msg" id="raceMsg"></span>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <p>The interesting result is that the two self-managed options land in roughly the same band.
+    The baked model spends eleven minutes because configuration has to travel through a build and a
+    rolling deployment to reach a pod — safe, fully audited, and slow. The runtime service is
+    theoretically instant and takes thirteen, because <strong>the clock is dominated by diagnosis,
+    not by delivery</strong>: without a revision history, "put it back to how it was at 20:00" is
+    not an operation you can perform. You have to work out which values changed and reverse them by
+    hand, correctly, at 02:14.</p>
+
+  <p>That is the part worth internalising. The speed at which a system can <em>apply</em> a
+    configuration change is the number everyone compares. The speed at which it can <em>undo</em>
+    one is the number that matters at 02:14, and they are not related.</p>
+
+  <div class="note gr" style="border-color:rgba(95,227,161,.3)">
+    <div class="t">What actually made model C fast</div>
+    <p>Not the technology — the <strong>point-in-time restore</strong>. App Configuration keeps a
+      revision history of every key-value (30 days on Standard and Premium), and
+      <code>az appconfig kv restore --datetime</code> reverts the store to how it looked at a chosen
+      moment. Recovery was not "work out which value is wrong and edit it under pressure at 02:14."
+      It was "put it back to 20:00 yesterday" — one command, no diagnosis. Being able to return to a
+      known-good state <em>before</em> understanding what broke is the single most valuable property
+      an operational system can have.</p>
+    <p>Note what this is <em>not</em>. A snapshot cannot be restored over the store — snapshots
+      support create, archive and recover, where "recover" means un-archiving the snapshot itself.
+      Snapshots are the immutable <strong>record</strong> you pin a release to and hand an auditor;
+      revision history is the <strong>lever</strong> you pull at 02:14. Conflating the two is a
+      common and expensive misreading of the feature.</p>
+  </div>
+
+  <h3>The morning after: the drift you just created</h3>
+  <p>That emergency restore was made directly against the store, which means the store and
+    <code>keystone-config</code> now disagree. The next time anybody merges to that repository, the
+    publish pipeline will faithfully overwrite the fix and reopen the incident — at some
+    unpredictable later moment, with nobody watching.</p>
+
+  <p>This is the standard failure of every "git is the source of truth, synced to a managed store"
+    design, and it is worth building for rather than remembering. Two mechanisms, both cheap: a CI
+    job that diffs the store against the repository on a schedule and alerts on divergence, and a
+    hard rule that an emergency change is not finished until the back-port pull request is merged.
+    The incident is closed when the repository agrees with production, not when the graph recovers.</p>
+
+  <h3>The bit no architecture gives you</h3>
+  <p>All three models assume somebody knew within a minute that something was wrong. That did not
+    come from the configuration design; it came from an alert rule on an Application Insights
+    metric, wired to a rota, plus a release annotation on the latency chart that made the cause
+    obvious the moment somebody looked at it.</p>
+
+  <p>Build the fastest rollback in the world and it is worth nothing if the mean time to
+    <em>noticing</em> is forty minutes. Instrument first. The pipeline can only be as good as the
+    signal that tells it something went wrong.</p>
+
+  <details class="hood">
+    <summary>Under the hood · tracing four services as one request</summary>
+    <div class="hoodbody">
+      <p>One workspace, four cloud role names, and the trace context flowing across every hop.
+        Distributed tracing is the difference between "the system is slow" and "Gatehouse's call to
+        the payments partner is slow, and here is the exact request":</p>
+<pre><code><span class="cm">// identical in all four services; only the role name differs</span>
+builder.Services.<span class="fn">AddApplicationInsightsTelemetry</span>();
+builder.Services.<span class="fn">AddSingleton</span>&lt;ITelemetryInitializer&gt;(
+    <span class="kw">new</span> <span class="fn">CloudRoleNameInitializer</span>(builder.Configuration[<span class="st">"Telemetry:CloudRoleName"</span>]));
+
+<span class="cm">// the release annotation: makes "which deploy caused this?" a one-glance question</span>
+builder.Services.<span class="fn">Configure</span>&lt;TelemetryConfiguration&gt;(c =&gt;
+    c.TelemetryInitializers.<span class="fn">Add</span>(<span class="kw">new</span> <span class="fn">VersionInitializer</span>(
+        Environment.<span class="fn">GetEnvironmentVariable</span>(<span class="st">"IMAGE_DIGEST"</span>))));</code></pre>
+      <p>The alert rules that gate the deployment, and that woke somebody at 02:14:</p>
+      <table>
+        <tr><th>Signal</th><th>Threshold</th><th>Wired to</th></tr>
+        <tr><td>Failed request rate</td><td>&gt; 2% over 5 min, per role</td><td>Pager + the Azure Monitor deployment check</td></tr>
+        <tr><td>p95 server duration</td><td>&gt; 2× the 7-day baseline</td><td>Pager</td></tr>
+        <tr><td>Dependency failures</td><td>&gt; 5% to any single partner</td><td>Gatehouse team channel</td></tr>
+        <tr><td>Config refresh failures</td><td>Any, sustained 10 min</td><td>Platform team — the store is unreachable</td></tr>
+        <tr><td>Config drift</td><td>Store differs from <code>keystone-config</code> main</td><td>Platform team — an emergency edit was never back-ported</td></tr>
+      </table>
+      <p>That last row is the one people forget. If pods silently stop refreshing configuration,
+        nothing breaks immediately — they just quietly drift out of date until the day somebody
+        changes a value and half the fleet doesn't get it.</p>
+    </div>
+  </details>
+</div>
+</section>
+
+<!-- ============================ CREDITS ============================ -->
+<section class="act" id="end">
+<div class="wrap reveal">
+  <div class="actmark">Credits · Flight readiness review</div>
+  <h2>The whole design, on one page</h2>
+
+  <p class="lede">Six repositories, because things that change at different rates and break at
+    different scales should not share a release. One shared pipeline template that services extend
+    rather than copy, enforced by a required-template check so the security scan cannot be skipped.
+    One build per commit, promoted by digest through three environments, gated by approvals the
+    pipeline author cannot edit. And configuration split three ways by two questions — how fast
+    might I need to change this, and what happens if it's wrong — plus one rule that overrides both:
+    if it's a credential, it's a secret, wherever else it might have belonged.</p>
+
+  <div class="scene">
+    <div class="slug">THE THROUGH-LINE</div>
+    <p>Every decision in this design is the same decision wearing different clothes:
+      <em>separate the things that change at different rates.</em></p>
+    <p>Infrastructure from application. Structural config from operational config. Secrets from
+      both. Pipeline logic from deployment permission. Build from deploy. Get that separation
+      right and the go/no-go poll is boring — which is the highest compliment a release process
+      can be paid.</p>
+  </div>
+
+  <h3>The decisions, collected</h3>
+  <table>
+    <tr><th>#</th><th>Decision</th><th>The reason in one line</th></tr>
+    <tr><td>01</td><td>Keystone is a repo and a pipeline, not a pod</td><td>Don't make everyone's availability depend on one service at cold start</td></tr>
+    <tr><td>02</td><td>Six repositories, not four</td><td>Terraform and shared templates have their own cadence, blast radius and reviewers</td></tr>
+    <tr><td>03</td><td>Deployable unit is (digest, snapshot)</td><td>Rolling back half a release produces a combination nobody tested</td></tr>
+    <tr><td>04</td><td>Config classified by change speed</td><td>Incident-time changes must not require a deploy; reproducible things must be immutable</td></tr>
+    <tr><td>05</td><td>Gates live on environments, not in YAML</td><td>A gate the gated person can edit is not a gate</td></tr>
+    <tr><td>06</td><td>Federated identity everywhere</td><td>Removes an entire category of incident rather than managing it</td></tr>
+  </table>
+
+  <h3>If you're starting on Monday</h3>
+  <table>
+    <tr><th>#</th><th>Do this</th><th>Not this</th></tr>
+    <tr><td>1</td><td>Write the classification rule down before the first setting exists</td><td>Deciding per-setting, forever, by argument</td></tr>
+    <tr><td>2</td><td>One shared template repo, tagged, from day one</td><td>Copy-paste the first pipeline three times</td></tr>
+    <tr><td>3</td><td>Build once; promote by digest</td><td>A build stage per environment</td></tr>
+    <tr><td>4</td><td>Workload identity federation before the first secret exists</td><td>A client secret in a variable group "for now"</td></tr>
+    <tr><td>5</td><td>Path filters and layered config folders on the config repo</td><td>One flat folder that rebuilds everything</td></tr>
+    <tr><td>6</td><td>Alerts and release annotations before the first production deploy</td><td>Discovering you have no signal during the first incident</td></tr>
+    <tr><td>7</td><td>Practise a rollback deliberately, before you need one</td><td>Finding out the snapshot restore was never tested</td></tr>
+  </table>
+
+  <div class="note ca">
+    <div class="t">The honest caveat</div>
+    <p>This design is sized for four services, three environments and one team that owns the
+      platform. At twelve services you'll want to look hard at whether pipeline-per-service still
+      scales or whether you're ready for a pull-based GitOps controller in the cluster. At one
+      service, most of this is ceremony — a single repo and a single pipeline would serve you
+      better and you should not feel bad about that. Architecture is a response to a specific
+      scale, and quoting a design back at a problem it wasn't sized for is how most of it goes
+      wrong.</p>
+  </div>
+
+  <div class="note">
+    <div class="t">Colophon</div>
+    <p>Every diagram on this page is a live simulation, not a screenshot. Diagram 6's timings are
+      illustrative — modelled on realistic build, rollout, refresh and diagnosis durations, not
+      measured from a specific system. Behaviour described reflects Azure DevOps and Azure App
+      Configuration as of August 2026: snapshots are immutable and support create, archive and
+      recover only (recovering un-archives the snapshot; it does not revert the store — that is
+      what the 30-day revision history and <code>az appconfig kv restore</code> are for); App
+      Configuration data-plane RBAC is store-scoped with no key or label granularity; all
+      environment checks are evaluated as pre-deployment gates and are configured by resource
+      owners rather than in YAML; workload identity federation for Azure service connections is
+      generally available. This piece was reviewed against those docs after drafting and a dozen
+      claims were corrected — including, embarrassingly, its own original description of snapshot
+      rollback. The service names — Keystone, Pillar, Gatehouse, Facade — are this article's, not
+      a product's.</p>
+  </div>
+</div>
+</section>
+
+<div class="nu-shell end-back">
+  <a class="back-link" href="index.html">&larr; Back to all stories</a>
+  <div class="share-row">
+    <span class="share-label">Share</span>
+    <a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fniluniverse.com%2Fkeystone-mission-control.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a>
+    <a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fniluniverse.com%2Fkeystone-mission-control.html&text=Project%20Keystone%3A%20designing%20Azure%20DevOps%20pipelines%20for%20a%20microservice%20ecosystem" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a>
+    <a class="share-btn" href="mailto:?subject=Project%20Keystone&body=https%3A%2F%2Fniluniverse.com%2Fkeystone-mission-control.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a>
+    <button class="share-btn" type="button" data-copy-url="https://niluniverse.com/keystone-mission-control.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+  </div>
+</div>
+
+<footer class="sitefoot">
+  <div class="nu-shell foot-inner">
+    <span>&copy; 2026 Nilesh Mohite &mdash; <a href="https://www.nileshmohite.com">www.nileshmohite.com</a></span>
+    <span>Written between deployments &middot; Amalner, India</span>
+  </div>
+</footer>
+
+<script>
+/* ==================== hero: console telemetry ==================== */
+(function(){
+  const c=document.getElementById('consoleCanvas'); if(!c) return;
+  const x=c.getContext('2d'); let w,h,traces=[],dots=[];
+  function size(){ w=c.width=c.offsetWidth*devicePixelRatio; h=c.height=c.offsetHeight*devicePixelRatio; init(); }
+  function init(){
+    const dpr=devicePixelRatio;
+    traces=[];
+    for(let i=0;i<5;i++) traces.push({
+      y:h*(0.18+i*0.17), amp:(6+Math.random()*16)*dpr, ph:Math.random()*7,
+      sp:0.5+Math.random()*1.1, col:i%3===0?'95,227,161':(i%3===1?'99,216,255':'255,180,84'),
+      op:0.10+Math.random()*0.14
+    });
+    dots=[];
+    const n=Math.min(30,Math.floor(w/(90*dpr)));
+    for(let i=0;i<n;i++) dots.push({
+      x:Math.random()*w, y:Math.random()*h, r:(0.9+Math.random()*1.5)*dpr,
+      ph:Math.random()*7, sp:0.5+Math.random()*1.2,
+      col:Math.random()<0.6?'95,227,161':(Math.random()<0.5?'99,216,255':'255,180,84')
+    });
+  }
+  let t=0;
+  function loop(){
+    t+=0.016; x.clearRect(0,0,w,h);
+    const dpr=devicePixelRatio;
+    // grid
+    x.strokeStyle='rgba(36,47,64,.35)'; x.lineWidth=dpr*.5;
+    const g=64*dpr;
+    for(let gx=0;gx<w;gx+=g){ x.beginPath(); x.moveTo(gx,0); x.lineTo(gx,h); x.stroke(); }
+    for(let gy=0;gy<h;gy+=g){ x.beginPath(); x.moveTo(0,gy); x.lineTo(w,gy); x.stroke(); }
+    // telemetry traces
+    for(const tr of traces){
+      x.strokeStyle='rgba('+tr.col+','+tr.op+')'; x.lineWidth=1.5*dpr;
+      x.beginPath();
+      for(let px=0;px<=w;px+=6*dpr){
+        const yy=tr.y+Math.sin(px*0.006/dpr+t*tr.sp+tr.ph)*tr.amp
+                 +Math.sin(px*0.019/dpr+t*tr.sp*1.7)*tr.amp*0.35;
+        px===0? x.moveTo(px,yy) : x.lineTo(px,yy);
+      }
+      x.stroke();
+    }
+    // status dots
+    for(const d of dots){
+      const p=0.35+0.65*Math.sin(t*d.sp+d.ph);
+      const rg=x.createRadialGradient(d.x,d.y,0,d.x,d.y,d.r*8);
+      rg.addColorStop(0,'rgba('+d.col+','+(0.7*p)+')');
+      rg.addColorStop(1,'rgba('+d.col+',0)');
+      x.fillStyle=rg; x.beginPath(); x.arc(d.x,d.y,d.r*8,0,7); x.fill();
+      x.fillStyle='rgba('+d.col+','+(0.9*p)+')';
+      x.beginPath(); x.arc(d.x,d.y,d.r,0,7); x.fill();
+    }
+    requestAnimationFrame(loop);
+  }
+  addEventListener('resize',size); size(); loop();
+})();
+
+/* ==================== reveal ==================== */
+(function(){
+  const io=new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+  }),{threshold:.06,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+})();
+
+/* ==================== D1: the Keystone arch ==================== */
+(function(){
+  const DATA={
+    keystone:{n:'Keystone',r:'configuration · the apex stone',
+      p:'The source of truth for every setting in the ecosystem. Crucially — and this is Act II’s argument — it is a <b>repository and a pipeline</b>, not a running service. Its pipeline validates configuration, publishes versioned artifacts for deploy-time baking, and creates immutable App Configuration snapshots for runtime reads.',
+      f:[['Repo','keystone-config'],['Publishes','ConfigMap artifacts + App Config snapshots'],['Not','a pod in the cluster']]},
+    pillar:{n:'Pillar',r:'domain service · load-bearing',
+      p:'The business logic and the model. Owns its database outright — no other service touches that schema. Deploys weekly and deliberately, because the failure mode is wrong data written rather than a page that looks odd, and wrong data does not roll back.',
+      f:[['Risk tier','1 — human approval to production'],['Owns','the domain model and its database'],['Gate','contract tests + approval']]},
+    gatehouse:{n:'Gatehouse',r:'integration gateway · the fortified door',
+      p:'Everything foreign enters here: partner APIs, webhooks, file feeds. Its job is to make the outside world safe and boring before it reaches the domain — normalising payloads, enforcing timeouts, retrying transients, and translating somebody else’s outage into a sensible answer.',
+      f:[['Risk tier','2 — automated gates + contract tests'],['Owns','all third-party contracts'],['Where retries live','here, not in Pillar']]},
+    facade:{n:'Facade',r:'backend-for-frontend · the visible face',
+      p:'Shaped entirely by what the UI needs: aggregating several calls into one, trimming payloads for mobile, and changing whenever the interface changes. It holds no business rules — the moment it does, the domain has leaked and Pillar has lost authority over its own model.',
+      f:[['Risk tier','3 — fully automated to production'],['Deploys','several times a day'],['Holds','no business logic, ever']]},
+    aks:{n:'AKS',r:'runtime · one cluster',
+      p:'A single cluster with a namespace per environment, which keeps cost and operational surface sane at this size. Each service runs under its own Kubernetes service account, federated to its own Azure identity — so "what is Pillar allowed to read?" has a precise answer.',
+      f:[['Isolation','namespace per environment'],['Identity','workload identity per service'],['At larger scale','separate prod cluster']]},
+    acr:{n:'Container Registry',r:'artifacts · immutable by digest',
+      p:'Built once per commit, tagged with the commit SHA, and thereafter referenced by <b>digest</b> rather than tag. A tag can be moved; a digest cannot. Everything downstream — the test deploy, the approval, the production rollout — points at the same immutable bytes.',
+      f:[['Tag','commit SHA, never latest'],['Promoted by','sha256 digest'],['Scanned','before push, gate blocks on critical']]},
+    appconfig:{n:'App Configuration',r:'runtime store · snapshots',
+      p:'Serves operational configuration — the settings you might need to change during an incident. Labels separate environments within one store; snapshots freeze a named set of values that can be created, archived and recovered but never edited, which is what makes rollback a single atomic operation.',
+      f:[['Environments','by label, one store'],['Snapshots','immutable — the rollback unit'],['Secrets','stored as Key Vault references only']]},
+    kv:{n:'Key Vault',r:'secrets · referenced, never copied',
+      p:'Holds every secret in the system. Nothing copies values out of it: App Configuration stores a reference, and the pod resolves that reference at runtime with its own federated identity. Rotating a secret changes every consumer with no deploy and no configuration change.',
+      f:[['Access','workload identity, per service'],['In ConfigMaps','never — not once'],['Rotation','invisible to the pipeline']]},
+    insights:{n:'Application Insights',r:'observability · and a deployment gate',
+      p:'One workspace, four cloud role names, trace context flowing across every hop so a slow checkout resolves to a specific dependency call. It also participates in delivery: an Azure Monitor check queries its alert rules after a production deploy and fails the stage if the service is unhealthy.',
+      f:[['Roles','pillar · gatehouse · facade'],['Annotations','every release marked on every chart'],['Gates','the production stage, post-deploy']]},
+    devops:{n:'Azure DevOps',r:'delivery · repos, pipelines, environments',
+      p:'Six repositories, one shared template repository that services <code>extend</code>, and Environments carrying the approvals and checks. The separation that matters: pipeline <i>logic</i> lives in YAML that developers own, while permission to deploy lives on environments that only the platform team can change.',
+      f:[['Service connections','workload identity federation — no secrets'],['Templates','tagged, pinned, required'],['Checks','set by resource owners, not in YAML']]}
+  };
+  const box=document.getElementById('anatInfo');
+  function show(k){
+    const d=DATA[k]; if(!d) return;
+    document.querySelectorAll('.anat .node-g').forEach(g=>g.classList.toggle('sel',g.dataset.k===k));
+    box.innerHTML='<h5>'+d.n+'</h5><div class="role">'+d.r+'</div><p>'+d.p+'</p>'+
+      '<ul class="facts">'+d.f.map(f=>'<li><b>'+f[0]+'</b><span>'+f[1]+'</span></li>').join('')+'</ul>';
+  }
+  document.querySelectorAll('.anat .node-g').forEach(g=>{
+    g.setAttribute('tabindex','0');
+    g.addEventListener('click',()=>show(g.dataset.k));
+    g.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();show(g.dataset.k);} });
+  });
+  show('keystone');
+})();
+
+/* ==================== D2: three models, four bad nights ==================== */
+(function(){
+  const M={
+    a:{
+      restart:{sev:'warn',v:'Correlated, and yours to fix',
+        b:'Every pod restarts at once and asks Keystone for configuration. Keystone is restarting too, with two replicas, now serving every startup request in the cluster. Configured properly — readiness rather than liveness gating, plus a startupProbe — this degrades to "everything starts slowly" rather than a death spiral. Configured carelessly, pods get killed mid-startup and retry, and it does become one.',
+        c:'The cost is not the outage; it is that avoiding it is permanently your job. Cache last-known-good on disk, stagger startup, size replicas for a cold-start herd, add a PodDisruptionBudget, keep it all working as the system grows — to replicate what a managed store does on day one.',
+        t:'5–20 min',br:'All 3 services'},
+      bad:{sev:'bad',v:'Instant, everywhere',
+        b:'The bad value propagates to every service on its next refresh — typically within seconds. Fast delivery is exactly what makes this dangerous: there is no deployment window in which somebody might have noticed.',
+        c:'Recovery is dominated by diagnosis, not delivery. Unless you built revision history yourself, there is no "put it back to 20:00" — you must work out which keys changed and reverse each one by hand, correctly, under pressure. That is why this is slower than it looks.',
+        t:'10–15 min',br:'All 3 services'},
+      flip:{sev:'ok',v:'This is what it is good at',
+        b:'Change the value, services pick it up on their next refresh. No deploy, no pipeline, no approval. For the specific job of "change a number right now", model A does exactly what it promises.',
+        c:'Nothing — this is the scenario the model was designed for. The cost was paid in the other three columns.',
+        t:'&lt; 1 min',br:'Targeted'},
+      audit:{sev:'warn',v:'Hard to answer',
+        b:'"What configuration was Pillar running at 14:00 on Tuesday?" requires that Keystone logged every value it served, to whom, and when — and that those logs are retained. Most implementations log that a request happened, not what was in the response.',
+        c:'You are reconstructing state from logs rather than reading it from an immutable record. Answerable with enough engineering; not answerable by default.',
+        t:'Hours',br:'—'}
+    },
+    b:{
+      restart:{sev:'ok',v:'Nothing happens',
+        b:'Configuration is already inside the pod — a ConfigMap mounted as a file, baked at deploy time. A pod restarting reads it from local disk. There is no call, no dependency, and no possible stampede.',
+        c:'Nothing. This is the model’s strongest scenario and the reason it remains the default for structural configuration.',
+        t:'n/a',br:'None'},
+      bad:{sev:'warn',v:'Caught at a boundary',
+        b:'The bad value has to travel through a pipeline to reach production, which means it passed dev and test first. Many bad values simply never make it — they fail a smoke test in a lower environment while nobody is awake.',
+        c:'When one does reach production, reversing it costs a full deploy: revert the commit, rebuild, roll through environments. Correct, auditable, and slow.',
+        t:'10–15 min',br:'Per-service'},
+      flip:{sev:'bad',v:'You cannot, quickly',
+        b:'There is no mechanism to change a value without a deployment. At 02:14 with an error rate climbing, "revert the commit and wait for the pipeline" is the only lever — and every minute of it is failing requests.',
+        c:'This is the specific weakness that stops model B being the whole answer. Bake everything and you have designed a system that cannot be adjusted while it is on fire.',
+        t:'10–15 min',br:'Per-service'},
+      audit:{sev:'ok',v:'Trivially answerable',
+        b:'The ConfigMap is named after a hash of its contents and marked immutable, and the deployment records which one it mounted. "What was Pillar running?" is a <code>kubectl describe</code> away, and the git history shows who changed it and when.',
+        c:'Nothing. Immutability makes the audit question boring, which is the correct outcome.',
+        t:'&lt; 1 min',br:'—'}
+    },
+    c:{
+      restart:{sev:'ok',v:'Survivable by design',
+        b:'Pods read from a managed regional service, and they layer it on top of the baked ConfigMap. If the store is briefly unreachable a pod still starts — on last-deployed structural values — rather than hanging. Running pods are unaffected: they serve values already cached.',
+        c:'You do still have a startup dependency on an external service. It is a managed one with its own availability guarantees rather than two replicas you operate, but it is not zero.',
+        t:'0–2 min',br:'None if optional+layered'},
+      bad:{sev:'warn',v:'Fast in, fast out',
+        b:'The bad value reaches services within the refresh interval — same speed as model A. The difference is recovery: App Configuration keeps 30 days of revision history, so <code>az appconfig kv restore --datetime</code> reverts the store to a chosen moment. You put it back without first working out what broke.',
+        c:'Still fast enough to skip the safety of a deployment boundary, so validation must happen in the config pipeline before publish — schema checks are not optional here. And an emergency restore leaves the store disagreeing with git until somebody back-ports it.',
+        t:'1–3 min',br:'Targeted by store'},
+      flip:{sev:'ok',v:'Change it and move on',
+        b:'Update the value, bump the sentinel key, and every pod picks it up together within the refresh interval. Ten related values change atomically from the application’s point of view — no partial application, no deploy.',
+        c:'Requires the sentinel discipline: change values first, sentinel last. Bump the sentinel too early and pods reload a half-written configuration.',
+        t:'&lt; 1 min',br:'Targeted by label'},
+      audit:{sev:'ok',v:'Answerable from the snapshot',
+        b:'The release recorded a snapshot id, and snapshots cannot be edited or deleted — only created, archived and recovered. "What ran on Tuesday" is: open that snapshot. It is a frozen record, not a reconstruction from logs.',
+        c:'Snapshots consume quota, so old ones need archiving on a schedule. And note the snapshot is the record, not what pods read — they read live values so that refresh can work at all.',
+        t:'&lt; 1 min',br:'—'}
+    }
+  };
+  let model='a', scen='restart';
+  const sev=document.getElementById('mxSev'), ver=document.getElementById('mxVerdict'),
+        body=document.getElementById('mxBody'), cost=document.getElementById('mxCost'),
+        ttr=document.getElementById('mxTtr'), br=document.getElementById('mxBr'),
+        ttrW=document.getElementById('mxTtrW'), brW=document.getElementById('mxBrW');
+  const LABEL={ok:'Handled well',warn:'Survivable',bad:'This is the problem'};
+  const COLOR={ok:'var(--go)',warn:'var(--caution)',bad:'var(--abort)'};
+  function render(){
+    const d=M[model][scen];
+    sev.innerHTML='<span class="sev '+d.sev+'">'+LABEL[d.sev]+'</span>';
+    ver.textContent=d.v; ver.style.color=COLOR[d.sev];
+    body.innerHTML=d.b; cost.innerHTML=d.c;
+    ttr.innerHTML=d.t; br.textContent=d.br;
+    ttrW.className = d.sev==='bad'?'bad':(d.sev==='warn'?'warn':'good');
+    brW.className = (d.br==='All 3 services')?'bad':'';
+  }
+  document.querySelectorAll('#modelSeg button').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('#modelSeg button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); model=b.dataset.m; render();
+  }));
+  document.querySelectorAll('#scenSeg button').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('#scenSeg button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); scen=b.dataset.s; render();
+  }));
+  render();
+})();
+
+/* ==================== D3: classification sorter ==================== */
+(function(){
+  const ITEMS=[
+    {q:'SQL connection string for Pillar',s:'points at infrastructure Terraform provisioned',a:'secret',
+     w:'It contains credentials, so it is a <b>secret</b> — Key Vault, referenced from App Configuration, resolved by the pod’s own identity. If you were tempted by "structural" you were half right: the <i>server name</i> is structural, but the moment a password is in the string the whole value becomes a secret.'},
+    {q:'Database command timeout — 30 seconds',s:'how long Pillar waits before giving up on a query',a:'structural',
+     w:'<b>Structural.</b> It changes when the database or the query patterns change, which is a release-shaped event. You want it versioned with the code that depends on it, and you want to know exactly which deploy changed it.'},
+    {q:'Log level for Gatehouse — Information',s:'how much detail the service emits',a:'operational',
+     w:'<b>Operational.</b> The entire reason this setting exists is so that you can turn it up to Debug at 02:00 while staring at a problem. Bake it and you have built a diagnostic control you cannot reach when you need it.'},
+    {q:'Feature flag — new checkout flow, 10% of users',s:'progressive rollout of an unreleased feature',a:'operational',
+     w:'<b>Operational.</b> Flags exist to be changed without shipping. If turning a feature off requires a deploy, it is not a feature flag — it is a constant with extra steps.'},
+    {q:'Partner API key for the payments provider',s:'authenticates Gatehouse to a third party',a:'secret',
+     w:'<b>Secret.</b> Key Vault, always. The temptation is to put it in App Configuration "because it is just a header value" — but it is a credential, and credentials live in exactly one place so that rotation and access audit have one story.'},
+    {q:'Internal URL of Pillar, as called by Facade',s:'http://pillar.keystone-prod.svc.cluster.local',a:'structural',
+     w:'<b>Structural.</b> It changes only when the topology changes — a namespace rename, a service split — and those are deployments. It also must match the environment the pod is actually in, which is precisely what deploy-time baking guarantees.'},
+    {q:'Circuit breaker threshold — open after 5 failures',s:'when Gatehouse stops calling a failing partner',a:'operational',
+     w:'<b>Operational.</b> This is a dial you reach for mid-incident: a partner is degraded and you want to trip earlier, or they are recovering and you want to be more forgiving. Needing a deploy to adjust resilience during an outage is exactly backwards.'}
+  ];
+  const BINS=[
+    {k:'structural',t:'Structural',s:'baked ConfigMap'},
+    {k:'operational',t:'Operational',s:'App Configuration'},
+    {k:'secret',t:'Secret',s:'Key Vault reference'}
+  ];
+  const root=document.getElementById('sorter'), scoreN=document.getElementById('scoreN'),
+        scoreT=document.getElementById('scoreT'), bReset=document.getElementById('sortReset');
+  let score=0, answered=0;
+  function build(){
+    score=0; answered=0; scoreN.textContent='0'; scoreT.textContent=ITEMS.length;
+    root.innerHTML=ITEMS.map((it,i)=>
+      '<div class="sort-item"><div class="q">'+it.q+'</div><div class="qs">'+it.s+'</div>'+
+      '<div class="bins" data-i="'+i+'">'+
+        BINS.map(b=>'<button data-b="'+b.k+'">'+b.t+'<br><span style="opacity:.6;font-size:9px">'+b.s+'</span></button>').join('')+
+      '</div><div class="why" id="why'+i+'"></div></div>').join('');
+    root.querySelectorAll('.bins').forEach(bin=>{
+      bin.querySelectorAll('button').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          const i=+bin.dataset.i, it=ITEMS[i];
+          if(bin.dataset.done) return;
+          bin.dataset.done='1';
+          const correct=btn.dataset.b===it.a;
+          if(correct) score++;
+          answered++;
+          bin.querySelectorAll('button').forEach(x=>{
+            x.disabled=true;
+            if(x.dataset.b===it.a) x.classList.add('right');
+            else if(x===btn) x.classList.add('wrong');
+          });
+          const why=document.getElementById('why'+i);
+          why.innerHTML=it.w; why.classList.add('show');
+          scoreN.textContent=score;
+        });
+      });
+    });
+  }
+  bReset.addEventListener('click',build);
+  build();
+})();
+
+/* ==================== D4: change a file, see what builds ==================== */
+(function(){
+  const FILES=[
+    {p:'keystone-config/services/facade/prod.yaml',f:['config-publish','facade','redeploy'],br:'1 service',g:'Automated',
+     m:'Service-scoped config. Only Facade is affected — and it redeploys the digest already running rather than building a new one.'},
+    {p:'keystone-config/global/resilience.yaml',f:['config-publish','pillar','gatehouse','facade','redeploy'],br:'3 services',g:'Approval',
+     m:'Global config fans out to everything — which is why global/ is its own folder with a stricter gate. Note the three service pipelines REDEPLOY the digest already in production; they do not rebuild it.'},
+    {p:'keystone-config/README.md',f:[],br:'None',g:'—',
+     m:'Path filters exclude docs. Nothing builds — which is why people still trust the CI signal.'},
+    {p:'pillar-domain/src/Pillar.Api/OrderService.cs',f:['pillar'],br:'1 service',g:'Approval',
+     m:'Ordinary service change. Risk tier 1, so production needs a human.'},
+    {p:'facade-bff/src/Facade/Program.cs',f:['facade'],br:'1 service',g:'Automated',
+     m:'Risk tier 3 — fully automated through to production.'},
+    {p:'keystone-platform/aks.tf',f:['platform-plan'],br:'Everything',g:'Plan + approval',
+     m:'Infrastructure. Plan posted to the PR; apply only after a human reads the diff.'},
+    {p:'keystone-pipelines/steps/container-scan.yml',f:[],br:'Deferred',g:'Tag bump',
+     m:'Nothing rebuilds automatically — services pin a tag. You bump them deliberately, one at a time.'}
+  ];
+  const PIPES=[
+    {k:'config-publish',n:'keystone-config-publish',w:'validate → publish artifact + snapshot'},
+    {k:'pillar',n:'pillar-domain',w:'build → scan → dev → test → prod'},
+    {k:'gatehouse',n:'gatehouse-integration',w:'build → scan → dev → test → prod'},
+    {k:'facade',n:'facade-bff',w:'build → scan → dev → test → prod'},
+    {k:'redeploy',n:'(config-triggered run)',w:'build skipped → redeploy existing digest'},
+    {k:'platform-plan',n:'keystone-platform',w:'terraform plan → approval → apply'}
+  ];
+  const fl=document.getElementById('fileList'), pl=document.getElementById('pipeList'),
+        brV=document.getElementById('brVal'), gV=document.getElementById('gateVal'),
+        brW=document.getElementById('brWrap'), msg=document.getElementById('repoMsg');
+  fl.innerHTML='<div class="fh">Change a file</div>'+FILES.map((f,i)=>
+    '<div class="fitem" data-i="'+i+'"><span style="color:var(--ink-faint)">✎</span><span>'+f.p+'</span></div>').join('');
+  pl.innerHTML=PIPES.map(p=>
+    '<div class="pl2" id="pp-'+p.k+'"><div class="pn"><span>'+p.n+'</span><span class="badge">idle</span></div>'+
+    '<div class="pw">'+p.w+'</div></div>').join('');
+  function pick(i){
+    const f=FILES[i];
+    fl.querySelectorAll('.fitem').forEach(el=>el.classList.toggle('on',+el.dataset.i===i));
+    PIPES.forEach(p=>{
+      const el=document.getElementById('pp-'+p.k);
+      const on=f.f.includes(p.k);
+      el.classList.toggle('fire',on);
+      el.querySelector('.badge').textContent = on?'queued':'idle';
+    });
+    brV.textContent=f.br; gV.textContent=f.g;
+    brW.className = f.br==='3 services'||f.br==='Everything' ? 'bad' : (f.br==='None'||f.br==='Deferred'?'good':'');
+    msg.textContent=f.m;
+  }
+  fl.querySelectorAll('.fitem').forEach(el=>el.addEventListener('click',()=>pick(+el.dataset.i)));
+  pick(0);
+})();
+
+/* ==================== D5: launch sequence ==================== */
+(function(){
+  const STAGES=[
+    {k:'build',n:'Build',   st:'restore · test · scan',      d:2000},
+    {k:'push', n:'Push ACR',st:'tag + digest',               d:1200},
+    {k:'dev',  n:'Dev',     st:'auto · smoke tests',         d:1500},
+    {k:'test', n:'Test',    st:'auto · contract tests',      d:1700},
+    {k:'gate', n:'Hold',    st:'approval + business hours',  d:900},
+    {k:'prod', n:'Prod',    st:'rollout',                    d:1900},
+    {k:'watch',n:'Monitor', st:'Azure Monitor check',        d:1600}
+  ];
+  const DIGEST='sha256:9f4c1ad83b7e';
+  const box=document.getElementById('lseq'), note=document.getElementById('digestNote'),
+        hold=document.getElementById('holdBox'), holdTxt=document.getElementById('holdTxt'),
+        bGo=document.getElementById('holdGo'), bNo=document.getElementById('holdNo'),
+        bRun=document.getElementById('lRun'), bReset=document.getElementById('lReset'),
+        msg=document.getElementById('lMsg');
+  let timers=[];
+  function at(ms,fn){ timers.push(setTimeout(fn,ms)); }
+  function stop(){ timers.forEach(clearTimeout); timers=[]; }
+  function build(){
+    box.innerHTML=STAGES.map(s=>
+      '<div class="lstage" id="ls-'+s.k+'"><span class="ln">'+s.n+'</span>'+
+      '<span class="lst">waiting</span><span style="font-size:12.5px;color:var(--ink-faint)">'+s.st+'</span>'+
+      '<span class="ldig" id="ld-'+s.k+'"></span></div>').join('');
+  }
+  function set(k,cls,st,dig){
+    const el=document.getElementById('ls-'+k);
+    el.className='lstage '+cls;
+    el.querySelector('.lst').textContent=st;
+    if(dig!==undefined) document.getElementById('ld-'+k).innerHTML=dig;
+  }
+  function reset(){
+    stop(); build(); hold.classList.remove('show');
+    note.textContent='no build yet'; note.style.color='';
+    msg.textContent=''; bRun.disabled=false;
+  }
+  function runFrom(i){
+    if(i>=STAGES.length){
+      note.innerHTML='one build · one digest · three environments — <b style="color:var(--go)">'+DIGEST+'</b>';
+      note.style.color='var(--ink-faint)';
+      msg.style.color='var(--go)';
+      msg.textContent='✓ in production, and still the artifact that was tested';
+      bRun.disabled=false; return;
+    }
+    const s=STAGES[i];
+    if(s.k==='gate'){
+      set('gate','hold','holding');
+      holdTxt.innerHTML='<b>'+DIGEST+'</b> passed dev and test. Two approvers required, and the '+
+        'business-hours window closes at 16:00. Approving does not rebuild anything — it releases '+
+        'the artifact that already exists.';
+      hold.classList.add('show');
+      hold.scrollIntoView({block:'nearest',behavior:'smooth'});
+      return;
+    }
+    set(s.k,'run','running');
+    at(s.d,()=>{
+      if(s.k==='build'){
+        set('build','done','done','built <b>'+DIGEST+'</b>');
+        note.innerHTML='digest locked: <b style="color:var(--tel)">'+DIGEST+'</b> — nothing after this rebuilds';
+      } else if(s.k==='push'){
+        set('push','done','done','pushed <b>'+DIGEST+'</b>');
+      } else if(s.k==='dev'||s.k==='test'||s.k==='prod'){
+        set(s.k,'done','deployed','deployed <b>'+DIGEST+'</b>');
+      } else if(s.k==='watch'){
+        set('watch','done','healthy','no alerts firing');
+      }
+      runFrom(i+1);
+    });
+  }
+  bGo.addEventListener('click',()=>{
+    hold.classList.remove('show');
+    set('gate','done','approved','@a.kaur + @m.silva');
+    msg.style.color='var(--ink-faint)'; msg.textContent='approved — releasing the existing artifact';
+    runFrom(STAGES.findIndex(s=>s.k==='gate')+1);
+  });
+  bNo.addEventListener('click',()=>{
+    stop(); hold.classList.remove('show');
+    set('gate','fail','held','deferred to tomorrow 09:00');
+    msg.style.color='var(--caution)';
+    msg.textContent='held — the image stays in ACR, scanned and tested, ready to release unchanged';
+    note.innerHTML='artifact <b style="color:var(--tel)">'+DIGEST+'</b> preserved — no rebuild needed when it ships';
+    bRun.disabled=false;
+  });
+  bRun.addEventListener('click',()=>{ stop(); build(); hold.classList.remove('show');
+    msg.textContent=''; bRun.disabled=true; runFrom(0); });
+  bReset.addEventListener('click',reset);
+  reset();
+})();
+
+/* ==================== D6: rollback race ==================== */
+(function(){
+  // illustrative durations, in simulated seconds
+  const LANES=[
+    {id:1,total:780,steps:[[0,'alert fires'],[180,'which value changed? no history'],
+      [480,'edit values back by hand'],[660,'wait for refresh'],[780,'recovered']]},
+    {id:2,total:660,steps:[[0,'alert fires'],[120,'revert the commit'],[240,'pipeline builds'],
+      [420,'rolling deploy'],[660,'recovered']]},
+    {id:3,total:150,steps:[[0,'alert fires'],[45,'restore last snapshot'],[90,'sentinel bumped'],[150,'recovered']]}
+  ];
+  const MAX=900;
+  const clock=document.getElementById('raceClock'), fails=document.getElementById('raceFails'),
+        msg=document.getElementById('raceMsg'), bGo=document.getElementById('raceGo'),
+        bReset=document.getElementById('raceReset');
+  const RPS=40;                       // illustrative failing requests per second
+  let t=0, timer=null, done={};
+  function fmt(s){ const m=Math.floor(s/60), r=s%60;
+    return String(m).padStart(2,'0')+':'+String(Math.floor(r)).padStart(2,'0'); }
+  function reset(){
+    if(timer){clearInterval(timer);timer=null;}
+    t=0; done={};
+    LANES.forEach(l=>{
+      document.getElementById('rf'+l.id).style.width='0';
+      document.getElementById('rf'+l.id).textContent='';
+      document.getElementById('rt'+l.id).textContent='—';
+      document.getElementById('rt'+l.id).style.color='';
+      const tr=document.getElementById('tr'+l.id);
+      tr.querySelectorAll('.race-done').forEach(e=>e.remove());
+    });
+    clock.textContent='00:00'; fails.textContent='—';
+    msg.textContent=''; bGo.disabled=false;
+  }
+  function tick(){
+    t+=15;
+    clock.textContent=fmt(t);
+    let stillBroken=0;
+    LANES.forEach(l=>{
+      const prog=Math.min(1,t/l.total);
+      const fill=document.getElementById('rf'+l.id);
+      fill.style.width=(prog*100)+'%';
+      // current step label
+      let label='';
+      for(const s of l.steps) if(t>=s[0]) label=s[1];
+      fill.textContent = prog>0.14 ? label : '';
+      const rt=document.getElementById('rt'+l.id);
+      if(t>=l.total){
+        if(!done[l.id]){
+          done[l.id]=true;
+          // failures attributed to THIS lane only — these are three alternative
+          // architectures handling the same incident, not three concurrent systems
+          rt.innerHTML='recovered in '+fmt(l.total)+
+            ' · <span style="color:var(--abort)">~'+(l.total*RPS).toLocaleString()+' failed</span>';
+          rt.style.color='var(--go)';
+          const tr=document.getElementById('tr'+l.id);
+          const d=document.createElement('span'); d.className='race-done'; d.textContent='✓';
+          tr.appendChild(d);
+        }
+      } else {
+        rt.textContent=label;
+        stillBroken++;
+      }
+    });
+    // the decision-relevant number: what the slowest option costs over the fastest
+    const best=Math.min(...LANES.map(l=>l.total)), worst=Math.max(...LANES.map(l=>l.total));
+    const shown=Math.min(t,worst)-Math.min(t,best);
+    fails.textContent = shown>0 ? '+'+(shown*RPS).toLocaleString() : '—';
+    if(t>=MAX){
+      clearInterval(timer); timer=null; bGo.disabled=false;
+      msg.style.color='var(--go)';
+      msg.innerHTML='point-in-time restore: <b>2m30s</b> · redeploy: <b>11m</b> · hand-edit: <b>13m</b>';
+    }
+  }
+  bGo.addEventListener('click',()=>{
+    reset(); bGo.disabled=true;
+    msg.style.color='var(--abort)';
+    msg.textContent='02:14 — Gatehouse error rate through threshold';
+    timer=setInterval(tick,55);
+  });
+  bReset.addEventListener('click',reset);
+  reset();
+})();
+</script>
+
+<script>
+/* ==================== site chrome: theme toggle ==================== */
+(function(){
+  var KEY='nu-theme';
+  var toggle=document.getElementById('themeToggle');
+  if(!toggle) return;
+  function apply(t){
+    document.documentElement.setAttribute('data-theme',t);
+    toggle.setAttribute('aria-pressed', t==='linkedin' ? 'true':'false');
+    toggle.setAttribute('title', t==='linkedin' ? 'Switch to dark theme' : 'Switch to light theme');
+  }
+  var saved=null; try{saved=localStorage.getItem(KEY);}catch(e){}
+  if(saved==='linkedin' || saved==='cinema') apply(saved);
+  toggle.addEventListener('click',function(){
+    var isLight=document.documentElement.getAttribute('data-theme')==='linkedin';
+    var next=isLight?'cinema':'linkedin';
+    apply(next);
+    try{localStorage.setItem(KEY,next);}catch(e){}
+  });
+})();
+</script>
+<script>
+/* ==================== site chrome: copy link ==================== */
+(function(){
+  document.querySelectorAll('[data-copy-url]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var url = btn.getAttribute('data-copy-url');
+      var done = function(){
+        var original = btn.getAttribute('aria-label');
+        btn.classList.add('copied');
+        btn.setAttribute('aria-label','Copied!');
+        setTimeout(function(){ btn.classList.remove('copied'); btn.setAttribute('aria-label', original); }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function(){});
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = url; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch(e){}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+})();
+</script>
+<script>
+/* ==================== site chrome: reading progress ==================== */
+(function(){
+  var HEADING_SELECTOR = 'section.act h2';
+  var headings = Array.prototype.slice.call(document.querySelectorAll(HEADING_SELECTOR));
+  if (!headings.length) return;
+
+  var fill = document.getElementById('rpFill');
+  var ring = document.getElementById('rpRing');
+  var pct = document.getElementById('rpPct');
+  var status = document.getElementById('rpStatus');
+  var list = document.getElementById('rpList');
+  var toc = document.getElementById('rpToc');
+  var toggle = document.getElementById('rpToggle');
+  if (!fill || !toc) return;
+
+  var RING_CIRC = 97.4;
+  var seen = {};
+
+  var items = headings.map(function(h, i){
+    var base = 'rp-section-' + (i + 1);
+    if (!h.id) h.id = base;
+    while (seen[h.id]) { h.id = base + '-' + Math.random().toString(36).slice(2,6); }
+    seen[h.id] = true;
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.textContent = h.textContent.replace(/\s+/g,' ').trim();
+    li.appendChild(a);
+    list.appendChild(li);
+    return { heading: h, li: li };
+  });
+
+  function updateProgress(){
+    var doc = document.documentElement;
+    var scrollTop = window.scrollY || doc.scrollTop;
+    var height = doc.scrollHeight - doc.clientHeight;
+    var ratio = height > 0 ? Math.min(1, Math.max(0, scrollTop / height)) : 0;
+    var percent = Math.round(ratio * 100);
+    fill.style.width = percent + '%';
+    if (ring) ring.style.strokeDashoffset = String(RING_CIRC * (1 - ratio));
+    if (pct) pct.textContent = percent + '%';
+    if (status) status.textContent = percent >= 99 ? 'Finished reading' : percent + '% read';
+
+    var activeIdx = 0;
+    var probe = scrollTop + window.innerHeight * 0.3;
+    for (var i = 0; i < items.length; i++) {
+      var top = items[i].heading.getBoundingClientRect().top + scrollTop;
+      if (top <= probe) activeIdx = i;
+    }
+    items.forEach(function(it, i){ it.li.classList.toggle('active', i === activeIdx); });
+  }
+
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  window.addEventListener('resize', updateProgress);
+  updateProgress();
+
+  toggle.addEventListener('click', function(){
+    var open = toc.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', function(e){
+    if (!toc.contains(e.target)) toc.classList.remove('open');
+  });
+})();
+</script>
+</body>
+</html>

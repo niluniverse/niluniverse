@@ -1,0 +1,2240 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cinema">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Night Dispatcher — How Azure Data Factory Moves Data While You Sleep | Nilesh Mohite</title>
+<meta name="description" content="Every morning the numbers are simply correct. This is the freight yard that made it so — a cinematic, interactive guide to what Azure Data Factory actually does, the problem it exists to solve, and how it holds the night together.">
+<meta name="author" content="Nilesh Mohite">
+<meta property="og:title" content="The Night Dispatcher — How Azure Data Factory Moves Data While You Sleep">
+<meta property="og:description" content="340 stores, 200 suppliers, one dashboard that has to be right by 06:00. A story about the dispatcher who never sleeps — with six live diagrams.">
+<meta property="og:url" content="https://niluniverse.com/adf-night-dispatcher.html">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://niluniverse.com/adf-night-dispatcher-banner.jpg">
+<meta property="og:image:width" content="1400">
+<meta property="og:image:height" content="788">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Night Dispatcher — How Azure Data Factory Moves Data While You Sleep">
+<meta name="twitter:description" content="340 stores, 200 suppliers, one dashboard that has to be right by 06:00. A story about the dispatcher who never sleeps — with six live diagrams.">
+<meta name="twitter:image" content="https://niluniverse.com/adf-night-dispatcher-banner.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="favicon-180.png">
+<style>
+/* ============================================================
+   THE NIGHT DISPATCHER — article design tokens
+   Railway signals at night: amber lamps, steel, cold platform light.
+   ============================================================ */
+:root{
+  --bg:#080a0f;
+  --bg-2:#0d1117;
+  --panel:#131926;
+  --panel-2:#19212f;
+  --line:#26303f;
+  --line-soft:#1a222e;
+  --ink:#e9edf3;
+  --ink-dim:#a3b0c2;
+  --ink-faint:#6b7889;
+  --amber:#f0a63c;
+  --amber-soft:#8a6224;
+  --green:#5dd693;
+  --red:#ef5b6b;
+  --steel:#7b8ba6;
+  --cyan:#56c8e8;
+  --violet:#a98bf0;
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--sans);font-size:17px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+img{max-width:100%}
+a{color:var(--amber);text-decoration:none;border-bottom:1px solid rgba(240,166,60,.28)}
+a:hover{border-bottom-color:var(--amber)}
+
+/* ---------- layout ---------- */
+.wrap{max-width:800px;margin:0 auto;padding:0 24px}
+.wide{max-width:1080px;margin:0 auto;padding:0 24px}
+
+/* ---------- hero ---------- */
+.hero{position:relative;min-height:92vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;overflow:hidden;
+  border-bottom:1px solid var(--line-soft)}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%}
+.hero .veil{position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 60%,transparent 0%,rgba(8,10,15,.6) 55%,var(--bg) 90%)}
+.hero-in{position:relative;z-index:2;padding:0 24px;max-width:900px}
+.kicker{font-family:var(--mono);font-size:11.5px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--amber);margin-bottom:26px}
+.hero h1{font-family:var(--serif);font-size:clamp(2.6rem,8vw,5.4rem);line-height:1;
+  margin:0 0 20px;font-weight:500;letter-spacing:-.025em}
+.hero h1 em{font-style:italic;
+  background:linear-gradient(100deg,var(--amber) 10%,#ffd89b 50%,var(--amber));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .dek{font-size:19px;color:var(--ink-dim);max-width:600px;margin:0 auto 32px;line-height:1.65}
+.hero .meta{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);letter-spacing:.07em}
+.scrollcue{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:2;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;color:var(--ink-faint);
+  animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translate(-50%,0);opacity:.45}50%{transform:translate(-50%,7px);opacity:1}}
+
+/* ---------- acts ---------- */
+section.act{padding:92px 0 16px;position:relative}
+.actmark{font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--amber);margin-bottom:14px;display:flex;align-items:center;gap:14px}
+.actmark:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,var(--line),transparent)}
+h2{font-family:var(--serif);font-weight:500;font-size:clamp(1.9rem,4.4vw,2.9rem);line-height:1.14;
+  margin:0 0 20px;letter-spacing:-.02em}
+h3{font-size:1.18rem;margin:44px 0 12px;font-weight:600;letter-spacing:-.01em;color:#fff}
+h4{font-size:.97rem;margin:26px 0 8px;font-weight:600;color:var(--ink)}
+p{margin:0 0 20px;color:#d0d8e4}
+.lede{font-size:19.5px;color:var(--ink);line-height:1.68}
+.lede:first-letter{float:left;font-family:var(--serif);font-size:62px;line-height:.82;
+  padding:7px 12px 0 0;color:var(--amber);font-weight:600}
+strong{color:#fff;font-weight:600}
+em.term{font-style:normal;color:var(--cyan);font-family:var(--mono);font-size:.9em}
+ul,ol{margin:0 0 20px;padding-left:1.2rem;color:#d0d8e4}
+li{margin-bottom:.5rem}
+li::marker{color:var(--amber-soft)}
+
+/* ---------- scene ---------- */
+.scene{border-left:2px solid var(--amber);
+  background:linear-gradient(90deg,rgba(240,166,60,.07),transparent 72%);
+  padding:22px 26px;margin:34px 0;border-radius:0 8px 8px 0}
+.scene .slug{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--amber);margin-bottom:10px}
+.scene p{font-family:var(--serif);font-size:18.5px;line-height:1.6;color:#dfe6f0;margin:0 0 12px}
+.scene p:last-child{margin-bottom:0}
+
+/* ---------- callouts ---------- */
+.note{border:1px solid var(--line);background:var(--panel);border-radius:10px;
+  padding:18px 20px;margin:28px 0}
+.note .t{font-size:11.5px;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--amber);margin-bottom:8px}
+.note p{margin:0;font-size:15.5px;color:var(--ink-dim)}
+.note.cy .t{color:var(--cyan)}
+.note.gr .t{color:var(--green)}
+.note.rd .t{color:var(--red)}
+
+/* ---------- under the hood ---------- */
+details.hood{border:1px solid var(--line);border-radius:12px;margin:26px 0;background:var(--panel);
+  overflow:hidden}
+details.hood>summary{cursor:pointer;list-style:none;padding:15px 20px;font-family:var(--mono);
+  font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim);
+  display:flex;align-items:center;gap:11px;transition:color .2s}
+details.hood>summary::-webkit-details-marker{display:none}
+details.hood>summary:hover{color:var(--ink)}
+details.hood>summary:before{content:"▸";color:var(--amber);transition:transform .2s;
+  display:inline-block;font-size:14px}
+details.hood[open]>summary:before{transform:rotate(90deg)}
+details.hood[open]>summary{border-bottom:1px solid var(--line-soft)}
+.hoodbody{padding:6px 20px 20px}
+.hoodbody p{font-size:15.5px}
+
+/* ---------- code ---------- */
+pre{background:#05070b;border:1px solid var(--line-soft);border-radius:10px;padding:16px 18px;
+  overflow-x:auto;font-family:var(--mono);font-size:12.6px;line-height:1.68;margin:16px 0;color:#c3cddb}
+code{font-family:var(--mono);font-size:.87em;background:rgba(240,166,60,.1);
+  padding:2px 6px;border-radius:4px;color:#f2c583}
+pre code{background:none;padding:0;color:inherit;font-size:12.6px}
+.cm{color:#586374}
+.kw{color:#c79ae0}
+.st{color:#8fc98f}
+.nm{color:#7fbde0}
+.nu{color:var(--amber)}
+.fn{color:#f0a0bc}
+.filetag{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);letter-spacing:.1em;
+  margin:18px 0 -8px;text-transform:uppercase}
+
+/* ---------- table ---------- */
+table{width:100%;border-collapse:collapse;margin:24px 0;font-size:14.5px}
+th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--amber);padding:10px 12px;border-bottom:1px solid var(--line)}
+td{padding:12px;border-bottom:1px solid var(--line-soft);color:var(--ink-dim);vertical-align:top}
+td:first-child{color:var(--ink);font-weight:500}
+@media(max-width:640px){
+  table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    border:1px solid var(--line-soft);border-radius:10px;padding:0 10px;font-size:13.5px}
+  th,td{min-width:120px}
+  th:first-child,td:first-child{min-width:98px}
+}
+
+/* ============================================================
+   INTERACTIVE MODULES — shared shell
+   ============================================================ */
+.module{border:1px solid var(--line);border-radius:16px;
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));margin:44px 0;overflow:hidden;
+  box-shadow:0 24px 60px -30px rgba(0,0,0,.9)}
+.module-head{padding:16px 20px;border-bottom:1px solid var(--line-soft);
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.module-head .ttl{font-size:14px;font-weight:600;letter-spacing:-.01em}
+.module-head .hint{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);
+  letter-spacing:.08em;margin-left:auto}
+.chip{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--ink-faint)}
+.mbody{padding:22px 20px 26px}
+
+.btn{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;
+  background:var(--amber);color:#1c1204;border:0;border-radius:7px;padding:9px 16px;
+  cursor:pointer;font-weight:600;transition:all .18s}
+.btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink-dim);font-weight:400}
+.btn.ghost:hover{border-color:var(--amber);color:var(--amber)}
+.btn.danger{background:var(--red);color:#2a0508}
+.btn.cyan{background:var(--cyan);color:#04202b}
+.ctl{display:flex;gap:10px;align-items:center;margin-top:18px;flex-wrap:wrap}
+.ctl .msg{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+
+.sl{flex:1;min-width:170px}
+.sl label{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-faint);display:flex;justify-content:space-between;gap:10px;margin-bottom:7px}
+.sl label b{color:var(--amber);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--amber);height:3px}
+.sliders{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:6px}
+
+.statrow{display:flex;gap:26px;flex-wrap:wrap;margin-top:18px;font-family:var(--mono);
+  font-size:10.5px;color:var(--ink-faint);letter-spacing:.06em}
+.statrow b{display:block;font-size:20px;color:var(--ink);font-weight:600;letter-spacing:-.01em;
+  margin-top:2px}
+.statrow .good b{color:var(--green)}
+.statrow .bad b{color:var(--red)}
+.statrow .warn b{color:var(--amber)}
+
+.svgtxt{font-family:var(--mono);font-size:9.5px;fill:#9aa8bd;letter-spacing:.03em;pointer-events:none}
+.svgtxt.b{fill:#fff;font-size:10.5px;font-weight:600}
+.svgtxt.s{font-size:8px;fill:#66738a}
+
+/* ---- M1: the yard (N×M vs hub) ---- */
+.yardtabs{display:flex;gap:8px;margin-bottom:18px}
+.yardtabs button{flex:1;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;padding:10px 8px;border-radius:8px;border:1px solid var(--line);
+  background:transparent;color:var(--ink-faint);cursor:pointer;transition:all .2s;font-weight:600}
+.yardtabs button:hover{color:var(--ink)}
+.yardtabs button.on{background:var(--amber);color:#1c1204;border-color:transparent}
+.yardtabs button.on.alt{background:var(--cyan);color:#04202b}
+
+/* ---- M2: dispatch board anatomy ---- */
+.anat{display:grid;grid-template-columns:1.3fr 1fr;min-height:420px}
+@media(max-width:860px){.anat{grid-template-columns:1fr}}
+.anat-map{padding:18px;border-right:1px solid var(--line-soft)}
+@media(max-width:860px){.anat-map{border-right:0;border-bottom:1px solid var(--line-soft)}}
+.anat-info{padding:22px 22px 26px;background:rgba(5,7,11,.45)}
+.anat-info h5{margin:0 0 4px;font-size:16px;font-weight:600}
+.anat-info .role{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--amber);margin-bottom:14px}
+.anat-info p{font-size:14.5px;color:var(--ink-dim);margin:0 0 12px;line-height:1.65}
+.anat-info .facts{list-style:none;padding:0;margin:14px 0 0;font-size:13px}
+.anat-info .facts li{padding:7px 0;border-top:1px solid var(--line-soft);color:var(--ink-faint);
+  display:flex;gap:10px}
+.anat-info .facts li b{color:var(--ink);font-weight:500;flex:none;width:92px;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;padding-top:2px}
+.node-g{cursor:pointer}
+.node-g rect{transition:all .22s}
+.node-g:hover .box{stroke-width:1.8}
+.node-g.sel .box{stroke-width:2.2;filter:url(#glowA)}
+
+/* ---- M3: the timetable ---- */
+.tt-clock{font-family:var(--mono);font-size:26px;color:var(--amber);letter-spacing:.04em;
+  font-weight:500;margin-bottom:2px}
+.tt-date{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);letter-spacing:.1em;
+  text-transform:uppercase;margin-bottom:18px}
+.tt-lane{margin-bottom:14px}
+.tt-lane .lh{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+.tt-lane .lh .nm2{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink);
+  text-transform:uppercase}
+.tt-lane .lh .sub{font-size:11.5px;color:var(--ink-faint)}
+.tt-track{position:relative;height:38px;border:1px solid var(--line-soft);border-radius:8px;
+  background:#05070b;overflow:hidden}
+.tt-track .hour{position:absolute;top:0;bottom:0;width:1px;background:var(--line-soft)}
+.tt-run{position:absolute;top:5px;bottom:5px;border-radius:4px;font-family:var(--mono);
+  font-size:8.5px;display:flex;align-items:center;justify-content:center;color:#04202b;
+  overflow:hidden;transition:all .3s;white-space:nowrap}
+.tt-run.ok{background:rgba(93,214,147,.85);color:#04220f}
+.tt-run.miss{background:rgba(239,91,107,.24);border:1px dashed var(--red);color:var(--red)}
+.tt-run.back{background:rgba(240,166,60,.85);color:#1c1204}
+.tt-run.evt{background:rgba(86,200,232,.85);color:#04202b}
+.tt-play{position:absolute;top:0;bottom:0;width:2px;background:var(--amber);z-index:5;
+  box-shadow:0 0 8px var(--amber)}
+.tt-axis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;
+  color:var(--ink-faint);margin-top:5px;letter-spacing:.05em}
+.tt-outage{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(45deg,
+  rgba(239,91,107,.14),rgba(239,91,107,.14) 6px,transparent 6px,transparent 12px);
+  border-left:1px solid rgba(239,91,107,.5);border-right:1px solid rgba(239,91,107,.5);z-index:2}
+
+/* ---- M4: throughput tuner ---- */
+.tune-bar{height:26px;border-radius:6px;background:#05070b;border:1px solid var(--line-soft);
+  overflow:hidden;margin:6px 0 4px;position:relative}
+.tune-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--amber),#ffd89b);
+  width:0;transition:width .45s cubic-bezier(.2,.7,.2,1)}
+.tune-bar .cap{position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-end;
+  padding-right:10px;font-family:var(--mono);font-size:10.5px;color:var(--ink)}
+.bottleneck{margin-top:16px;border-left:2px solid var(--red);background:rgba(239,91,107,.07);
+  padding:12px 14px;border-radius:0 8px 8px 0;font-size:14px;color:var(--ink-dim);display:none}
+.bottleneck.show{display:block}
+.bottleneck b{color:var(--red);font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;display:block;margin-bottom:5px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  padding:7px 11px;border-radius:6px;border:1px solid var(--line);background:transparent;
+  color:var(--ink-faint);cursor:pointer;transition:all .18s}
+.seg button.on{border-color:var(--amber);color:var(--amber);background:rgba(240,166,60,.1)}
+
+/* ---- M5: pipeline runner ---- */
+.pl-canvas{background:#05070b;border:1px solid var(--line-soft);border-radius:10px;
+  padding:18px 16px;overflow-x:auto}
+.pl-row{display:flex;align-items:center;gap:10px;min-width:640px}
+.pl-node{flex:none;width:112px;border:1.5px solid var(--line);border-radius:9px;padding:9px 10px;
+  background:var(--panel);transition:all .3s;position:relative}
+.pl-node .ic{font-size:14px;margin-bottom:3px}
+.pl-node .nm3{font-family:var(--mono);font-size:9.5px;color:var(--ink-faint);line-height:1.35;
+  letter-spacing:.02em}
+.pl-node.run{border-color:var(--amber);background:rgba(240,166,60,.11);
+  box-shadow:0 0 0 5px rgba(240,166,60,.07)}
+.pl-node.run .nm3{color:var(--ink)}
+.pl-node.done{border-color:rgba(93,214,147,.45);background:rgba(93,214,147,.07)}
+.pl-node.done .nm3{color:var(--ink-dim)}
+.pl-node.fail{border-color:var(--red);background:rgba(239,91,107,.11)}
+.pl-node.fail .nm3{color:var(--red)}
+.pl-arrow{flex:none;color:var(--line);font-size:13px}
+.fanout{margin-top:14px;padding:14px 16px;border:1px dashed var(--line);border-radius:10px;
+  background:rgba(86,200,232,.03)}
+.fanout .fh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--cyan);margin-bottom:10px;display:flex;justify-content:space-between;gap:10px}
+.fangrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(30px,1fr));gap:5px}
+.fan{aspect-ratio:1;border-radius:5px;border:1px solid var(--line);background:var(--panel);
+  transition:all .3s}
+.fan.run{border-color:var(--amber);background:rgba(240,166,60,.35);animation:fpulse .9s infinite}
+.fan.done{border-color:rgba(93,214,147,.5);background:rgba(93,214,147,.3)}
+@keyframes fpulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ---- M6: the failure sandbox ---- */
+.fail-log{background:#05070b;border:1px solid var(--line-soft);border-radius:10px;
+  padding:14px 16px;font-family:var(--mono);font-size:11.5px;line-height:1.72;height:190px;
+  overflow-y:auto;color:#9aabc0;margin-top:16px}
+.fail-log .ok{color:var(--green)}
+.fail-log .wa{color:var(--amber)}
+.fail-log .er{color:var(--red)}
+.fail-log .dim{color:#4a5566}
+.rows{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px}
+.rowbox{flex:1;min-width:190px;border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+  background:var(--panel)}
+.rowbox .rh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-faint);margin-bottom:8px}
+.rowbox .val{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--ink)}
+.rowbox .sub2{font-size:11.5px;color:var(--ink-faint);margin-top:4px}
+.rowbox.bad{border-color:rgba(239,91,107,.45);background:rgba(239,91,107,.06)}
+.rowbox.bad .val{color:var(--red)}
+.rowbox.good{border-color:rgba(93,214,147,.4);background:rgba(93,214,147,.05)}
+.rowbox.good .val{color:var(--green)}
+.toggle-row{display:flex;gap:8px;margin-bottom:4px;flex-wrap:wrap}
+
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+hr.soft{border:0;border-top:1px solid var(--line-soft);margin:52px 0}
+
+/* ============================================================
+   SITE CHROME — shared with niluniverse.com / www.nileshmohite.com
+   Namespaced --chrome-* so it can never collide with the article
+   tokens above. Do not rename.
+   ============================================================ */
+:root{
+  --chrome-bg:#14171D; --chrome-panel:#1B1F27; --chrome-panel-2:#212630; --chrome-line:#2E3440;
+  --chrome-accent:#C9A24B; --chrome-accent-hi:#E6C06E; --chrome-on-accent:#14171D;
+  --chrome-head:#F3F5F8; --chrome-dim:#8891A0; --chrome-ok:#7FBF8E;
+  --chrome-shadow:rgba(0,0,0,.5);
+}
+.nu-shell{max-width:1100px;margin:0 auto;padding:0 24px}
+header.site{border-bottom:1px solid var(--chrome-line);background:var(--chrome-bg);position:relative;z-index:30}
+header.site nav{display:flex;align-items:center;justify-content:space-between;gap:20px;height:64px}
+header.site .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--chrome-head);
+  font-family:var(--mono);font-weight:600;font-size:15px;border-bottom:none}
+header.site .brand-mark{width:28px;height:28px;flex:none}
+header.site .b-nil{color:var(--chrome-accent)}
+.theme-toggle{display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex:none;
+  border:1px solid var(--chrome-line);border-radius:50%;background:var(--chrome-panel);
+  color:var(--chrome-accent);cursor:pointer;transition:background .18s,border-color .18s,transform .18s}
+.theme-toggle:hover{background:var(--chrome-panel-2);border-color:var(--chrome-accent);transform:rotate(-8deg)}
+.theme-toggle svg{width:18px;height:18px}
+.theme-toggle .icon-sun,.theme-toggle .icon-moon{display:none}
+html[data-theme="cinema"] .theme-toggle .icon-moon{display:block}
+html[data-theme="linkedin"] .theme-toggle .icon-sun{display:block}
+
+.back-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:16px 24px}
+.back-link{font-family:var(--mono);font-size:.76rem;letter-spacing:.03em;color:var(--chrome-dim);
+  text-decoration:none;border-bottom:none;display:inline-flex;align-items:center;gap:7px;transition:color .2s,gap .2s}
+.back-link:hover{color:var(--chrome-accent);gap:10px;border-bottom:none}
+.share-row{display:flex;align-items:center;gap:8px}
+.share-label{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--chrome-dim);margin-right:2px}
+.share-btn{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;
+  flex:none;border:1px solid var(--chrome-line);background:var(--chrome-panel);color:var(--chrome-dim);
+  cursor:pointer;text-decoration:none;transition:color .18s,border-color .18s,background .18s,transform .18s}
+.share-btn:hover{color:var(--chrome-accent);border-color:var(--chrome-accent);background:var(--chrome-panel-2);
+  transform:translateY(-1px);border-bottom:none}
+.share-btn svg{width:14px;height:14px}
+.share-btn.copied{color:var(--chrome-ok);border-color:var(--chrome-ok)}
+
+.tags-row{max-width:800px;margin:0 auto;padding:0 24px 8px;display:flex;flex-wrap:wrap;gap:.5rem}
+.tags-row .tagchip{font-size:.72rem;letter-spacing:.05em;color:var(--ink-dim);
+  background:var(--panel);border:1px solid var(--line-soft);
+  padding:.28rem .6rem;border-radius:20px;font-family:var(--mono)}
+
+.end-back{display:flex;flex-direction:column;align-items:center;gap:16px;padding:10px 24px 60px}
+.end-back .back-link{justify-content:center;font-size:.82rem}
+
+footer.sitefoot{border-top:1px solid var(--chrome-line);background:var(--chrome-bg)}
+footer.sitefoot .foot-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  flex-wrap:wrap;padding:26px 24px;font-family:var(--mono);font-size:.76rem;color:var(--chrome-dim)}
+footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
+
+.rp-bar{position:fixed;top:0;left:0;width:100%;height:3px;background:transparent;z-index:9999;pointer-events:none}
+.rp-fill{height:100%;width:0%;
+  background:linear-gradient(90deg,var(--amber),#ffd89b,var(--cyan));transition:width .1s linear}
+.rp-toc{position:fixed;right:20px;bottom:20px;z-index:9998;font-family:var(--mono)}
+.rp-toggle{width:52px;height:52px;border-radius:50%;flex:none;background:var(--chrome-panel);
+  border:1px solid var(--chrome-line);display:flex;align-items:center;justify-content:center;position:relative;
+  cursor:pointer;box-shadow:0 8px 24px var(--chrome-shadow);padding:0}
+.rp-ring{position:absolute;inset:0;width:52px;height:52px;transform:rotate(-90deg)}
+.rp-ring-bg{fill:none;stroke:var(--chrome-line);stroke-width:2.5}
+.rp-ring-fg{fill:none;stroke:var(--chrome-accent);stroke-width:2.5;stroke-linecap:round;
+  stroke-dasharray:97.4;stroke-dashoffset:97.4;transition:stroke-dashoffset .15s linear}
+.rp-pct{font-size:10.5px;color:var(--chrome-head);font-weight:600;position:relative;z-index:1}
+.rp-panel{position:absolute;right:0;bottom:64px;width:260px;max-height:60vh;overflow-y:auto;
+  background:var(--chrome-panel);border:1px solid var(--chrome-line);border-radius:10px;padding:14px;
+  box-shadow:0 20px 50px var(--chrome-shadow);opacity:0;transform:translateY(8px);pointer-events:none;
+  transition:opacity .18s,transform .18s}
+.rp-toc.open .rp-panel{opacity:1;transform:none;pointer-events:auto}
+.rp-panel-head{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--chrome-accent);
+  margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed var(--chrome-line)}
+.rp-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.rp-list li a{display:block;padding:7px 8px;border-radius:6px;font-size:12.5px;line-height:1.4;
+  color:var(--chrome-dim);text-decoration:none;transition:background .15s,color .15s;border-bottom:none}
+.rp-list li a:hover{background:var(--chrome-bg);color:var(--chrome-head)}
+.rp-list li.active a{color:var(--chrome-accent);background:var(--chrome-bg);font-weight:600}
+@media(max-width:640px){
+  .rp-toc{right:14px;bottom:14px}
+  .rp-toggle,.rp-ring{width:46px;height:46px}
+  .rp-panel{width:min(78vw,280px)}
+}
+  .nav-tagline {
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .03em;
+    color: var(--dim); text-align: center; margin: 0 auto; white-space: nowrap;
+  }
+  .nav-tagline b { color: var(--accent); font-weight: 500; }
+  @media (max-width: 620px) {
+    nav { flex-wrap: wrap; row-gap: 6px; }
+    .nav-tagline { flex-basis: 100%; order: 3; white-space: normal; font-size: .68rem; }
+  }
+</style>
+</head>
+<body>
+<div class="rp-bar" id="rpBar"><div class="rp-fill" id="rpFill"></div></div>
+<div class="rp-toc" id="rpToc">
+  <button class="rp-toggle" id="rpToggle" type="button" aria-expanded="false" aria-label="Reading progress and section list">
+    <svg class="rp-ring" viewBox="0 0 36 36"><circle class="rp-ring-bg" cx="18" cy="18" r="15.5"/><circle class="rp-ring-fg" id="rpRing" cx="18" cy="18" r="15.5"/></svg>
+    <span class="rp-pct" id="rpPct">0%</span>
+  </button>
+  <div class="rp-panel" id="rpPanel">
+    <div class="rp-panel-head" id="rpStatus">0% read</div>
+    <ol class="rp-list" id="rpList"></ol>
+  </div>
+</div>
+
+<header class="site">
+  <div class="nu-shell">
+    <nav>
+      <a class="brand" href="https://www.nileshmohite.com">
+        <svg class="brand-mark" viewBox="0 0 120 120" fill="none" aria-hidden="true"><rect x="4" y="4" width="112" height="112" rx="26" fill="var(--chrome-accent)"/><polyline points="30,42 54,62 30,82" stroke="var(--chrome-on-accent)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><rect x="62" y="74" width="30" height="14" rx="4" fill="var(--chrome-on-accent)"/></svg>
+        <span><span class="b-nil">nil</span>universe</span>
+      </a>
+      <span class="nav-tagline">Directed by <b>Nilesh Mohite</b> and Presented by AI</span>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" title="Switch to light theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<div class="nu-shell back-bar">
+  <a class="back-link" href="index.html">&larr; All stories</a>
+  <div class="share-row">
+    <a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fniluniverse.com%2Fadf-night-dispatcher.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a>
+    <a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fniluniverse.com%2Fadf-night-dispatcher.html&text=The%20Night%20Dispatcher%3A%20how%20Azure%20Data%20Factory%20moves%20data%20while%20you%20sleep" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a>
+    <a class="share-btn" href="mailto:?subject=The%20Night%20Dispatcher&body=https%3A%2F%2Fniluniverse.com%2Fadf-night-dispatcher.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a>
+    <button class="share-btn" type="button" data-copy-url="https://niluniverse.com/adf-night-dispatcher.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+  </div>
+</div>
+
+<header class="hero">
+  <canvas id="yardCanvas"></canvas>
+  <div class="veil"></div>
+  <div class="hero-in">
+    <div class="kicker">Azure Data Factory · Data Integration</div>
+    <h1>The Night<br><em>Dispatcher</em></h1>
+    <p class="dek">Every morning the numbers are simply correct. Nobody wonders why.
+      This is the freight yard that made it so — and the dispatcher who never sleeps.</p>
+    <div class="meta">16 August 2026 &middot; 17 min read &middot; Nilesh Mohite</div>
+  </div>
+  <div class="scrollcue">SCROLL</div>
+</header>
+
+<div class="tags-row">
+  <span class="tagchip">Azure Data Factory</span>
+  <span class="tagchip">Data Pipelines</span>
+  <span class="tagchip">ETL &amp; ELT</span>
+  <span class="tagchip">Integration Runtime</span>
+  <span class="tagchip">Azure</span>
+  <span class="tagchip">Data Engineering</span>
+</div>
+
+<!-- ============================ COLD OPEN ============================ -->
+<section class="act" id="cold">
+<div class="wrap reveal">
+  <div class="actmark">Cold open · 06:40</div>
+  <h2>The board is already right</h2>
+
+  <div class="scene">
+    <div class="slug">INT. REPLENISHMENT OFFICE, LEEDS — MORNING</div>
+    <p>Priya puts her coffee down and opens the board. Three hundred and forty stores, six
+      distribution centres, tonight's truck manifests. Which pallets go where. What's short.
+      What's about to be short by Thursday.</p>
+    <p>It is correct. All of it. Yesterday's tills, last night's supplier confirmations, this
+      morning's stock positions, reconciled and sitting in one table as if they had always
+      belonged together.</p>
+    <p>She does not wonder how. Nobody wonders how. That is the entire point.</p>
+  </div>
+
+  <p class="lede">Seven hours earlier, none of that data was in the same building — let alone the
+    same shape. It was scattered across a dozen systems that don't know each other exist, run on
+    different schedules, speak different formats, and fail in different ways. Something had to go
+    and get it. Something had to decide the order, handle the ones that didn't show up, retry the
+    ones that timed out, and finish before the sun did.</p>
+
+  <p>That something is <strong>Azure Data Factory</strong>. And the fastest way to understand what
+    it is for is to look at the mess it was invented to replace.</p>
+
+  <p>Our company is <strong>Meridian Retail</strong>: 340 stores, 6 distribution centres, about 200
+    suppliers. Here is what has to arrive, every night, before Priya's coffee:</p>
+
+  <table>
+    <tr><th>Source</th><th>Where it lives</th><th>Its personality</th></tr>
+    <tr><td>Till transactions</td><td>On-prem SQL Server, in the datacentre</td><td>Dumps at 23:15 when the last store closes. Enormous. No route in from the internet.</td></tr>
+    <tr><td>Stock positions</td><td>Warehouse management system, on-prem</td><td>Ancient, precious, and guarded by a team who will not be giving you a firewall exception.</td></tr>
+    <tr><td>Supplier confirmations</td><td>~200 SFTP drops, CSV</td><td>Arrive between 22:00 and 05:00 on nobody's schedule. Occasionally malformed. Occasionally not at all.</td></tr>
+    <tr><td>Carrier tracking</td><td>Third-party REST APIs</td><td>Paginated, rate-limited, and will happily 429 you at 02:00.</td></tr>
+    <tr><td>E-commerce orders</td><td>Azure SQL</td><td>The one that behaves.</td></tr>
+    <tr><td>Finance &amp; cost</td><td>SAP</td><td>Month-end shaped. Different owner. Different rules.</td></tr>
+  </table>
+
+  <p>Six sources, one destination, one deadline. That sounds like six jobs. It is not — and the
+    reason it is not is the whole reason this category of tool exists.</p>
+
+  <div class="note cy">
+    <div class="t">How to read this</div>
+    <p>The main text is the film — plain English, no prerequisites. Anywhere you see an
+      <strong>Under the hood</strong> panel, open it for the real pipeline JSON, the actual
+      settings, and the numbers. Skip every one of them and the story still works.</p>
+  </div>
+</div>
+</section>
+
+<!-- ============================ THE PROBLEM ============================ -->
+<section class="act" id="problem">
+<div class="wrap reveal">
+  <div class="actmark">Setup · The yard before the dispatcher</div>
+  <h2>Why six sources is never six jobs</h2>
+
+  <p class="lede">The instinct is to write a script per route. One to pull tills into the lake.
+    One to pull stock. One for each supplier feed. Small, understandable, independent. It works
+    beautifully — right up until it doesn't, and then it fails in a way that is very hard to
+    climb back out of.</p>
+
+  <p>There are two problems, and the second one is the one that actually kills you.</p>
+
+  <p><strong>The first is arithmetic.</strong> Sources multiply by destinations. The lake wants raw
+    tills; the warehouse model wants cleaned tills; finance wants an aggregate; the ML forecaster
+    wants its own slice. Every new destination re-crosses every existing source. Move the slider
+    below and watch the line count go somewhere unpleasant.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--amber);border-color:rgba(240,166,60,.4)">Diagram 1</span>
+    <span class="ttl">The yard, two ways</span>
+    <span class="hint">switch the layout · drag the sliders &rarr;</span>
+  </div>
+  <div class="mbody">
+    <div class="yardtabs">
+      <button data-y="p2p" class="on">Point-to-point scripts</button>
+      <button data-y="hub" class="alt">One dispatcher</button>
+    </div>
+    <svg id="yardSvg" viewBox="0 0 640 330" width="100%" style="display:block"></svg>
+    <div class="sliders" style="margin-top:16px">
+      <div class="sl">
+        <label>Sources <b id="ySrcL">6</b></label>
+        <input type="range" id="ySrc" min="2" max="14" value="6">
+      </div>
+      <div class="sl">
+        <label>Destinations <b id="yDstL">4</b></label>
+        <input type="range" id="yDst" min="1" max="8" value="4">
+      </div>
+    </div>
+    <div class="statrow">
+      <div id="yIntWrap"><span>integrations to maintain</span><b id="yInt">24</b></div>
+      <div><span>credentials duplicated</span><b id="yCred">24</b></div>
+      <div><span>places retry logic lives</span><b id="yRetry">24</b></div>
+      <div><span>one dashboard shows all runs</span><b id="yObs">no</b></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <p><strong>The second problem is the one that gets you paged.</strong> Every one of those scripts
+    invents its own answer to the same six questions — and invents it slightly differently.</p>
+
+  <ul>
+    <li><strong>When do I run?</strong> A cron entry here, a Task Scheduler job there, a
+      <code>while true</code> loop in a service somewhere nobody remembers deploying.</li>
+    <li><strong>What if the source isn't ready?</strong> Sleep 300 and hope. Or fail, and let
+      the morning find out.</li>
+    <li><strong>What if I fail halfway?</strong> Re-run everything from the top, probably.
+      Four hundred gigabytes, again.</li>
+    <li><strong>Who do I tell?</strong> A log file on a VM. Sometimes an email, from an address
+      that stopped existing when someone left.</li>
+    <li><strong>What ran last night?</strong> Nobody knows without SSH-ing somewhere.</li>
+    <li><strong>Where did this number come from?</strong> Silence.</li>
+  </ul>
+
+  <div class="scene">
+    <div class="slug">THE REAL FAILURE MODE</div>
+    <p>It is 03:00. A number on the board is wrong. Somewhere among two hundred scripts on four
+      machines, one of them either didn't run, ran twice, ran early, or ran against a source that
+      was mid-backup and returned half a table.</p>
+    <p>You do not have a data problem. You have an <em>archaeology</em> problem.</p>
+  </div>
+
+  <p>So the job to be done isn't "copy data." Copying is easy; every language has a library for it.
+    The job is <strong>everything around the copying</strong> — the ordering, the timing, the
+    waiting, the retrying, the alerting, the record of what happened and when. That's not
+    plumbing. That's <em>dispatch</em>.</p>
+
+  <div class="note">
+    <div class="t">The one-sentence version</div>
+    <p>Azure Data Factory exists so that the answers to "when does this run, in what order, what
+      happens when it breaks, and who finds out" are written down in one place, in one way, for
+      every route in the yard — instead of two hundred times, slightly differently, by whoever
+      happened to be on that ticket.</p>
+  </div>
+</div>
+</section>
+<!-- ============================ ACT I ============================ -->
+<section class="act" id="act1">
+<div class="wrap reveal">
+  <div class="actmark">Act I · The dispatch board</div>
+  <h2>The dispatcher does not drive the trains</h2>
+
+  <p class="lede">Here is the single most clarifying thing you can know about Azure Data Factory,
+    and it is the thing most introductions bury: <strong>ADF is a dispatcher, not a lorry.</strong>
+    Its job is to decide what moves, in what order, when, and what happens when something doesn't
+    arrive. It is a control system first and a hauler second.</p>
+
+  <p>That distinction matters because it tells you what to expect. ADF <em>does</em> shift bulk data
+    itself — its Copy activity is a genuinely fast, heavily parallel mover, and for most ingestion
+    that's all you need. But when the work gets computational — joins across billions of rows,
+    complex reshaping, machine learning — ADF does what a good dispatcher does: it hands the job to
+    something built for it (Databricks, a SQL engine, an Azure Function) and goes back to watching
+    the board. It can also run that transformation on Spark it manages for you, which we'll get to.</p>
+
+  <div class="scene">
+    <div class="slug">THE SHAPE OF THE THING</div>
+    <p>A dispatcher's value is not muscle. It is that at 02:00 exactly one person knows what is
+      on which track, what is late, what is blocked behind what, and which siding the 400-tonne
+      thing is waiting in.</p>
+    <p>Take the dispatcher away and you still have all the trains. You just have no railway.</p>
+  </div>
+
+  <p>Six nouns run the whole product. Click through them — every one is either something you will
+    configure on your first day or something you will be reading about at 3am on some later one.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--cyan);border-color:rgba(86,200,232,.4)">Diagram 2</span>
+    <span class="ttl">Anatomy of the dispatch board</span>
+    <span class="hint">click any box &rarr;</span>
+  </div>
+  <div class="anat">
+    <div class="anat-map">
+      <svg viewBox="0 0 540 420" width="100%" style="display:block">
+        <defs>
+          <filter id="glowA"><feGaussianBlur stdDeviation="3.2" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <marker id="arA" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <polygon points="0 0, 7 3.5, 0 7" fill="#3b4a5f"/></marker>
+        </defs>
+
+        <text class="svgtxt s" x="20" y="20">WHY IT STARTED</text>
+        <g class="node-g" data-k="trigger">
+          <rect class="box" x="20" y="30" width="146" height="58" rx="9" fill="#2a2113" stroke="#f0a63c"/>
+          <text class="svgtxt b" x="34" y="53">Trigger</text>
+          <text class="svgtxt" x="34" y="69">schedule · window</text>
+          <text class="svgtxt s" x="34" y="82">· event</text>
+        </g>
+        <line x1="93" y1="90" x2="93" y2="112" stroke="#3b4a5f" stroke-width="1.4" marker-end="url(#arA)"/>
+
+        <text class="svgtxt s" x="20" y="132">WHAT RUNS</text>
+        <rect x="14" y="140" width="512" height="112" rx="12" fill="rgba(240,166,60,.04)"
+              stroke="#3a3524" stroke-dasharray="4 4"/>
+        <g class="node-g" data-k="pipeline">
+          <rect class="box" x="26" y="152" width="140" height="88" rx="9" fill="#1a2030" stroke="#7b8ba6"/>
+          <text class="svgtxt b" x="40" y="175">Pipeline</text>
+          <text class="svgtxt" x="40" y="191">the unit you</text>
+          <text class="svgtxt" x="40" y="204">schedule &amp; rerun</text>
+          <text class="svgtxt s" x="40" y="222">holds the order</text>
+        </g>
+        <g class="node-g" data-k="activity">
+          <rect class="box" x="182" y="152" width="150" height="88" rx="9" fill="#1a2030" stroke="#7b8ba6"/>
+          <text class="svgtxt b" x="196" y="175">Activity</text>
+          <text class="svgtxt" x="196" y="191">one unit of work</text>
+          <text class="svgtxt s" x="196" y="209">copy · lookup ·</text>
+          <text class="svgtxt s" x="196" y="222">foreach · notebook</text>
+        </g>
+        <g class="node-g" data-k="dataflow">
+          <rect class="box" x="348" y="152" width="166" height="88" rx="9" fill="#241d33" stroke="#a98bf0"/>
+          <text class="svgtxt b" x="362" y="175">Data flow</text>
+          <text class="svgtxt" x="362" y="191">drawn transforms</text>
+          <text class="svgtxt s" x="362" y="209">compiles to Spark</text>
+          <text class="svgtxt s" x="362" y="222">you never see</text>
+        </g>
+
+        <text class="svgtxt s" x="20" y="276">WHAT IT POINTS AT</text>
+        <g class="node-g" data-k="linked">
+          <rect class="box" x="26" y="284" width="150" height="70" rx="9" fill="#12222b" stroke="#56c8e8"/>
+          <text class="svgtxt b" x="40" y="307">Linked service</text>
+          <text class="svgtxt" x="40" y="323">where it is,</text>
+          <text class="svgtxt" x="40" y="336">how to get in</text>
+        </g>
+        <g class="node-g" data-k="dataset">
+          <rect class="box" x="192" y="284" width="150" height="70" rx="9" fill="#12222b" stroke="#56c8e8"/>
+          <text class="svgtxt b" x="206" y="307">Dataset</text>
+          <text class="svgtxt" x="206" y="323">which table,</text>
+          <text class="svgtxt" x="206" y="336">which folder</text>
+        </g>
+        <g class="node-g" data-k="monitor">
+          <rect class="box" x="358" y="284" width="156" height="70" rx="9" fill="#152418" stroke="#5dd693"/>
+          <text class="svgtxt b" x="372" y="307">Monitoring</text>
+          <text class="svgtxt" x="372" y="323">what happened,</text>
+          <text class="svgtxt" x="372" y="336">and when</text>
+        </g>
+
+        <text class="svgtxt s" x="20" y="378">WHOSE NETWORK IT HAPPENS ON</text>
+        <g class="node-g" data-k="ir">
+          <rect class="box" x="26" y="386" width="488" height="26" rx="8" fill="#2a2113" stroke="#f0a63c"/>
+          <text class="svgtxt b" x="40" y="403">Integration runtime — Azure IR · Self-hosted IR · Azure-SSIS IR</text>
+        </g>
+      </svg>
+    </div>
+    <div class="anat-info" id="anatInfo"></div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <h3>The one everybody skips</h3>
+  <p>Five of those six nouns are intuitive. The one that quietly decides whether your project
+    succeeds is the <strong>integration runtime</strong> — because it is the answer to a question
+    nobody thinks to ask until the security review: <em>whose network is this actually happening
+    on?</em></p>
+
+  <p>Meridian's till database is in a datacentre, behind a firewall, and the network team will not
+    be opening an inbound port so that a cloud service can reach in. That is not obstruction; that
+    is correct. So ADF doesn't reach in. You install a <strong>self-hosted integration runtime</strong>
+    on a machine <em>inside</em> that network, and it dials <em>out</em> to Azure on 443. The
+    connection is established from the trusted side. Nothing inbound is ever opened.</p>
+
+  <div class="note gr">
+    <div class="t">Why this design keeps everyone happy</div>
+    <p>The self-hosted IR needs only outbound HTTPS — to Azure Relay for control messages and to
+      the Data Factory endpoint. Credentials are encrypted and stored on that machine, not in the
+      cloud. You can run up to four nodes for high availability and throughput. From the security
+      team's point of view, you installed an agent that phones home; you did not punch a hole in
+      the perimeter. That difference is why hybrid data integration is possible at all.</p>
+  </div>
+
+  <details class="hood">
+    <summary>Under the hood · a linked service, a dataset, and the pipeline that uses them</summary>
+    <div class="hoodbody">
+      <p>Everything in ADF is JSON underneath, whether or not you ever open the code view. A linked
+        service is a connection — note that the secret is a Key Vault reference, never a literal:</p>
+      <div class="filetag">linkedService/OnPremTills.json</div>
+<pre><code>{
+  <span class="nm">"name"</span>: <span class="st">"OnPremTills"</span>,
+  <span class="nm">"properties"</span>: {
+    <span class="nm">"type"</span>: <span class="st">"SqlServer"</span>,
+    <span class="cm">// which runtime executes this — i.e. whose network</span>
+    <span class="nm">"connectVia"</span>: { <span class="nm">"referenceName"</span>: <span class="st">"shir-datacentre"</span>, <span class="nm">"type"</span>: <span class="st">"IntegrationRuntimeReference"</span> },
+    <span class="nm">"typeProperties"</span>: {
+      <span class="nm">"server"</span>:   <span class="st">"sql-tills-01.meridian.internal"</span>,
+      <span class="nm">"database"</span>: <span class="st">"TillsWarehouse"</span>,
+      <span class="nm">"authenticationType"</span>: <span class="st">"SQL"</span>,
+      <span class="nm">"userName"</span>: <span class="st">"svc_adf_reader"</span>,
+      <span class="nm">"password"</span>: {
+        <span class="nm">"type"</span>: <span class="st">"AzureKeyVaultSecret"</span>,
+        <span class="nm">"store"</span>: { <span class="nm">"referenceName"</span>: <span class="st">"kv-meridian"</span>, <span class="nm">"type"</span>: <span class="st">"LinkedServiceReference"</span> },
+        <span class="nm">"secretName"</span>: <span class="st">"tills-reader-password"</span>
+      }
+    }
+  }
+}</code></pre>
+
+      <p>A dataset names a shape of data at that place. Keep them generic and parameterised —
+        one dataset for "a table in tills", not forty datasets for forty tables:</p>
+      <div class="filetag">dataset/TillsTable.json</div>
+<pre><code>{
+  <span class="nm">"name"</span>: <span class="st">"TillsTable"</span>,
+  <span class="nm">"properties"</span>: {
+    <span class="nm">"type"</span>: <span class="st">"SqlServerTable"</span>,
+    <span class="nm">"linkedServiceName"</span>: { <span class="nm">"referenceName"</span>: <span class="st">"OnPremTills"</span>, <span class="nm">"type"</span>: <span class="st">"LinkedServiceReference"</span> },
+    <span class="cm">// parameters are what stop you building 40 near-identical datasets</span>
+    <span class="nm">"parameters"</span>: {
+      <span class="nm">"schemaName"</span>: { <span class="nm">"type"</span>: <span class="st">"string"</span> },
+      <span class="nm">"tableName"</span>:  { <span class="nm">"type"</span>: <span class="st">"string"</span> }
+    },
+    <span class="nm">"typeProperties"</span>: {
+      <span class="nm">"schema"</span>: { <span class="nm">"value"</span>: <span class="st">"@dataset().schemaName"</span>, <span class="nm">"type"</span>: <span class="st">"Expression"</span> },
+      <span class="nm">"table"</span>:  { <span class="nm">"value"</span>: <span class="st">"@dataset().tableName"</span>,  <span class="nm">"type"</span>: <span class="st">"Expression"</span> }
+    }
+  }
+}</code></pre>
+      <p><strong>The parameterised dataset is the difference between a project that scales and one
+        that doesn't.</strong> Teams that skip it end up hand-building one dataset, one pipeline and
+        one trigger per table, and by table ninety nobody can change anything safely. We'll build
+        the alternative — one pipeline driven by a control table — in Act IV.</p>
+    </div>
+  </details>
+</div>
+</section>
+
+<!-- ============================ ACT II ============================ -->
+<section class="act" id="act2">
+<div class="wrap reveal">
+  <div class="actmark">Act II · The timetable</div>
+  <h2>Three ways to say "now"</h2>
+
+  <p class="lede">A dispatcher's first decision is <em>when</em>. ADF gives you three fundamentally
+    different answers, and choosing wrong is the single most common cause of the 03:00 phone call —
+    because two of them look identical until the night something goes wrong.</p>
+
+  <p>The <strong>schedule trigger</strong> is a wall clock. Every day at 23:30, run this. Simple,
+    familiar, and what most people reach for first.</p>
+
+  <p>The <strong>tumbling window trigger</strong> is a series of contiguous, non-overlapping time
+    slices — 23:00–00:00, 00:00–01:00, and so on, forever, with no gaps. Each run knows which slice
+    it owns, because ADF hands it <code>WindowStart</code> and <code>WindowEnd</code> as parameters.</p>
+
+  <p>The <strong>event trigger</strong> doesn't watch a clock at all. It watches a storage account,
+    and fires when a blob appears. This is how you handle two hundred suppliers who upload whenever
+    they feel like it: you stop polling and start reacting.</p>
+
+  <p>Run the night below. Let it play, then break it — knock out the middle of the night with an
+    outage and watch what each lane does about the runs it missed.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--green);border-color:rgba(93,214,147,.4)">Diagram 3</span>
+    <span class="ttl">One night, three triggers</span>
+    <span class="hint">play the night, then cause an outage &rarr;</span>
+  </div>
+  <div class="mbody">
+    <div class="tt-clock" id="ttClock">22:00</div>
+    <div class="tt-date" id="ttDate">the night shift · 22:00 → 06:00</div>
+
+    <div class="tt-lane">
+      <div class="lh"><span class="nm2">Schedule</span>
+        <span class="sub">fires at 23:30 and 02:30 · fire and forget</span></div>
+      <div class="tt-track" id="laneSched"></div>
+    </div>
+    <div class="tt-lane">
+      <div class="lh"><span class="nm2">Tumbling window</span>
+        <span class="sub">every hour, contiguous, remembers its state</span></div>
+      <div class="tt-track" id="laneTumble"></div>
+    </div>
+    <div class="tt-lane">
+      <div class="lh"><span class="nm2">Storage event</span>
+        <span class="sub">fires when a supplier drops a file</span></div>
+      <div class="tt-track" id="laneEvent"></div>
+    </div>
+    <div class="tt-axis" id="ttAxis"></div>
+
+    <div class="ctl">
+      <button class="btn" id="ttPlay">▶ play the night</button>
+      <button class="btn danger" id="ttOutage">⚡ source outage 01:00–03:00</button>
+      <button class="btn cyan" id="ttDrop">↥ supplier drops a file</button>
+      <button class="btn ghost" id="ttReset">reset</button>
+      <span class="msg" id="ttMsg"></span>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <p>That's the whole lesson, and it costs people real money. When the source came back at 03:00,
+    the <strong>schedule trigger simply moved on</strong>. Its 02:30 run happened during the outage,
+    failed, and that slice of the night is now gone — nothing will ever go back for it unless a
+    human notices and does it by hand.</p>
+
+  <p>The <strong>tumbling window trigger walked back</strong> and ran the windows it had missed, in
+    order. It could do that because it keeps state: it knows which windows exist, which have
+    succeeded, and which haven't. That's also why it supports backfill in general — set the start
+    date to last month and it will work through every window since, honouring however much
+    concurrency you allow it.</p>
+
+  <table>
+    <tr><th></th><th>Schedule</th><th>Tumbling window</th></tr>
+    <tr><td>Backfill the past</td><td>No — future times only</td><td>Yes, that's the point</td></tr>
+    <tr><td>Built-in retry</td><td>No</td><td>Yes, configurable</td></tr>
+    <tr><td>Concurrency control</td><td>No</td><td>Yes, 1–50</td></tr>
+    <tr><td>Knows its time slice</td><td>Only "when it fired"</td><td><code>WindowStart</code> / <code>WindowEnd</code></td></tr>
+    <tr><td>Pipelines per trigger</td><td>Many-to-many</td><td>Strictly one-to-one</td></tr>
+    <tr><td>When is it "successful"?</td><td>When the run <em>starts</em></td><td>When the run <em>finishes</em></td></tr>
+    <tr><td>Depends on other windows</td><td>No</td><td>Yes</td></tr>
+  </table>
+
+  <div class="note rd">
+    <div class="t">Read that last-but-one row again</div>
+    <p>A schedule trigger is fire-and-forget: it reports success once it has <em>launched</em> the
+      pipeline. The pipeline can fail thirty seconds later and the trigger's own history still says
+      it did its job. A tumbling window trigger waits for the pipeline and takes on its outcome. If
+      you have ever looked at a green trigger history while the data was plainly missing, this is
+      the row that explains it.</p>
+  </div>
+
+  <h3>So which one?</h3>
+  <p>A useful rule: <strong>if the run is about a period of time, use a tumbling window.</strong>
+    "Yesterday's sales", "last hour's transactions", "the 03:00–04:00 slice" — anything where a run
+    owns a slice and a missed slice leaves a hole. Use a schedule trigger for work that is genuinely
+    about the wall clock rather than a period — a nightly full refresh, a 07:00 report send — where
+    missing one occurrence is an inconvenience, not a gap in a table.</p>
+
+  <details class="hood">
+    <summary>Under the hood · a tumbling window trigger, and why the window parameters matter</summary>
+    <div class="hoodbody">
+<pre><code>{
+  <span class="nm">"name"</span>: <span class="st">"TillsHourly"</span>,
+  <span class="nm">"properties"</span>: {
+    <span class="nm">"type"</span>: <span class="st">"TumblingWindowTrigger"</span>,
+    <span class="nm">"typeProperties"</span>: {
+      <span class="nm">"frequency"</span>: <span class="st">"Hour"</span>,
+      <span class="nm">"interval"</span>: <span class="nu">1</span>,
+      <span class="nm">"startTime"</span>: <span class="st">"2026-08-01T22:00:00Z"</span>,
+      <span class="cm">// how many missed windows may run at once when backfilling</span>
+      <span class="nm">"maxConcurrency"</span>: <span class="nu">4</span>,
+      <span class="nm">"retryPolicy"</span>: { <span class="nm">"count"</span>: <span class="nu">3</span>, <span class="nm">"intervalInSeconds"</span>: <span class="nu">300</span> },
+      <span class="cm">// don't start this window until yesterday's same window succeeded</span>
+      <span class="nm">"dependsOn"</span>: [{
+        <span class="nm">"type"</span>: <span class="st">"TumblingWindowTriggerDependencyReference"</span>,
+        <span class="nm">"referenceTrigger"</span>: { <span class="nm">"referenceName"</span>: <span class="st">"TillsHourly"</span>, <span class="nm">"type"</span>: <span class="st">"TriggerReference"</span> },
+        <span class="nm">"offset"</span>: <span class="st">"-24:00:00"</span>, <span class="nm">"size"</span>: <span class="st">"01:00:00"</span>
+      }]
+    },
+    <span class="nm">"pipeline"</span>: {
+      <span class="nm">"pipelineReference"</span>: { <span class="nm">"referenceName"</span>: <span class="st">"LoadTills"</span>, <span class="nm">"type"</span>: <span class="st">"PipelineReference"</span> },
+      <span class="cm">// ← THIS is the important part</span>
+      <span class="nm">"parameters"</span>: {
+        <span class="nm">"windowStart"</span>: <span class="st">"@trigger().outputs.windowStartTime"</span>,
+        <span class="nm">"windowEnd"</span>:   <span class="st">"@trigger().outputs.windowEndTime"</span>
+      }
+    }
+  }
+}</code></pre>
+      <p>The pipeline then filters on exactly its own slice, which is what makes a rerun harmless:</p>
+<pre><code><span class="cm">-- inside the Copy activity's source query</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> dbo.TillTransactions
+<span class="kw">WHERE</span> ModifiedUtc &gt;= <span class="st">'@{pipeline().parameters.windowStart}'</span>
+  <span class="kw">AND</span> ModifiedUtc &lt;  <span class="st">'@{pipeline().parameters.windowEnd}'</span>;</code></pre>
+      <p><strong>Note the asymmetry: <code>&gt;=</code> on the start, <code>&lt;</code> on the end.</strong>
+        Get that wrong and every boundary row is either loaded twice or missed entirely — a bug that
+        surfaces as "the daily total is off by a rounding error" and takes a week to find.</p>
+      <p>The <code>dependsOn</code> block is the underrated feature. It lets a window wait on
+        another window — including an earlier window of the same trigger — so a backfill of three
+        days' worth of hourly loads runs in the right order instead of forty runs stampeding your
+        source database simultaneously.</p>
+    </div>
+  </details>
+</div>
+</section>
+<!-- ============================ ACT III ============================ -->
+<section class="act" id="act3">
+<div class="wrap reveal">
+  <div class="actmark">Act III · The long haul</div>
+  <h2>Moving four hundred gigabytes before the sun comes up</h2>
+
+  <p class="lede">The Copy activity is the workhorse, and it is a good deal cleverer than it looks.
+    It has two dials worth understanding, and one mental model that will save you from turning them
+    pointlessly.</p>
+
+  <p>The first dial is <strong>Data Integration Units</strong> — DIUs. A DIU is an abstract bundle of
+    CPU, memory and network on the Azure integration runtime. You can request anywhere from 4 to 256
+    of them, and by default ADF picks a number for you based on what you're copying from and to.
+    More DIUs means more machine pointed at the problem.</p>
+
+  <p>The second is <strong>degree of parallelism</strong> — <code>parallelCopies</code> — the number
+    of concurrent threads reading from the source and writing to the sink. For a folder of two
+    thousand supplier CSVs, that's how many files move at once. For a partitioned table, it's how
+    many partitions stream in parallel.</p>
+
+  <div class="scene">
+    <div class="slug">THE MODEL THAT MATTERS</div>
+    <p>Throughput is not what you provisioned. Throughput is the <em>narrowest point on the route</em>
+      — whichever is smallest of: what the source is willing to hand over, what the network can
+      carry, what the sink will accept, and what you paid for.</p>
+    <p>Turning up the dial on the widest part of the route costs money and changes nothing.</p>
+  </div>
+
+  <p>Play with it. Try to make it fast, then try to work out which lever actually did it.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--amber);border-color:rgba(240,166,60,.4)">Diagram 4</span>
+    <span class="ttl">Copy throughput · find the real bottleneck</span>
+    <span class="hint">illustrative model &rarr;</span>
+  </div>
+  <div class="mbody">
+    <div style="margin-bottom:16px">
+      <div class="sl" style="margin-bottom:12px">
+        <label style="margin-bottom:9px">What are you copying?</label>
+        <div class="seg" id="srcSeg">
+          <button data-s="files" class="on">2,000 supplier CSVs</button>
+          <button data-s="partitioned">Partitioned tills table</button>
+          <button data-s="single">One un-partitioned table</button>
+        </div>
+      </div>
+      <div class="sl">
+        <label style="margin-bottom:9px">Where is the source?</label>
+        <div class="seg" id="netSeg">
+          <button data-n="cloud" class="on">Azure (cloud → cloud)</button>
+          <button data-n="onprem">On-prem, via self-hosted IR</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sliders">
+      <div class="sl">
+        <label>Data Integration Units <b id="diuL">32</b></label>
+        <input type="range" id="diu" min="4" max="256" step="4" value="32">
+      </div>
+      <div class="sl">
+        <label>Degree of parallelism <b id="parL">8</b></label>
+        <input type="range" id="par" min="1" max="48" value="8">
+      </div>
+      <div class="sl">
+        <label>Self-hosted IR nodes <b id="nodeL">1</b></label>
+        <input type="range" id="nodes" min="1" max="4" value="1">
+      </div>
+    </div>
+
+    <div class="tune-bar"><i id="tuneFill"></i><span class="cap" id="tuneCap">—</span></div>
+    <div class="statrow">
+      <div><span>effective throughput</span><b id="stThru">—</b></div>
+      <div><span>400 GB would take</span><b id="stTime">—</b></div>
+      <div><span>relative compute cost</span><b id="stCost">—</b></div>
+      <div id="stEffWrap"><span>capacity actually used</span><b id="stEff">—</b></div>
+    </div>
+    <div class="bottleneck" id="bneck"><b>Bottleneck</b><span id="bneckTxt"></span></div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <p>The un-partitioned table is the one that teaches the lesson. A single table with no partition
+    column is a single stream — one reader, one connection, one queue. You can request 256 DIUs and
+    48 parallel copies and the source will still hand you one row at a time in one order. The fix is
+    not a bigger dial; it's giving the source something to parallelise <em>on</em> — a partition
+    column, a date range, a set of key ranges.</p>
+
+  <div class="note">
+    <div class="t">Staged copy — the two-hop trick</div>
+    <p>Sometimes the right move is to copy in two stages: source → blob storage → sink. It sounds
+      slower and often isn't. Enable compression and a slow on-prem link carries far fewer bytes.
+      Some sinks — Synapse via PolyBase, Snowflake, Redshift — are dramatically faster loading from
+      blob than accepting a row stream. And when a firewall only permits 443, staging is what makes
+      the route possible at all. ADF cleans up the interim files itself when the copy completes.</p>
+  </div>
+
+  <details class="hood">
+    <summary>Under the hood · a Copy activity with the dials set deliberately</summary>
+    <div class="hoodbody">
+<pre><code>{
+  <span class="nm">"name"</span>: <span class="st">"CopyTillsToLake"</span>,
+  <span class="nm">"type"</span>: <span class="st">"Copy"</span>,
+  <span class="nm">"policy"</span>: { <span class="nm">"retry"</span>: <span class="nu">3</span>, <span class="nm">"retryIntervalInSeconds"</span>: <span class="nu">120</span>, <span class="nm">"timeout"</span>: <span class="st">"02:00:00"</span> },
+  <span class="nm">"typeProperties"</span>: {
+    <span class="nm">"source"</span>: {
+      <span class="nm">"type"</span>: <span class="st">"SqlServerSource"</span>,
+      <span class="nm">"sqlReaderQuery"</span>: {
+        <span class="nm">"value"</span>: <span class="st">"SELECT * FROM dbo.TillTransactions WHERE ModifiedUtc &gt;= '@{pipeline().parameters.windowStart}' AND ModifiedUtc &lt; '@{pipeline().parameters.windowEnd}'"</span>,
+        <span class="nm">"type"</span>: <span class="st">"Expression"</span>
+      },
+      <span class="cm">// give the source something to parallelise on</span>
+      <span class="nm">"partitionOption"</span>: <span class="st">"PhysicalPartitionsOfTable"</span>
+    },
+    <span class="nm">"sink"</span>: {
+      <span class="nm">"type"</span>: <span class="st">"ParquetSink"</span>,
+      <span class="nm">"storeSettings"</span>: { <span class="nm">"type"</span>: <span class="st">"AzureBlobFSWriteSettings"</span> }
+    },
+    <span class="cm">// omit these two and ADF chooses for you — which is usually right</span>
+    <span class="nm">"dataIntegrationUnits"</span>: <span class="nu">32</span>,
+    <span class="nm">"parallelCopies"</span>: <span class="nu">8</span>,
+
+    <span class="cm">// two-hop through blob, compressed — worth it over a slow link</span>
+    <span class="nm">"enableStaging"</span>: <span class="kw">true</span>,
+    <span class="nm">"stagingSettings"</span>: {
+      <span class="nm">"linkedServiceName"</span>: { <span class="nm">"referenceName"</span>: <span class="st">"stgMeridian"</span>, <span class="nm">"type"</span>: <span class="st">"LinkedServiceReference"</span> },
+      <span class="nm">"path"</span>: <span class="st">"adf-staging"</span>,
+      <span class="nm">"enableCompression"</span>: <span class="kw">true</span>
+    }
+  }
+}</code></pre>
+      <p><strong>Start by setting neither dial.</strong> ADF's automatic choice is genuinely good and
+        adapts to the shape of each run. Set them only when you have measured a specific run and
+        know which way you need to push it — and remember DIUs apply to the Azure integration
+        runtime only. Copies executed by a self-hosted IR are bounded by that machine's cores,
+        memory and link, which is why the node slider above matters more than the DIU one when the
+        source is on-prem.</p>
+      <p>Billing follows the same shape as the dials: data movement is charged per DIU-hour, so
+        <em>used DIUs × how long the copy ran</em>. Doubling DIUs on a route that then finishes in
+        half the time costs roughly the same. Doubling DIUs on a route that doesn't speed up at all
+        costs exactly double. Rates vary by region — the
+        <a href="https://azure.microsoft.com/en-us/pricing/calculator/">Azure pricing calculator</a>
+        is the only honest source for a number.</p>
+    </div>
+  </details>
+</div>
+</section>
+
+<!-- ============================ ACT IV ============================ -->
+<section class="act" id="act4">
+<div class="wrap reveal">
+  <div class="actmark">Act IV · The yard crew</div>
+  <h2>One pipeline that loads two hundred tables</h2>
+
+  <p class="lede">Here is where teams either discover the pattern that makes ADF scale, or quietly
+    build themselves a maintenance nightmare that takes two years to admit to.</p>
+
+  <p>The nightmare version is reasonable-looking: one pipeline per table. Table one gets a pipeline,
+    a dataset, a trigger. So does table two. By table two hundred you have six hundred objects, no
+    two quite alike, and a change to the retry policy is a fortnight of clicking.</p>
+
+  <p>The pattern that works is <strong>metadata-driven</strong>: one pipeline, one parameterised
+    dataset, and a control table that lists what to load. Want to add a table? Insert a row. The
+    pipeline doesn't change. Neither does the trigger. Nothing gets clicked.</p>
+
+  <div class="scene">
+    <div class="slug">THE SHIFT IN THINKING</div>
+    <p>Stop drawing one pipeline per thing you load. Draw one pipeline that reads a list, then
+      does the same careful thing to every item on it.</p>
+    <p>Your pipelines stop being a picture of your data estate and become a description of your
+      <em>process</em>. The estate lives in a table, where it can be queried, audited and changed
+      by a person who has never opened Data Factory.</p>
+  </div>
+
+  <p>Below is that pipeline, running. The Lookup reads the control table; the ForEach fans out across
+    every table it found. Change the batch count and watch the wall-clock time move.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--violet);border-color:rgba(169,139,240,.4)">Diagram 5</span>
+    <span class="ttl">The metadata-driven pipeline, running</span>
+    <span class="hint">set batch count, then run &rarr;</span>
+  </div>
+  <div class="mbody">
+    <div class="pl-canvas">
+      <div class="pl-row" id="plRow"></div>
+      <div class="fanout" id="fanBox" style="display:none">
+        <div class="fh"><span>ForEach · one iteration per table in the control table</span>
+          <span id="fanCount">0 / 24</span></div>
+        <div class="fangrid" id="fanGrid"></div>
+      </div>
+    </div>
+    <div class="sliders" style="margin-top:18px">
+      <div class="sl">
+        <label>Tables in the control table <b id="tblL">24</b></label>
+        <input type="range" id="tbl" min="6" max="60" value="24">
+      </div>
+      <div class="sl">
+        <label>ForEach batch count <b id="batchL">6</b></label>
+        <input type="range" id="batch" min="1" max="20" value="6">
+      </div>
+    </div>
+    <div class="statrow">
+      <div><span>simulated wall clock</span><b id="plTime">—</b></div>
+      <div><span>pipelines you maintain</span><b class="good" id="plObjs">1</b></div>
+      <div><span>source connections open</span><b id="plConns">—</b></div>
+    </div>
+    <div class="ctl">
+      <button class="btn" id="plRun">▶ run pipeline</button>
+      <button class="btn ghost" id="plReset">reset</button>
+      <span class="msg" id="plMsg"></span>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <p>Notice the trade in the batch count. One at a time is gentle and slow. Twenty at a time is fast
+    right up until your source database notices twenty concurrent extract queries and starts
+    refusing connections — or your on-prem IR machine runs out of memory. <strong>The batch count is
+    not a performance setting; it is a politeness setting</strong>, and the correct value is
+    whatever the system on the other end can tolerate at 02:00 without paging its own owner.</p>
+
+  <h3>When copying isn't enough</h3>
+  <p>Everything so far has been movement. Real pipelines also reshape — join tills to products,
+    deduplicate supplier rows, pivot a week into columns. ADF gives you two honest options.</p>
+
+  <p><strong>Mapping data flows</strong> let you draw the transformation — join, aggregate, derive,
+    pivot — and ADF compiles it to Spark and runs it on a cluster it manages. You never write Scala
+    and you never manage a cluster. The costs to know: a cold cluster takes a few minutes to start
+    before any of your data moves, and clusters are billed per vCore-hour with a floor of 8 vCores.
+    That startup is why a pipeline with six sequential data flows can spend more time booting than
+    working — and why the integration runtime's <em>time-to-live</em> setting exists, keeping a
+    cluster warm between sequential runs so the second flow doesn't pay the startup toll again.</p>
+
+  <p><strong>Or delegate.</strong> If the transformation already lives somewhere — a stored procedure
+    your DBAs trust, a Databricks notebook your data scientists own, a Function that calls a pricing
+    API — ADF calls it, waits, and handles the failure. That's the dispatcher doing its actual job.
+    A pipeline made mostly of "go ask that system to do the thing it's good at" is not a cop-out;
+    it's frequently the correct architecture.</p>
+
+  <details class="hood">
+    <summary>Under the hood · the control table and the pipeline that reads it</summary>
+    <div class="hoodbody">
+      <p>The control table is unglamorous and it is the most valuable object in the whole solution:</p>
+<pre><code><span class="kw">CREATE TABLE</span> ctl.LoadRegistry (
+  LoadId          <span class="kw">INT</span> <span class="kw">IDENTITY</span> <span class="kw">PRIMARY KEY</span>,
+  SourceSchema    <span class="kw">SYSNAME</span>      <span class="kw">NOT NULL</span>,
+  SourceTable     <span class="kw">SYSNAME</span>      <span class="kw">NOT NULL</span>,
+  SinkPath        <span class="kw">NVARCHAR</span>(<span class="nu">400</span>) <span class="kw">NOT NULL</span>,
+  WatermarkColumn <span class="kw">SYSNAME</span>      <span class="kw">NOT NULL</span>,
+  LastWatermark   <span class="kw">DATETIME2</span>    <span class="kw">NOT NULL</span>,   <span class="cm">-- how far we got last time</span>
+  BusinessKey     <span class="kw">NVARCHAR</span>(<span class="nu">200</span>) <span class="kw">NOT NULL</span>,   <span class="cm">-- what makes a row unique</span>
+  IsEnabled       <span class="kw">BIT</span>          <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="nu">1</span>,
+  LoadGroup       <span class="kw">TINYINT</span>      <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="nu">1</span>    <span class="cm">-- lets you stagger the night</span>
+);</code></pre>
+      <p>And the pipeline that consumes it. Note <code>isSequential: false</code> with an explicit
+        <code>batchCount</code> — that pair is the politeness setting discussed above:</p>
+<pre><code>{
+  <span class="nm">"name"</span>: <span class="st">"LoadEverything"</span>,
+  <span class="nm">"properties"</span>: {
+    <span class="nm">"parameters"</span>: { <span class="nm">"loadGroup"</span>: { <span class="nm">"type"</span>: <span class="st">"int"</span>, <span class="nm">"defaultValue"</span>: <span class="nu">1</span> } },
+    <span class="nm">"activities"</span>: [
+      {
+        <span class="nm">"name"</span>: <span class="st">"GetTableList"</span>,
+        <span class="nm">"type"</span>: <span class="st">"Lookup"</span>,
+        <span class="nm">"typeProperties"</span>: {
+          <span class="nm">"source"</span>: {
+            <span class="nm">"type"</span>: <span class="st">"AzureSqlSource"</span>,
+            <span class="nm">"sqlReaderQuery"</span>: <span class="st">"SELECT * FROM ctl.LoadRegistry WHERE IsEnabled = 1 AND LoadGroup = @{pipeline().parameters.loadGroup}"</span>
+          },
+          <span class="nm">"firstRowOnly"</span>: <span class="kw">false</span>       <span class="cm">// ← forget this and you get exactly one table</span>
+        }
+      },
+      {
+        <span class="nm">"name"</span>: <span class="st">"ForEachTable"</span>,
+        <span class="nm">"type"</span>: <span class="st">"ForEach"</span>,
+        <span class="nm">"dependsOn"</span>: [{ <span class="nm">"activity"</span>: <span class="st">"GetTableList"</span>, <span class="nm">"dependencyConditions"</span>: [<span class="st">"Succeeded"</span>] }],
+        <span class="nm">"typeProperties"</span>: {
+          <span class="nm">"items"</span>: { <span class="nm">"value"</span>: <span class="st">"@activity('GetTableList').output.value"</span>, <span class="nm">"type"</span>: <span class="st">"Expression"</span> },
+          <span class="nm">"isSequential"</span>: <span class="kw">false</span>,
+          <span class="nm">"batchCount"</span>: <span class="nu">6</span>,             <span class="cm">// be kind to the source</span>
+          <span class="nm">"activities"</span>: [
+            {
+              <span class="nm">"name"</span>: <span class="st">"CopyOneTable"</span>,
+              <span class="nm">"type"</span>: <span class="st">"ExecutePipeline"</span>,
+              <span class="nm">"typeProperties"</span>: {
+                <span class="nm">"pipeline"</span>: { <span class="nm">"referenceName"</span>: <span class="st">"LoadOneTable"</span>, <span class="nm">"type"</span>: <span class="st">"PipelineReference"</span> },
+                <span class="nm">"waitOnCompletion"</span>: <span class="kw">true</span>,
+                <span class="nm">"parameters"</span>: {
+                  <span class="nm">"schemaName"</span>:      <span class="st">"@item().SourceSchema"</span>,
+                  <span class="nm">"tableName"</span>:       <span class="st">"@item().SourceTable"</span>,
+                  <span class="nm">"watermarkColumn"</span>: <span class="st">"@item().WatermarkColumn"</span>,
+                  <span class="nm">"lastWatermark"</span>:   <span class="st">"@item().LastWatermark"</span>,
+                  <span class="nm">"businessKey"</span>:     <span class="st">"@item().BusinessKey"</span>,
+                  <span class="nm">"sinkPath"</span>:        <span class="st">"@item().SinkPath"</span>
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}</code></pre>
+      <p>Two details that bite people. <code>firstRowOnly</code> defaults to <code>true</code> on a
+        Lookup, so a forgotten <code>false</code> silently loads one table and reports success.
+        And a Lookup returns at most a few thousand rows — for a genuinely large control set you
+        page it or drive the ForEach from a stored procedure instead.</p>
+    </div>
+  </details>
+</div>
+</section>
+
+<!-- ============================ ACT V ============================ -->
+<section class="act" id="act5">
+<div class="wrap reveal">
+  <div class="actmark">Act V · 02:47</div>
+  <h2>The night it went wrong</h2>
+
+  <p class="lede">It always goes wrong somewhere. A supplier ships a CSV with an unescaped comma
+    in a product description. The on-prem SQL box starts its backup window and stops answering. A
+    carrier API decides you've asked enough questions for one night and starts returning 429.</p>
+
+  <p>None of this is exceptional. All of it is Tuesday. The measure of a pipeline is not whether it
+    fails — it's what the failure costs you.</p>
+
+  <p>ADF gives you three tools, and then asks you one question that it cannot answer on your behalf.</p>
+
+  <p>The tools: <strong>retry policies</strong> per activity, because most 3am failures are transient
+    and a second attempt four minutes later just works. <strong>Failure paths</strong>, because
+    activity dependencies aren't only "then" — they're <em>Succeeded</em>, <em>Failed</em>,
+    <em>Completed</em> and <em>Skipped</em>, so you can wire a real handler that logs the error,
+    writes the bad file to a quarantine folder, and raises an alert. And <strong>rerun from the
+    failed activity</strong>, so a pipeline that died on step nine of eleven doesn't re-copy four
+    hundred gigabytes to get back to where it was.</p>
+
+  <div class="scene">
+    <div class="slug">THE QUESTION ADF CANNOT ANSWER FOR YOU</div>
+    <p>If I run this again, do I get the same answer — or do I get the answer twice?</p>
+  </div>
+
+  <p>That property is <strong>idempotency</strong>, and it is not a setting. It's a design decision
+    you make in how you write to the sink. Get it right and reruns are boring. Get it wrong and every
+    incident has a second, worse incident hiding inside it — the cleanup.</p>
+
+  <p>Break the night below, both ways.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--red);border-color:rgba(239,91,107,.4)">Diagram 6</span>
+    <span class="ttl">Break it, then rerun it</span>
+    <span class="hint">choose a write strategy first &rarr;</span>
+  </div>
+  <div class="mbody">
+    <div class="sl" style="margin-bottom:14px">
+      <label style="margin-bottom:9px">How does the pipeline write to the sink?</label>
+      <div class="toggle-row" id="wrSeg">
+        <button class="btn ghost" data-w="append">Append rows (naive)</button>
+        <button class="btn ghost" data-w="upsert">Upsert on business key + watermark</button>
+      </div>
+    </div>
+
+    <div class="pl-canvas">
+      <div class="pl-row" id="fRow"></div>
+    </div>
+
+    <div class="rows">
+      <div class="rowbox" id="boxExpect"><div class="rh">rows that should exist</div>
+        <div class="val" id="vExpect">180,000</div><div class="sub2">one night of tills</div></div>
+      <div class="rowbox" id="boxActual"><div class="rh">rows actually in the sink</div>
+        <div class="val" id="vActual">—</div><div class="sub2" id="sActual">not run yet</div></div>
+      <div class="rowbox" id="boxVerdict"><div class="rh">morning verdict</div>
+        <div class="val" id="vVerdict">—</div><div class="sub2" id="sVerdict">&nbsp;</div></div>
+    </div>
+
+    <div class="fail-log" id="fLog"><span class="dim">// waiting…</span></div>
+
+    <div class="ctl">
+      <button class="btn danger" id="fBreak">⚡ run the night (it will fail)</button>
+      <button class="btn" id="fRerun" disabled>↻ rerun from failed activity</button>
+      <button class="btn ghost" id="fReset">reset</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <p>Same failure. Same rerun. Two completely different mornings — and the difference was decided
+    weeks earlier, by whoever chose how the sink gets written.</p>
+
+  <p>The append version is not stupid; it's just optimistic. It assumes every run happens exactly
+    once, which is true until the first time it isn't. The upsert version makes a stronger promise:
+    <em>running me twice is the same as running me once.</em> That promise is what lets you retry
+    automatically, backfill freely, and rerun at 03:00 without first having to reason about what's
+    already in the table.</p>
+
+  <div class="note gr">
+    <div class="t">What makes a load idempotent</div>
+    <p>Three things, and you need all three. A <strong>business key</strong> — the thing that makes
+      a row genuinely unique, not an auto-increment surrogate. A <strong>time slice</strong> that the
+      run owns, so it knows exactly which rows are its responsibility. And a <strong>write that
+      replaces rather than adds</strong> — an upsert/merge, or a delete-then-insert of just that
+      slice. Miss the key and you can't match. Miss the slice and you don't know what to replace.
+      Miss the merge and you're appending.</p>
+  </div>
+
+  <h3>And tell someone</h3>
+  <p>A failure nobody hears about is just a slower, more expensive kind of data loss. ADF emits
+    metrics and run logs to Azure Monitor, so the useful setup is small and worth doing on day one:
+    alert on <em>pipeline failed</em>, alert on <em>pipeline elapsed time above the usual</em>
+    (a run that used to take twenty minutes and now takes ninety is a real signal that nothing else
+    catches), and route both to the place people actually look. Then keep the run history somewhere
+    that outlives ADF's own retention, because the question "what did this pipeline do six weeks
+    ago?" arrives eventually and it always arrives urgently.</p>
+
+  <details class="hood">
+    <summary>Under the hood · retry, failure paths, and an idempotent sink</summary>
+    <div class="hoodbody">
+      <h4>Retry and the four dependency conditions</h4>
+<pre><code>{
+  <span class="nm">"name"</span>: <span class="st">"CopySupplierFile"</span>,
+  <span class="nm">"type"</span>: <span class="st">"Copy"</span>,
+  <span class="cm">// most 3am failures are transient — try again before waking anyone</span>
+  <span class="nm">"policy"</span>: { <span class="nm">"retry"</span>: <span class="nu">3</span>, <span class="nm">"retryIntervalInSeconds"</span>: <span class="nu">240</span>, <span class="nm">"timeout"</span>: <span class="st">"01:00:00"</span> }
+},
+{
+  <span class="nm">"name"</span>: <span class="st">"QuarantineBadFile"</span>,
+  <span class="nm">"type"</span>: <span class="st">"Copy"</span>,
+  <span class="cm">// runs ONLY if the copy above exhausted its retries and failed</span>
+  <span class="nm">"dependsOn"</span>: [{ <span class="nm">"activity"</span>: <span class="st">"CopySupplierFile"</span>, <span class="nm">"dependencyConditions"</span>: [<span class="st">"Failed"</span>] }]
+},
+{
+  <span class="nm">"name"</span>: <span class="st">"RecordOutcome"</span>,
+  <span class="nm">"type"</span>: <span class="st">"SqlServerStoredProcedure"</span>,
+  <span class="cm">// runs either way — this is how the control table learns what happened</span>
+  <span class="nm">"dependsOn"</span>: [{ <span class="nm">"activity"</span>: <span class="st">"CopySupplierFile"</span>, <span class="nm">"dependencyConditions"</span>: [<span class="st">"Completed"</span>] }]
+}</code></pre>
+      <p><code>Completed</code> is the one people forget exists. It fires on success <em>or</em>
+        failure, which is exactly what you want for logging, watermark bookkeeping and cleanup.</p>
+
+      <h4>The idempotent write</h4>
+      <p>Land the slice in a staging table, then merge on the business key. Re-running replaces
+        rather than duplicates, so the second run is a no-op:</p>
+<pre><code><span class="kw">CREATE PROCEDURE</span> ctl.MergeTills
+    @WindowStart <span class="kw">DATETIME2</span>,
+    @WindowEnd   <span class="kw">DATETIME2</span>
+<span class="kw">AS</span>
+<span class="kw">BEGIN</span>
+  <span class="kw">SET</span> XACT_ABORT <span class="kw">ON</span>;
+  <span class="kw">BEGIN TRAN</span>;
+
+  <span class="kw">MERGE</span> dwh.TillTransactions <span class="kw">AS</span> tgt
+  <span class="kw">USING</span> (<span class="kw">SELECT</span> * <span class="kw">FROM</span> stg.TillTransactions
+         <span class="kw">WHERE</span> ModifiedUtc &gt;= @WindowStart <span class="kw">AND</span> ModifiedUtc &lt; @WindowEnd) <span class="kw">AS</span> src
+     <span class="kw">ON</span> tgt.StoreId = src.StoreId              <span class="cm">-- the business key,</span>
+    <span class="kw">AND</span> tgt.TillId  = src.TillId               <span class="cm">-- not an identity column</span>
+    <span class="kw">AND</span> tgt.TxnNumber = src.TxnNumber
+  <span class="kw">WHEN MATCHED</span> <span class="kw">THEN UPDATE SET</span>
+        tgt.Amount = src.Amount, tgt.ModifiedUtc = src.ModifiedUtc
+  <span class="kw">WHEN NOT MATCHED BY TARGET</span> <span class="kw">THEN INSERT</span> (...) <span class="kw">VALUES</span> (...);
+
+  <span class="cm">-- only advance the watermark once the merge has committed</span>
+  <span class="kw">UPDATE</span> ctl.LoadRegistry
+     <span class="kw">SET</span> LastWatermark = @WindowEnd
+   <span class="kw">WHERE</span> SourceTable = <span class="st">'TillTransactions'</span>;
+
+  <span class="kw">COMMIT</span>;
+<span class="kw">END</span></code></pre>
+      <p><strong>The watermark update belongs inside the same transaction as the merge.</strong>
+        Advance it first and a failure between the two steps means you've recorded progress you
+        didn't make — and that gap will never be filled by anything except a human noticing.</p>
+    </div>
+  </details>
+</div>
+</section>
+
+<!-- ============================ CREDITS ============================ -->
+<section class="act" id="end">
+<div class="wrap reveal">
+  <div class="actmark">Credits · 06:41</div>
+  <h2>Why the board is right</h2>
+
+  <p class="lede">Because at 22:00 a trigger fired. Because a pipeline read a list rather than
+    hard-coding one. Because an agent inside the datacentre dialled out instead of a firewall being
+    opened. Because each run owned a slice of time and knew it. Because when the supplier file was
+    malformed, three retries happened, a quarantine folder filled, an alert went out, and the other
+    hundred and ninety-nine files carried on. Because when someone reran the failed step at 03:10,
+    the merge replaced rather than doubled.</p>
+
+  <p>And because none of that was invented that night. It was decided once, written down, and
+    applied to every route in the yard.</p>
+
+  <div class="scene">
+    <div class="slug">THE THROUGH-LINE</div>
+    <p>Azure Data Factory is not really a data-moving tool. It's a place to put the <em>answers</em> —
+      to when, in what order, how many at a time, what if it fails, who finds out, and what happened
+      last night — so that those answers exist once instead of two hundred times.</p>
+    <p>The data movement is the easy part. It was always the easy part.</p>
+  </div>
+
+  <h3>If you're starting on Monday</h3>
+  <table>
+    <tr><th>#</th><th>Do this</th><th>Not this</th></tr>
+    <tr><td>1</td><td>Parameterise datasets from the very first one</td><td>One dataset per table, forever</td></tr>
+    <tr><td>2</td><td>A control table driving one pipeline</td><td>A pipeline per table</td></tr>
+    <tr><td>3</td><td>Tumbling windows for anything that owns a time slice</td><td>Schedule triggers everywhere by habit</td></tr>
+    <tr><td>4</td><td>Design the idempotent write before the first load</td><td>Discovering duplicates during an incident</td></tr>
+    <tr><td>5</td><td>Secrets in Key Vault, referenced — never typed in</td><td>A password in a linked service</td></tr>
+    <tr><td>6</td><td>Leave DIU and parallelism on auto until you've measured</td><td>Turning dials on the widest part of the route</td></tr>
+    <tr><td>7</td><td>Failure alerts and a duration alert on day one</td><td>Finding out from Priya at 06:40</td></tr>
+    <tr><td>8</td><td>Git-backed from the start, ARM templates deployed by a pipeline</td><td>Editing production in the portal</td></tr>
+  </table>
+
+  <div class="note cy">
+    <div class="t">A note on the last row</div>
+    <p>Connect the factory to Git on day one, before there is anything to lose. Development happens
+      on branches; merging to main is what makes a change real. The modern deployment path skips the
+      old "click Publish in the portal" step entirely — a build pipeline validates the factory and
+      exports the ARM template programmatically via Microsoft's
+      <code>@microsoft/azure-data-factory-utilities</code> npm package, and a release pipeline
+      deploys that artifact to test and production. The portal stops being where you ship and goes
+      back to being where you look.</p>
+  </div>
+
+  <div class="note">
+    <div class="t">Colophon</div>
+    <p>Every diagram on this page is a live simulation, not a screenshot. Diagram 4's throughput
+      figures are an illustrative model built to teach where bottlenecks live — not a capacity
+      planner; measure your own runs. Behaviour described here reflects Azure Data Factory as of
+      August 2026: DIUs range 4–256, tumbling window concurrency 1–50, self-hosted integration
+      runtime up to 4 nodes. Pricing is charged per activity run, per DIU-hour and per data-flow
+      vCore-hour, with rates that vary by region — check the calculator rather than trusting any
+      number in a blog post, including this one.</p>
+  </div>
+</div>
+</section>
+
+<div class="nu-shell end-back">
+  <a class="back-link" href="index.html">&larr; Back to all stories</a>
+  <div class="share-row">
+    <span class="share-label">Share</span>
+    <a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fniluniverse.com%2Fadf-night-dispatcher.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a>
+    <a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fniluniverse.com%2Fadf-night-dispatcher.html&text=The%20Night%20Dispatcher%3A%20how%20Azure%20Data%20Factory%20moves%20data%20while%20you%20sleep" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a>
+    <a class="share-btn" href="mailto:?subject=The%20Night%20Dispatcher&body=https%3A%2F%2Fniluniverse.com%2Fadf-night-dispatcher.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a>
+    <button class="share-btn" type="button" data-copy-url="https://niluniverse.com/adf-night-dispatcher.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+  </div>
+</div>
+
+<footer class="sitefoot">
+  <div class="nu-shell foot-inner">
+    <span>&copy; 2026 Nilesh Mohite &mdash; <a href="https://www.nileshmohite.com">www.nileshmohite.com</a></span>
+    <span>Written between deployments &middot; Amalner, India</span>
+  </div>
+</footer>
+
+<script>
+/* ==================== hero: signal lamps in the yard ==================== */
+(function(){
+  const c=document.getElementById('yardCanvas'); if(!c) return;
+  const x=c.getContext('2d'); let w,h,lamps=[],cars=[];
+  function size(){
+    w=c.width=c.offsetWidth*devicePixelRatio; h=c.height=c.offsetHeight*devicePixelRatio; init();
+  }
+  function init(){
+    const dpr=devicePixelRatio;
+    lamps=[];
+    const n=Math.min(26,Math.max(10,Math.floor(w/(110*dpr))));
+    for(let i=0;i<n;i++) lamps.push({
+      x:Math.random()*w, y:h*0.35+Math.random()*h*0.6,
+      r:(Math.random()*1.8+1.2)*dpr,
+      hue:Math.random()<0.72?'240,166,60':(Math.random()<0.5?'93,214,147':'239,91,107'),
+      ph:Math.random()*Math.PI*2, sp:0.4+Math.random()*0.9
+    });
+    cars=[];
+    for(let i=0;i<4;i++) cars.push({
+      y:h*(0.55+i*0.11), x:Math.random()*w, sp:(0.18+Math.random()*0.3)*dpr,
+      len:(70+Math.random()*130)*dpr
+    });
+  }
+  let t=0;
+  function loop(){
+    t+=0.016; x.clearRect(0,0,w,h);
+    const dpr=devicePixelRatio;
+    // rails receding
+    x.strokeStyle='rgba(123,139,166,.10)'; x.lineWidth=dpr;
+    for(let i=0;i<7;i++){
+      const y=h*0.5+i*h*0.075;
+      x.beginPath(); x.moveTo(0,y); x.lineTo(w,y-h*0.02); x.stroke();
+    }
+    // freight moving along the rails
+    for(const car of cars){
+      car.x+=car.sp; if(car.x-car.len>w) car.x=-car.len;
+      const g=x.createLinearGradient(car.x-car.len,0,car.x,0);
+      g.addColorStop(0,'rgba(86,200,232,0)');
+      g.addColorStop(1,'rgba(86,200,232,.30)');
+      x.strokeStyle=g; x.lineWidth=1.6*dpr;
+      x.beginPath(); x.moveTo(car.x-car.len,car.y); x.lineTo(car.x,car.y); x.stroke();
+    }
+    // signal lamps
+    for(const l of lamps){
+      const pulse=0.55+0.45*Math.sin(t*l.sp+l.ph);
+      const g=x.createRadialGradient(l.x,l.y,0,l.x,l.y,l.r*9);
+      g.addColorStop(0,'rgba('+l.hue+','+(0.85*pulse)+')');
+      g.addColorStop(1,'rgba('+l.hue+',0)');
+      x.fillStyle=g; x.beginPath(); x.arc(l.x,l.y,l.r*9,0,7); x.fill();
+      x.fillStyle='rgba('+l.hue+','+(0.95*pulse)+')';
+      x.beginPath(); x.arc(l.x,l.y,l.r,0,7); x.fill();
+    }
+    requestAnimationFrame(loop);
+  }
+  addEventListener('resize',size); size(); loop();
+})();
+
+/* ==================== reveal on scroll ==================== */
+(function(){
+  const io=new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+  }),{threshold:.06,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+})();
+
+/* ==================== D1: the yard, two ways ==================== */
+(function(){
+  const svg=document.getElementById('yardSvg');
+  const sS=document.getElementById('ySrc'), sD=document.getElementById('yDst');
+  const lS=document.getElementById('ySrcL'), lD=document.getElementById('yDstL');
+  const oInt=document.getElementById('yInt'), oCred=document.getElementById('yCred'),
+        oRetry=document.getElementById('yRetry'), oObs=document.getElementById('yObs'),
+        wInt=document.getElementById('yIntWrap');
+  let mode='p2p';
+  const W=640,H=330;
+  function draw(){
+    const ns=+sS.value, nd=+sD.value;
+    lS.textContent=ns; lD.textContent=nd;
+    const sy=i=>30+(H-60)*(ns===1?0.5:i/(ns-1));
+    const dy=i=>30+(H-60)*(nd===1?0.5:i/(nd-1));
+    let p='';
+    // lines
+    if(mode==='p2p'){
+      for(let i=0;i<ns;i++)for(let j=0;j<nd;j++){
+        p+='<line x1="118" y1="'+sy(i).toFixed(1)+'" x2="522" y2="'+dy(j).toFixed(1)+
+           '" stroke="rgba(239,91,107,.30)" stroke-width="1"/>';
+      }
+    } else {
+      for(let i=0;i<ns;i++)
+        p+='<line x1="118" y1="'+sy(i).toFixed(1)+'" x2="288" y2="165" stroke="rgba(86,200,232,.45)" stroke-width="1.3"/>';
+      for(let j=0;j<nd;j++)
+        p+='<line x1="352" y1="165" x2="522" y2="'+dy(j).toFixed(1)+'" stroke="rgba(93,214,147,.45)" stroke-width="1.3"/>';
+    }
+    // nodes
+    for(let i=0;i<ns;i++){
+      const y=sy(i);
+      p+='<rect x="18" y="'+(y-9)+'" width="100" height="18" rx="4" fill="#131926" stroke="#26303f"/>'+
+         '<text class="svgtxt" x="26" y="'+(y+3.5)+'">source '+(i+1)+'</text>';
+    }
+    for(let j=0;j<nd;j++){
+      const y=dy(j);
+      p+='<rect x="522" y="'+(y-9)+'" width="100" height="18" rx="4" fill="#131926" stroke="#26303f"/>'+
+         '<text class="svgtxt" x="530" y="'+(y+3.5)+'">target '+(j+1)+'</text>';
+    }
+    if(mode==='hub'){
+      p+='<rect x="288" y="139" width="64" height="52" rx="9" fill="#2a2113" stroke="#f0a63c" stroke-width="1.6"/>'+
+         '<text class="svgtxt b" x="320" y="160" text-anchor="middle">ADF</text>'+
+         '<text class="svgtxt s" x="320" y="174" text-anchor="middle">one set</text>'+
+         '<text class="svgtxt s" x="320" y="185" text-anchor="middle">of answers</text>';
+    }
+    svg.innerHTML=p;
+    // stats
+    const nm=ns*nd, hub=ns+nd;
+    const v = mode==='p2p'? nm : hub;
+    oInt.textContent=v;
+    oInt.style.color = mode==='p2p' ? 'var(--red)' : 'var(--green)';
+    oCred.textContent = mode==='p2p'? nm : ns+nd;
+    oRetry.textContent = mode==='p2p'? nm : 1;
+    oObs.textContent = mode==='p2p'? 'no' : 'yes';
+    oObs.style.color = mode==='p2p'? 'var(--red)':'var(--green)';
+  }
+  document.querySelectorAll('.yardtabs button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('.yardtabs button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on'); mode=b.dataset.y; draw();
+    });
+  });
+  sS.addEventListener('input',draw); sD.addEventListener('input',draw);
+  draw();
+})();
+
+/* ==================== D2: dispatch board anatomy ==================== */
+(function(){
+  const DATA={
+    trigger:{n:'Trigger',r:'why a run started',
+      p:'The reason a pipeline began. Three kinds: a <b>schedule</b> (wall clock), a <b>tumbling window</b> (contiguous time slices that remember their own state), or an <b>event</b> (a blob appeared, or a message hit Event Grid). Choosing between them is Act II, and it is the decision most worth getting right.',
+      f:[['Also','you can run a pipeline manually or from another pipeline'],['Gotcha','a schedule trigger reports success when the run <i>starts</i>'],['Best for slices','tumbling window — it can backfill, retry and depend on other windows']]},
+    pipeline:{n:'Pipeline',r:'the unit of work you manage',
+      p:'An ordered set of activities. This is the thing you schedule, monitor, parameterise and rerun — the noun that appears in run history and in your alerts. Pipelines can call other pipelines, which is how you keep one that reads a list separate from one that does the careful thing to each item.',
+      f:[['Parameters','pass values in at run time — this is what makes one pipeline serve 200 tables'],['Rerun','from the start, or from the activity that failed'],['Keep them','small and composable rather than one enormous canvas']]},
+    activity:{n:'Activity',r:'one step',
+      p:'A single unit of work inside a pipeline. Copy moves data. Lookup reads a small result set to drive later steps. ForEach loops. If and Switch branch. Execute Pipeline calls another pipeline. Databricks Notebook, Stored Procedure and Azure Function hand the work to something else entirely.',
+      f:[['Retry','per activity: a count and an interval'],['Dependencies','Succeeded, Failed, Completed, Skipped — not just "then"'],['Timeout','defaults are generous; set your own or a hung run blocks the night']]},
+    dataflow:{n:'Mapping data flow',r:'transformation you draw',
+      p:'Joins, aggregates, derived columns, pivots — built visually and compiled to Spark that ADF runs on a cluster it manages for you. No Scala, no cluster administration. The trade is startup: a cold cluster takes a few minutes before any of your data moves.',
+      f:[['Under it','Apache Spark, provisioned per job'],['Cluster sizes','small 8 cores, medium 16, large 32 — and up from there'],['TTL','keeps a cluster warm between sequential flows so you pay the startup once']]},
+    linked:{n:'Linked service',r:'a place and a key',
+      p:'A connection: where a system is, and how to authenticate to it. The equivalent of a connection string, except it also records <i>which integration runtime</i> should use it — that is, whose network the conversation happens on.',
+      f:[['Secrets','reference Azure Key Vault; never type a password in'],['Better still','managed identity, so there is no secret at all'],['Reuse','one linked service serves every dataset pointing at that system']]},
+    dataset:{n:'Dataset',r:'a named shape of data',
+      p:'Which table, which folder, which file format, at a place a linked service describes. The single highest-leverage habit in ADF is to <b>parameterise these</b> — one dataset meaning "a table in the tills database" rather than forty datasets meaning forty specific tables.',
+      f:[['Parameters','schema, table, path, filename — passed in per run'],['Formats','Parquet, Delta, CSV, JSON, Avro, and the rest'],['Smell','if you have one dataset per table, stop and refactor now']]},
+    monitor:{n:'Monitoring',r:'what happened, and when',
+      p:'Run history for every pipeline and every activity inside it: duration, rows read and written, the error, the input and output. This is the thing the two-hundred-scripts-on-a-VM approach never had, and the reason 3am debugging stops being archaeology.',
+      f:[['Retention','ADF keeps runs for a limited window — ship logs to Log Analytics to keep them'],['Alert on','failures, and on runs taking far longer than usual'],['Rerun','from monitoring, including from the failed activity onward']]},
+    ir:{n:'Integration runtime',r:'whose network, whose compute',
+      p:'The compute that actually performs the work — and, crucially, where it sits on the network. <b>Azure IR</b> is Microsoft-managed compute in the cloud. <b>Self-hosted IR</b> is an agent you install inside your own network so ADF can reach private systems without any inbound firewall rule. <b>Azure-SSIS IR</b> runs existing SSIS packages lifted from on-prem.',
+      f:[['Self-hosted needs','outbound HTTPS on 443 only — nothing inbound, ever'],['High availability','up to 4 nodes per self-hosted IR'],['DIUs','apply to Azure IR only; a self-hosted copy is bounded by that machine']]}
+  };
+  const box=document.getElementById('anatInfo');
+  function show(k){
+    const d=DATA[k]; if(!d) return;
+    document.querySelectorAll('.anat .node-g').forEach(g=>g.classList.toggle('sel',g.dataset.k===k));
+    box.innerHTML='<h5>'+d.n+'</h5><div class="role">'+d.r+'</div><p>'+d.p+'</p>'+
+      '<ul class="facts">'+d.f.map(f=>'<li><b>'+f[0]+'</b><span>'+f[1]+'</span></li>').join('')+'</ul>';
+  }
+  document.querySelectorAll('.anat .node-g').forEach(g=>{
+    g.setAttribute('tabindex','0');
+    g.addEventListener('click',()=>show(g.dataset.k));
+    g.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();show(g.dataset.k);} });
+  });
+  show('trigger');
+})();
+
+/* ==================== D3: one night, three triggers ==================== */
+(function(){
+  const START=22, END=30;               // 22:00 → 06:00 next day
+  const SPAN=END-START;
+  const clock=document.getElementById('ttClock'), axis=document.getElementById('ttAxis'),
+        msg=document.getElementById('ttMsg');
+  const lanes={sched:document.getElementById('laneSched'),
+               tumble:document.getElementById('laneTumble'),
+               event:document.getElementById('laneEvent')};
+  const bPlay=document.getElementById('ttPlay'), bOut=document.getElementById('ttOutage'),
+        bDrop=document.getElementById('ttDrop'), bReset=document.getElementById('ttReset');
+  let now=START, timer=null, outage=null, runs=[], drops=[], playing=false;
+
+  function pct(h){ return ((h-START)/SPAN)*100; }
+  function fmt(h){
+    const hh=Math.floor(h)%24, mm=Math.round((h%1)*60);
+    return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+  }
+  function buildAxis(){
+    let s='';
+    for(let h=START;h<=END;h+=2) s+='<span>'+fmt(h)+'</span>';
+    axis.innerHTML=s;
+  }
+  function inOutage(h){ return outage && h>=outage[0] && h<outage[1]; }
+
+  function render(){
+    for(const k in lanes){
+      let s='';
+      for(let h=START+1;h<END;h++) s+='<div class="hour" style="left:'+pct(h)+'%"></div>';
+      if(outage) s+='<div class="tt-outage" style="left:'+pct(outage[0])+'%;width:'+
+        ((outage[1]-outage[0])/SPAN*100)+'%"></div>';
+      runs.filter(r=>r.lane===k).forEach(r=>{
+        s+='<div class="tt-run '+r.cls+'" style="left:'+pct(r.at)+'%;width:'+(r.w||5.5)+'%">'+r.label+'</div>';
+      });
+      s+='<div class="tt-play" style="left:'+pct(now)+'%"></div>';
+      lanes[k].innerHTML=s;
+    }
+    clock.textContent=fmt(now);
+  }
+
+  function fireAt(h){
+    // schedule trigger: 23:30 and 02:30 (=26.5)
+    [23.5,26.5].forEach(t=>{
+      if(Math.abs(h-t)<0.001 && !runs.some(r=>r.lane==='sched'&&r.at===t)){
+        const bad=inOutage(t);
+        runs.push({lane:'sched',at:t,cls:bad?'miss':'ok',
+          label:bad?'lost':'ran',w:6.5});
+        if(bad) note('schedule trigger: 02:30 run failed. That slice is gone — nothing will retry it.','var(--red)');
+      }
+    });
+    // tumbling window: every hour on the hour
+    if(Math.abs(h-Math.round(h))<0.001){
+      const t=Math.round(h);
+      if(t>START && t<END && !runs.some(r=>r.lane==='tumble'&&r.at===t)){
+        const bad=inOutage(t);
+        runs.push({lane:'tumble',at:t,cls:bad?'miss':'ok',label:bad?'waiting':fmt(t),w:100/SPAN-0.6});
+      }
+    }
+  }
+  function note(t,c){ msg.textContent=t; msg.style.color=c||'var(--ink-faint)'; }
+
+  function tick(){
+    now=+(now+0.25).toFixed(2);
+    fireAt(now);
+    if(now>=END){
+      now=END; stop();
+      // backfill: tumbling window walks back over missed windows
+      const missed=runs.filter(r=>r.lane==='tumble'&&r.cls==='miss');
+      if(missed.length){
+        note('source is back — tumbling window is backfilling '+missed.length+' missed window(s)…','var(--amber)');
+        let i=0;
+        const bf=setInterval(()=>{
+          if(i>=missed.length){
+            clearInterval(bf);
+            note('✓ every window accounted for. The schedule trigger’s missed run is still missing.','var(--green)');
+            render(); return;
+          }
+          missed[i].cls='back'; missed[i].label='backfill'; i++; render();
+        },420);
+      } else { note('night complete.','var(--green)'); }
+    }
+    render();
+  }
+  function stop(){ if(timer){clearInterval(timer);timer=null;} playing=false; bPlay.textContent='▶ play the night'; }
+  function play(){
+    if(playing){ stop(); return; }
+    if(now>=END) reset();
+    playing=true; bPlay.textContent='❚❚ pause';
+    timer=setInterval(tick,110);
+  }
+  function reset(){
+    stop(); now=START; runs=[]; drops=[]; outage=null; note(''); render();
+  }
+  bPlay.addEventListener('click',play);
+  bReset.addEventListener('click',reset);
+  bOut.addEventListener('click',()=>{
+    outage=[25,27];  // 01:00 → 03:00
+    note('source outage armed for 01:00–03:00. Play the night.','var(--red)');
+    render();
+  });
+  bDrop.addEventListener('click',()=>{
+    const at=Math.max(START+0.4,Math.min(END-1.2, now + (playing?0.1:1.6)));
+    runs.push({lane:'event',at:+at.toFixed(2),cls:'evt',label:'file → run',w:7});
+    note('a supplier dropped a file at '+fmt(at)+' — the event trigger fired immediately.','var(--cyan)');
+    render();
+  });
+  buildAxis(); reset();
+})();
+
+/* ==================== D4: copy throughput tuner ==================== */
+(function(){
+  const diu=document.getElementById('diu'), par=document.getElementById('par'),
+        nodes=document.getElementById('nodes');
+  const diuL=document.getElementById('diuL'), parL=document.getElementById('parL'),
+        nodeL=document.getElementById('nodeL');
+  const fill=document.getElementById('tuneFill'), cap=document.getElementById('tuneCap');
+  const sThru=document.getElementById('stThru'), sTime=document.getElementById('stTime'),
+        sCost=document.getElementById('stCost'), sEff=document.getElementById('stEff'),
+        sEffW=document.getElementById('stEffWrap');
+  const bn=document.getElementById('bneck'), bnT=document.getElementById('bneckTxt');
+  let src='files', net='cloud';
+  const MAX=900; // MB/s ceiling for the bar scale
+
+  function calc(){
+    const d=+diu.value, p=+par.value, n=+nodes.value;
+    diuL.textContent=d; parL.textContent=p; nodeL.textContent=n;
+    nodes.parentElement.style.opacity = net==='onprem' ? 1 : .38;
+
+    // what we provisioned (illustrative)
+    let provisioned = d*3.2;
+    // what the source can actually give
+    let sourceCap, why=null;
+    if(src==='files')        sourceCap = Math.min(p,2000)*26;
+    else if(src==='partitioned') sourceCap = Math.min(p,32)*22;
+    else                     sourceCap = 42;              // single stream, hard ceiling
+    // network / runtime ceiling
+    let netCap = net==='cloud' ? 100000 : n*95;
+
+    const thru=Math.min(provisioned,sourceCap,netCap);
+    // identify the binding constraint
+    if(thru===sourceCap && sourceCap<provisioned && sourceCap<netCap){
+      why = src==='single'
+        ? 'The source is one un-partitioned table — a single stream. It hands you rows in one order down one connection, so extra DIUs and extra threads have nothing to do. Give the copy a partition column, a date range, or key ranges to split on. Until then this number will not move.'
+        : (src==='files'
+            ? 'You are thread-bound, not DIU-bound. Each file is one unit of work, so throughput tracks the degree of parallelism. Raise parallelism (or accept this is as fast as this file count goes).'
+            : 'You are thread-bound. The table is partitioned, so raising parallelism gets you more partitions in flight — up to the point the source database starts complaining.');
+    } else if(thru===netCap && netCap<provisioned){
+      why='The self-hosted integration runtime is the ceiling. All of this data is being pulled through your own machines — DIUs do not apply to a self-hosted runtime. Add nodes (up to 4), give them more network, or enable staged copy with compression so fewer bytes cross the link.';
+    } else if(thru===provisioned && provisioned<sourceCap){
+      why=null; // genuinely DIU-bound: healthy
+    }
+
+    fill.style.width=Math.min(100,(thru/MAX)*100)+'%';
+    cap.textContent=Math.round(thru)+' MB/s';
+    sThru.textContent=Math.round(thru)+' MB/s';
+    const secs=(400*1024)/thru;
+    sTime.textContent = secs>3600 ? (secs/3600).toFixed(1)+' h' : Math.round(secs/60)+' min';
+    // cost tracks DIU-hours: DIUs x duration
+    const cost=(d*secs/3600);
+    sCost.textContent=cost<1000? Math.round(cost)+' u' : (cost/1000).toFixed(1)+'k u';
+    const eff=Math.round((thru/provisioned)*100);
+    sEff.textContent=Math.min(100,eff)+'%';
+    sEffW.className = eff>=80?'good':(eff>=45?'warn':'bad');
+
+    if(why){ bn.classList.add('show'); bnT.textContent=why; }
+    else { bn.classList.remove('show'); }
+  }
+  [diu,par,nodes].forEach(s=>s.addEventListener('input',calc));
+  document.querySelectorAll('#srcSeg button').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('#srcSeg button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); src=b.dataset.s; calc();
+  }));
+  document.querySelectorAll('#netSeg button').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('#netSeg button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); net=b.dataset.n; calc();
+  }));
+  calc();
+})();
+
+/* ==================== D5: metadata-driven pipeline ==================== */
+(function(){
+  const NODES=[
+    {ic:'◷',n:'Get watermark',d:900},
+    {ic:'☰',n:'Lookup control table',d:1100},
+    {ic:'⇶',n:'ForEach table',d:0},
+    {ic:'✓',n:'Update watermarks',d:900}
+  ];
+  const row=document.getElementById('plRow'), fanBox=document.getElementById('fanBox'),
+        fanGrid=document.getElementById('fanGrid'), fanCount=document.getElementById('fanCount');
+  const tbl=document.getElementById('tbl'), batch=document.getElementById('batch');
+  const tblL=document.getElementById('tblL'), batchL=document.getElementById('batchL');
+  const oTime=document.getElementById('plTime'), oConns=document.getElementById('plConns'),
+        msg=document.getElementById('plMsg');
+  const bRun=document.getElementById('plRun'), bReset=document.getElementById('plReset');
+  let timers=[], running=false;
+  function at(ms,fn){ timers.push(setTimeout(fn,ms)); }
+  function stop(){ timers.forEach(clearTimeout); timers=[]; }
+
+  function build(){
+    row.innerHTML=NODES.map((s,i)=>
+      '<div class="pl-node" id="pn'+i+'"><div class="ic">'+s.ic+'</div><div class="nm3">'+s.n+'</div></div>'+
+      (i<NODES.length-1?'<span class="pl-arrow">→</span>':'')).join('');
+  }
+  function buildFan(){
+    const n=+tbl.value;
+    fanGrid.innerHTML=Array.from({length:n},(_,i)=>'<div class="fan" id="fn'+i+'"></div>').join('');
+    fanCount.textContent='0 / '+n;
+  }
+  function sync(){
+    tblL.textContent=tbl.value; batchL.textContent=batch.value;
+    oConns.textContent=batch.value;
+    if(!running){ reset(); }
+  }
+  function reset(){
+    stop(); running=false; bRun.disabled=false;
+    build(); buildFan(); fanBox.style.display='none';
+    oTime.textContent='—'; oConns.textContent=batch.value; msg.textContent='';
+  }
+  function run(){
+    if(running) return; running=true; bRun.disabled=true;
+    stop(); build(); buildFan(); fanBox.style.display='none'; msg.textContent='';
+    const n=+tbl.value, b=+batch.value;
+    const PER=760;                     // ms per table (simulated)
+    let t=0;
+    // step 0 and 1
+    [0,1].forEach(i=>{
+      at(t,()=>{ document.getElementById('pn'+i).className='pl-node run'; });
+      t+=NODES[i].d;
+      at(t,()=>{ document.getElementById('pn'+i).className='pl-node done'; });
+    });
+    // ForEach
+    at(t,()=>{
+      document.getElementById('pn2').className='pl-node run';
+      fanBox.style.display='block';
+    });
+    const waves=Math.ceil(n/b);
+    let done=0;
+    for(let wv=0; wv<waves; wv++){
+      const startI=wv*b, endI=Math.min(n,startI+b);
+      at(t+wv*PER,()=>{
+        for(let i=startI;i<endI;i++){ const el=document.getElementById('fn'+i); if(el) el.className='fan run'; }
+      });
+      at(t+(wv+1)*PER,()=>{
+        for(let i=startI;i<endI;i++){ const el=document.getElementById('fn'+i); if(el) el.className='fan done'; }
+        done=endI; fanCount.textContent=done+' / '+n;
+      });
+    }
+    t+=waves*PER;
+    at(t,()=>{ document.getElementById('pn2').className='pl-node done'; });
+    at(t,()=>{ document.getElementById('pn3').className='pl-node run'; });
+    t+=NODES[3].d;
+    at(t,()=>{
+      document.getElementById('pn3').className='pl-node done';
+      // simulated wall clock: each table ~ 3 min of real work
+      const mins=Math.ceil(waves*3+2);
+      oTime.textContent=mins+' min';
+      msg.style.color='var(--green)';
+      msg.textContent='✓ '+n+' tables loaded in '+waves+' wave'+(waves===1?'':'s')+' — by one pipeline';
+      running=false; bRun.disabled=false;
+    });
+  }
+  [tbl,batch].forEach(s=>s.addEventListener('input',sync));
+  bRun.addEventListener('click',run);
+  bReset.addEventListener('click',reset);
+  sync(); reset();
+})();
+
+/* ==================== D6: break it, then rerun it ==================== */
+(function(){
+  const STEPS=[
+    {ic:'☰',n:'Lookup files'},
+    {ic:'↓',n:'Copy 1–140'},
+    {ic:'↓',n:'Copy 141'},
+    {ic:'⇄',n:'Merge to sink'},
+    {ic:'✓',n:'Update watermark'}
+  ];
+  const EXPECT=180000, PARTIAL=140000;
+  const row=document.getElementById('fRow'), log=document.getElementById('fLog');
+  const vA=document.getElementById('vActual'), sA=document.getElementById('sActual'),
+        vV=document.getElementById('vVerdict'), sV=document.getElementById('sVerdict'),
+        bxA=document.getElementById('boxActual'), bxV=document.getElementById('boxVerdict');
+  const bBreak=document.getElementById('fBreak'), bRerun=document.getElementById('fRerun'),
+        bReset=document.getElementById('fReset');
+  let mode=null, timers=[], stage=0;
+  function at(ms,fn){ timers.push(setTimeout(fn,ms)); }
+  function stop(){ timers.forEach(clearTimeout); timers=[]; }
+  function line(cls,t){
+    const d=document.createElement('div'); d.className=cls||''; d.textContent=t;
+    log.appendChild(d); log.scrollTop=log.scrollHeight;
+  }
+  function build(){
+    row.innerHTML=STEPS.map((s,i)=>
+      '<div class="pl-node" id="fs'+i+'"><div class="ic">'+s.ic+'</div><div class="nm3">'+s.n+'</div></div>'+
+      (i<STEPS.length-1?'<span class="pl-arrow">→</span>':'')).join('');
+  }
+  function reset(){
+    stop(); stage=0; build();
+    log.innerHTML='<span class="dim">// pick a write strategy, then run the night</span>';
+    vA.textContent='—'; sA.textContent='not run yet'; bxA.className='rowbox';
+    vV.textContent='—'; sV.innerHTML='&nbsp;'; bxV.className='rowbox';
+    bRerun.disabled=true; bBreak.disabled=!mode;
+  }
+  function setMode(m){
+    mode=m;
+    document.querySelectorAll('#wrSeg button').forEach(b=>{
+      const on=b.dataset.w===m;
+      b.classList.toggle('ghost',!on);
+      b.style.background = on ? (m==='upsert'?'var(--green)':'var(--red)') : '';
+      b.style.color = on ? (m==='upsert'?'#04220f':'#2a0508') : '';
+      b.style.borderColor = on ? 'transparent' : '';
+    });
+    reset();
+    line('dim', m==='upsert'
+      ? '// strategy: MERGE on (StoreId, TillId, TxnNumber), watermark advanced in the same transaction'
+      : '// strategy: INSERT every row the copy produces');
+  }
+  function runNight(){
+    stop(); build(); log.innerHTML=''; bBreak.disabled=true;
+    let t=0;
+    line('dim','── 02:31 pipeline LoadSupplierFiles started ──');
+    at(t+=300,()=>{ document.getElementById('fs0').className='pl-node run'; });
+    at(t+=700,()=>{ document.getElementById('fs0').className='pl-node done';
+      line('','▸ 200 supplier files found'); });
+    at(t+=200,()=>{ document.getElementById('fs1').className='pl-node run'; });
+    at(t+=1400,()=>{ document.getElementById('fs1').className='pl-node done';
+      line('ok','✓ files 1–140 copied · 140,000 rows'); });
+    at(t+=200,()=>{ document.getElementById('fs2').className='pl-node run';
+      line('','▸ copying file 141 — supplier_ACME_0815.csv'); });
+    at(t+=1100,()=>{
+      line('er','✗ column count mismatch at line 4,192 (unescaped comma)');
+      line('wa','⚠ retry 1 of 3 in 240s…');
+    });
+    at(t+=900,()=>{ line('wa','⚠ retry 2 of 3 — same error'); });
+    at(t+=700,()=>{ line('wa','⚠ retry 3 of 3 — same error'); });
+    at(t+=700,()=>{
+      document.getElementById('fs2').className='pl-node fail';
+      line('er','✗ activity "Copy 141" failed after 3 retries');
+      line('','▸ failure path: file moved to /quarantine/');
+      line('','▸ alert raised → #data-oncall');
+      line('dim','// pipeline halted. Steps 4 and 5 never ran.');
+      vA.textContent=PARTIAL.toLocaleString();
+      sA.textContent='partial — 60 files never landed';
+      bxA.className='rowbox bad';
+      vV.textContent='INCOMPLETE'; vV.style.fontSize='19px';
+      sV.textContent='someone fixes the file and reruns';
+      bxV.className='rowbox bad';
+      bRerun.disabled=false; stage=1;
+      line('wa','⚠ 03:07 — supplier resends a clean file. Rerun from the failed activity.');
+    });
+  }
+  function rerun(){
+    stop(); bRerun.disabled=true;
+    document.getElementById('fs2').className='pl-node';
+    let t=0;
+    line('dim','── 03:10 rerun from failed activity: "Copy 141" ──');
+    line('dim','// steps 1–2 are skipped — 140,000 rows are not re-copied');
+    at(t+=400,()=>{ document.getElementById('fs2').className='pl-node run'; });
+    at(t+=1100,()=>{ document.getElementById('fs2').className='pl-node done';
+      line('ok','✓ files 141–200 copied · 40,000 rows'); });
+    at(t+=250,()=>{ document.getElementById('fs3').className='pl-node run';
+      line('','▸ writing to sink…'); });
+    at(t+=1200,()=>{
+      document.getElementById('fs3').className='pl-node done';
+      if(mode==='upsert'){
+        line('ok','✓ MERGE matched 140,000 existing rows → updated in place');
+        line('ok','✓ 40,000 new rows inserted');
+        vA.textContent=EXPECT.toLocaleString();
+        sA.textContent='exactly right';
+        bxA.className='rowbox good';
+      } else {
+        line('er','✗ 140,000 rows from the first attempt were inserted again');
+        line('er','✗ plus 40,000 new rows');
+        vA.textContent=(PARTIAL+EXPECT).toLocaleString();
+        sA.textContent='140,000 duplicates';
+        bxA.className='rowbox bad';
+      }
+    });
+    at(t+=300,()=>{ document.getElementById('fs4').className='pl-node run'; });
+    at(t+=800,()=>{
+      document.getElementById('fs4').className='pl-node done';
+      if(mode==='upsert'){
+        line('ok','✓ watermark advanced · pipeline succeeded');
+        line('dim','// 06:40 — Priya opens the board. It is right.');
+        vV.textContent='CORRECT'; vV.style.fontSize='22px';
+        sV.textContent='rerunning was safe by design';
+        bxV.className='rowbox good';
+      } else {
+        line('wa','⚠ watermark advanced · pipeline reported SUCCESS');
+        line('er','✗ every till total is now inflated. Nothing failed. Nothing alerted.');
+        line('dim','// 06:40 — Priya opens the board. Revenue is up 78% overnight.');
+        vV.textContent='SILENTLY WRONG'; vV.style.fontSize='16px';
+        sV.textContent='green pipeline, broken numbers';
+        bxV.className='rowbox bad';
+      }
+      bBreak.disabled=false;
+    });
+  }
+  document.querySelectorAll('#wrSeg button').forEach(b=>{
+    b.addEventListener('click',()=>setMode(b.dataset.w));
+  });
+  bBreak.addEventListener('click',runNight);
+  bRerun.addEventListener('click',rerun);
+  bReset.addEventListener('click',()=>{ if(mode) setMode(mode); else reset(); });
+  reset();
+})();
+</script>
+
+<script>
+/* ==================== site chrome: theme toggle ==================== */
+(function(){
+  var KEY='nu-theme';
+  var toggle=document.getElementById('themeToggle');
+  if(!toggle) return;
+  function apply(t){
+    document.documentElement.setAttribute('data-theme',t);
+    toggle.setAttribute('aria-pressed', t==='linkedin' ? 'true':'false');
+    toggle.setAttribute('title', t==='linkedin' ? 'Switch to dark theme' : 'Switch to light theme');
+  }
+  var saved=null; try{saved=localStorage.getItem(KEY);}catch(e){}
+  if(saved==='linkedin' || saved==='cinema') apply(saved);
+  toggle.addEventListener('click',function(){
+    var isLight=document.documentElement.getAttribute('data-theme')==='linkedin';
+    var next=isLight?'cinema':'linkedin';
+    apply(next);
+    try{localStorage.setItem(KEY,next);}catch(e){}
+  });
+})();
+</script>
+<script>
+/* ==================== site chrome: copy link ==================== */
+(function(){
+  document.querySelectorAll('[data-copy-url]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var url = btn.getAttribute('data-copy-url');
+      var done = function(){
+        var original = btn.getAttribute('aria-label');
+        btn.classList.add('copied');
+        btn.setAttribute('aria-label','Copied!');
+        setTimeout(function(){ btn.classList.remove('copied'); btn.setAttribute('aria-label', original); }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function(){});
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = url; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch(e){}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+})();
+</script>
+<script>
+/* ==================== site chrome: reading progress ==================== */
+(function(){
+  var HEADING_SELECTOR = 'section.act h2';
+  var headings = Array.prototype.slice.call(document.querySelectorAll(HEADING_SELECTOR));
+  if (!headings.length) return;
+
+  var fill = document.getElementById('rpFill');
+  var ring = document.getElementById('rpRing');
+  var pct = document.getElementById('rpPct');
+  var status = document.getElementById('rpStatus');
+  var list = document.getElementById('rpList');
+  var toc = document.getElementById('rpToc');
+  var toggle = document.getElementById('rpToggle');
+  if (!fill || !toc) return;
+
+  var RING_CIRC = 97.4;
+  var seen = {};
+
+  var items = headings.map(function(h, i){
+    var base = 'rp-section-' + (i + 1);
+    if (!h.id) h.id = base;
+    while (seen[h.id]) { h.id = base + '-' + Math.random().toString(36).slice(2,6); }
+    seen[h.id] = true;
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.textContent = h.textContent.replace(/\s+/g,' ').trim();
+    li.appendChild(a);
+    list.appendChild(li);
+    return { heading: h, li: li };
+  });
+
+  function updateProgress(){
+    var doc = document.documentElement;
+    var scrollTop = window.scrollY || doc.scrollTop;
+    var height = doc.scrollHeight - doc.clientHeight;
+    var ratio = height > 0 ? Math.min(1, Math.max(0, scrollTop / height)) : 0;
+    var percent = Math.round(ratio * 100);
+    fill.style.width = percent + '%';
+    if (ring) ring.style.strokeDashoffset = String(RING_CIRC * (1 - ratio));
+    if (pct) pct.textContent = percent + '%';
+    if (status) status.textContent = percent >= 99 ? 'Finished reading' : percent + '% read';
+
+    var activeIdx = 0;
+    var probe = scrollTop + window.innerHeight * 0.3;
+    for (var i = 0; i < items.length; i++) {
+      var top = items[i].heading.getBoundingClientRect().top + scrollTop;
+      if (top <= probe) activeIdx = i;
+    }
+    items.forEach(function(it, i){ it.li.classList.toggle('active', i === activeIdx); });
+  }
+
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  window.addEventListener('resize', updateProgress);
+  updateProgress();
+
+  toggle.addEventListener('click', function(){
+    var open = toc.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', function(e){
+    if (!toc.contains(e.target)) toc.classList.remove('open');
+  });
+})();
+</script>
+</body>
+</html>

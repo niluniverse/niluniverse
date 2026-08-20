@@ -7,15 +7,15 @@
 <meta name="description" content="How the Outbox pattern quietly keeps events from being lost. It helps a system survive broker outages, pod evictions, and traffic spikes, without asking for credit.">
 <meta property="og:title" content="The Outbox Pattern: The Silent Hero of Distributed Services" />
 <meta property="og:description" content="How one database table and one transaction can absorb broker outages, retries, and traffic spikes, so your microservices do not have to." />
-<meta property="og:url" content="https://blog.niluniverse.com/outbox-pattern.html" />
+<meta property="og:url" content="https://niluniverse.com/outbox-pattern.html" />
 <meta property="og:type" content="article" />
-<meta property="og:image" content="https://blog.niluniverse.com/outbox-pattern-banner.jpg" />
+<meta property="og:image" content="https://niluniverse.com/outbox-pattern-banner.jpg" />
 <meta property="og:image:width" content="1400" />
 <meta property="og:image:height" content="788" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="The Outbox Pattern: The Silent Hero of Distributed Services" />
 <meta name="twitter:description" content="How one database table and one transaction can absorb broker outages, retries, and traffic spikes, so your microservices do not have to." />
-<meta name="twitter:image" content="https://blog.niluniverse.com/outbox-pattern-banner.jpg" />
+<meta name="twitter:image" content="https://niluniverse.com/outbox-pattern-banner.jpg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -238,7 +238,7 @@
     *{animation:none!important;transition:none!important}
     .reveal{opacity:1;transform:none}
   }
-  /* ==== Cinema theme (new default) + toggle button — shared with niluniverse.com ==== */
+  /* ==== Cinema theme (new default) + toggle button — shared with www.nileshmohite.com ==== */
   [data-theme="cinema"] {
     --bg: #14171D; --panel: #1B1F27; --panel-2: #212630; --line: #2E3440;
     --accent: #C9A24B; --accent-hi: #E6C06E; --on-accent: #14171D;
@@ -287,7 +287,7 @@
   .back-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   .end-back { display: flex; flex-direction: column; align-items: center; gap: 16px; }
 
-  /* ==== Reading progress rail — shared with niluniverse.com ==== */
+  /* ==== Reading progress rail — shared with www.nileshmohite.com ==== */
   .rp-bar { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: transparent; z-index: 9999; pointer-events: none; }
   .rp-fill { height: 100%; width: 0%; background: var(--accent); transition: width .1s linear; }
   .rp-toc { position: fixed; right: 20px; bottom: 20px; z-index: 9998; font-family: var(--mono); }
@@ -322,6 +322,15 @@
     .rp-ring { width: 46px; height: 46px; }
     .rp-panel { width: min(78vw, 280px); }
   }
+  .nav-tagline {
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .03em;
+    color: var(--dim); text-align: center; margin: 0 auto; white-space: nowrap;
+  }
+  .nav-tagline b { color: var(--accent); font-weight: 500; }
+  @media (max-width: 620px) {
+    nav { flex-wrap: wrap; row-gap: 6px; }
+    .nav-tagline { flex-basis: 100%; order: 3; white-space: normal; font-size: .68rem; }
+  }
 </style>
 </head>
 <body>
@@ -339,10 +348,11 @@
 <header class="site">
   <div class="wrap">
     <nav>
-      <a class="brand" href="https://niluniverse.com">
+      <a class="brand" href="https://www.nileshmohite.com">
         <svg class="brand-mark" viewBox="0 0 120 120" fill="none" aria-hidden="true"><rect x="4" y="4" width="112" height="112" rx="26" fill="var(--accent)"/><polyline points="30,42 54,62 30,82" stroke="var(--on-accent)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><rect x="62" y="74" width="30" height="14" rx="4" fill="var(--on-accent)"/></svg>
         <span><span class="b-nil">nil</span>universe</span>
       </a>
+      <span class="nav-tagline">Directed by <b>Nilesh Mohite</b> and Presented by AI</span>
       <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" title="Switch to light theme">
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -353,7 +363,7 @@
 
 <div class="wrap back-bar">
   <a class="back-link" href="index.html">&larr; All stories</a>
-  <div class="share-row"><a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.niluniverse.com%2Foutbox-pattern.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a><a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fblog.niluniverse.com%2Foutbox-pattern.html&text=The%20Outbox%20Pattern%3A%20The%20Silent%20Hero%20of%20Distributed%20Services" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a><a class="share-btn" href="mailto:?subject=The%20Outbox%20Pattern%3A%20The%20Silent%20Hero%20of%20Distributed%20Services&body=https%3A%2F%2Fblog.niluniverse.com%2Foutbox-pattern.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a><button class="share-btn" type="button" data-copy-url="https://blog.niluniverse.com/outbox-pattern.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button></div>
+  <div class="share-row"><a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fniluniverse.com%2Foutbox-pattern.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a><a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fniluniverse.com%2Foutbox-pattern.html&text=The%20Outbox%20Pattern%3A%20The%20Silent%20Hero%20of%20Distributed%20Services" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a><a class="share-btn" href="mailto:?subject=The%20Outbox%20Pattern%3A%20The%20Silent%20Hero%20of%20Distributed%20Services&body=https%3A%2F%2Fniluniverse.com%2Foutbox-pattern.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a><button class="share-btn" type="button" data-copy-url="https://niluniverse.com/outbox-pattern.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button></div>
 </div>
 
 <!-- ===================== HERO ===================== -->
@@ -584,7 +594,7 @@
 
 <div class="wrap end-back">
   <a class="back-link" href="index.html">&larr; Back to all stories</a>
-  <div class="share-row"><span class="share-label">Share</span><a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.niluniverse.com%2Foutbox-pattern.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a><a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fblog.niluniverse.com%2Foutbox-pattern.html&text=The%20Outbox%20Pattern%3A%20The%20Silent%20Hero%20of%20Distributed%20Services" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a><a class="share-btn" href="mailto:?subject=The%20Outbox%20Pattern%3A%20The%20Silent%20Hero%20of%20Distributed%20Services&body=https%3A%2F%2Fblog.niluniverse.com%2Foutbox-pattern.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a><button class="share-btn" type="button" data-copy-url="https://blog.niluniverse.com/outbox-pattern.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button></div>
+  <div class="share-row"><span class="share-label">Share</span><a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fniluniverse.com%2Foutbox-pattern.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a><a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fniluniverse.com%2Foutbox-pattern.html&text=The%20Outbox%20Pattern%3A%20The%20Silent%20Hero%20of%20Distributed%20Services" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a><a class="share-btn" href="mailto:?subject=The%20Outbox%20Pattern%3A%20The%20Silent%20Hero%20of%20Distributed%20Services&body=https%3A%2F%2Fniluniverse.com%2Foutbox-pattern.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a><button class="share-btn" type="button" data-copy-url="https://niluniverse.com/outbox-pattern.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button></div>
 </div>
 <script>
 /* ---------- ambient node field (the "ecosystem" the hero guards) ---------- */
@@ -659,7 +669,7 @@
 <script src="assets/engagement.js" data-accent="var(--accent)" defer></script>
 <footer>
   <div class="wrap foot-inner">
-    <span>&copy; 2026 Nilesh Mohite &mdash; <a href="https://niluniverse.com" style="color:var(--accent)">niluniverse.com</a></span>
+    <span>&copy; 2026 Nilesh Mohite &mdash; <a href="https://www.nileshmohite.com" style="color:var(--accent)">www.nileshmohite.com</a></span>
     <span>Written between deployments &middot; Amalner, India</span>
   </div>
 </footer>

@@ -1,0 +1,2500 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cinema">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terraform Builds the Theatre, Kubernetes Conducts the Show | Nilesh Mohite</title>
+<meta name="description" content="Two heroes, one idea. A cinematic, interactive walkthrough of Terraform, Azure Kubernetes Service and CI/CD — with six live diagrams — as a .NET monolith becomes a microservice ecosystem.">
+<meta name="author" content="Nilesh Mohite">
+<meta property="og:title" content="Terraform Builds the Theatre, Kubernetes Conducts the Show">
+<meta property="og:description" content="Two heroes, one reconciliation loop. Terraform builds the theatre; Kubernetes conducts the show — told in five acts, with six live diagrams.">
+<meta property="og:url" content="https://niluniverse.com/terraform-kubernetes-theatre.html">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://niluniverse.com/terraform-kubernetes-theatre-banner.jpg">
+<meta property="og:image:width" content="1400">
+<meta property="og:image:height" content="788">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Terraform Builds the Theatre, Kubernetes Conducts the Show">
+<meta name="twitter:description" content="Two heroes, one reconciliation loop — Terraform and AKS, told in five acts, with six live diagrams.">
+<meta name="twitter:image" content="https://niluniverse.com/terraform-kubernetes-theatre-banner.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="favicon-180.png">
+<style>
+:root{
+  --bg:#07090f;
+  --bg-2:#0c1119;
+  --panel:#111826;
+  --panel-2:#161f30;
+  --line:#222e44;
+  --line-soft:#1a2333;
+  --ink:#e8edf6;
+  --ink-dim:#a2b0c6;
+  --ink-faint:#6b7a93;
+  --azure:#3aa0ff;
+  --azure-soft:#1d6fd0;
+  --tf:#9a6cf0;
+  --k8s:#4ad6c4;
+  --amber:#f2b544;
+  --green:#4ade80;
+  --red:#f4707a;
+  --pink:#f472b6;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:17px;line-height:1.72;-webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+img{max-width:100%}
+a{color:var(--azure);text-decoration:none;border-bottom:1px solid rgba(58,160,255,.3)}
+a:hover{border-bottom-color:var(--azure)}
+
+/* ---------- reading progress ---------- */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:200;
+  background:linear-gradient(90deg,var(--azure),var(--tf),var(--k8s));
+  box-shadow:0 0 12px rgba(58,160,255,.6);transition:width .1s linear}
+
+/* ---------- sticky act nav ---------- */
+#actnav{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:150;
+  display:flex;flex-direction:column;gap:14px}
+#actnav a{display:flex;align-items:center;gap:10px;border:0;justify-content:flex-end}
+#actnav .dot{width:9px;height:9px;border-radius:50%;background:#2a3a52;
+  transition:all .25s;flex:none}
+#actnav a.on .dot{background:var(--azure);box-shadow:0 0 0 4px rgba(58,160,255,.18)}
+#actnav .lab{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);
+  opacity:0;transform:translateX(6px);transition:all .25s;white-space:nowrap}
+#actnav a:hover .lab,#actnav a.on .lab{opacity:1;transform:none;color:var(--ink-dim)}
+@media(max-width:1180px){#actnav{display:none}}
+
+/* ---------- layout ---------- */
+.wrap{max-width:820px;margin:0 auto;padding:0 24px}
+.wide{max-width:1080px;margin:0 auto;padding:0 24px}
+
+/* ---------- hero ---------- */
+.hero{position:relative;min-height:96vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;overflow:hidden;
+  border-bottom:1px solid var(--line-soft)}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%}
+.hero .veil{position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 45%,transparent 0%,rgba(7,9,15,.55) 55%,var(--bg) 88%)}
+.hero-in{position:relative;z-index:2;padding:0 24px;max-width:940px}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.32em;text-transform:uppercase;
+  color:var(--azure);margin-bottom:26px}
+.hero h1{font-family:var(--serif);font-size:clamp(2.5rem,7vw,5.1rem);line-height:1.02;
+  margin:0 0 22px;font-weight:400;letter-spacing:-.02em}
+.hero h1 em{font-style:italic;
+  background:linear-gradient(100deg,var(--azure),var(--k8s) 55%,var(--tf));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .sub{font-size:19px;color:var(--ink-dim);max-width:620px;margin:0 auto 34px}
+.hero .meta{font-family:var(--mono);font-size:12px;color:var(--ink-faint);letter-spacing:.06em}
+.scrollcue{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);z-index:2;
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--ink-faint);
+  animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translate(-50%,0);opacity:.5}50%{transform:translate(-50%,7px);opacity:1}}
+
+/* ---------- acts ---------- */
+section.act{padding:96px 0 20px;position:relative}
+.actmark{font-family:var(--mono);font-size:11.5px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--azure);margin-bottom:14px;display:flex;align-items:center;gap:14px}
+.actmark:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,var(--line),transparent)}
+h2{font-family:var(--serif);font-weight:400;font-size:clamp(1.9rem,4.2vw,3rem);line-height:1.12;
+  margin:0 0 20px;letter-spacing:-.015em}
+h3{font-size:1.22rem;margin:44px 0 12px;font-weight:600;letter-spacing:-.01em}
+h4{font-size:.98rem;margin:26px 0 8px;font-weight:600;color:var(--ink)}
+p{margin:0 0 20px;color:#d3dcea}
+.lede{font-size:20px;color:var(--ink);line-height:1.68}
+.lede:first-letter{float:left;font-family:var(--serif);font-size:64px;line-height:.82;
+  padding:6px 12px 0 0;color:var(--azure)}
+strong{color:#fff;font-weight:600}
+em.term{font-style:normal;color:var(--k8s);font-family:var(--mono);font-size:.9em}
+
+/* ---------- scene / cinematic block ---------- */
+.scene{border-left:2px solid var(--azure);background:linear-gradient(90deg,rgba(58,160,255,.07),transparent 70%);
+  padding:22px 26px;margin:34px 0;border-radius:0 8px 8px 0}
+.scene .slug{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--azure);margin-bottom:10px}
+.scene p{font-family:var(--serif);font-size:19px;line-height:1.62;color:#dee6f2;margin:0 0 12px}
+.scene p:last-child{margin-bottom:0}
+
+/* ---------- callouts ---------- */
+.note{border:1px solid var(--line);background:var(--panel);border-radius:10px;
+  padding:18px 20px;margin:28px 0}
+.note .t{font-size:12px;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--amber);margin-bottom:8px}
+.note p{margin:0;font-size:15.5px;color:var(--ink-dim)}
+.note.blue .t{color:var(--azure)}
+.note.green .t{color:var(--green)}
+
+/* ---------- under the hood (details) ---------- */
+details.hood{border:1px solid var(--line);border-radius:12px;margin:26px 0;background:var(--panel);
+  overflow:hidden}
+details.hood>summary{cursor:pointer;list-style:none;padding:15px 20px;font-family:var(--mono);
+  font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim);
+  display:flex;align-items:center;gap:11px;transition:color .2s}
+details.hood>summary::-webkit-details-marker{display:none}
+details.hood>summary:hover{color:var(--ink)}
+details.hood>summary:before{content:"▸";color:var(--azure);transition:transform .2s;display:inline-block;font-size:14px}
+details.hood[open]>summary:before{transform:rotate(90deg)}
+details.hood[open]>summary{border-bottom:1px solid var(--line-soft)}
+.hoodbody{padding:6px 20px 20px}
+.hoodbody p{font-size:15.5px}
+
+/* ---------- code ---------- */
+pre{background:#05070c;border:1px solid var(--line-soft);border-radius:10px;padding:16px 18px;
+  overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.66;margin:16px 0;color:#c7d3e6}
+code{font-family:var(--mono);font-size:.88em;background:rgba(58,160,255,.1);
+  padding:2px 6px;border-radius:4px;color:#9fc9f5}
+pre code{background:none;padding:0;color:inherit;font-size:13px}
+.cm{color:#5b6b85}      /* comment */
+.kw{color:#c792ea}      /* keyword */
+.st{color:#a5e3a0}      /* string */
+.nm{color:#7fd3ff}      /* name */
+.nu{color:#f2b544}      /* number */
+.fn{color:#f4a8c0}
+.filetag{font-family:var(--mono);font-size:11px;color:var(--ink-faint);letter-spacing:.1em;
+  margin:18px 0 -8px;text-transform:uppercase}
+
+/* ================= INTERACTIVE MODULES ================= */
+.module{border:1px solid var(--line);border-radius:16px;background:
+  linear-gradient(180deg,var(--panel-2),var(--panel));margin:44px 0;overflow:hidden;
+  box-shadow:0 24px 60px -30px rgba(0,0,0,.9)}
+.module-head{padding:16px 20px;border-bottom:1px solid var(--line-soft);
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.module-head .ttl{font-size:14px;font-weight:600;letter-spacing:-.01em}
+.module-head .hint{font-family:var(--mono);font-size:11px;color:var(--ink-faint);letter-spacing:.08em;
+  margin-left:auto}
+.chip{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--ink-faint)}
+
+.btn{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  background:var(--azure);color:#04121f;border:0;border-radius:7px;padding:9px 16px;
+  cursor:pointer;font-weight:700;transition:all .18s}
+.btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink-dim);font-weight:500}
+.btn.ghost:hover{border-color:var(--azure);color:var(--azure)}
+.btn.warn{background:var(--amber);color:#241800}
+.btn.danger{background:var(--red);color:#2a0509}
+
+/* ---- M1: clickable AKS anatomy ---- */
+.anat{display:grid;grid-template-columns:1.35fr .95fr;min-height:430px}
+@media(max-width:820px){.anat{grid-template-columns:1fr}}
+.anat-map{padding:18px;border-right:1px solid var(--line-soft);position:relative}
+@media(max-width:820px){.anat-map{border-right:0;border-bottom:1px solid var(--line-soft)}}
+.anat-info{padding:22px 22px 26px;background:rgba(5,8,14,.45)}
+.anat-info h5{margin:0 0 4px;font-size:16px;font-weight:600}
+.anat-info .role{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--azure);margin-bottom:14px}
+.anat-info p{font-size:14.5px;color:var(--ink-dim);margin:0 0 12px;line-height:1.65}
+.anat-info .facts{list-style:none;padding:0;margin:14px 0 0;font-size:13px}
+.anat-info .facts li{padding:7px 0;border-top:1px solid var(--line-soft);color:var(--ink-faint);
+  display:flex;gap:10px}
+.anat-info .facts li b{color:var(--ink);font-weight:500;flex:none;width:96px;font-family:var(--mono);
+  font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding-top:2px}
+.node-g{cursor:pointer}
+.node-g rect,.node-g circle{transition:all .22s}
+.node-g:hover .box{stroke-width:1.8}
+.node-g.sel .box{stroke-width:2.2;filter:url(#glow)}
+.svgtxt{font-family:var(--mono);font-size:9.5px;fill:#a8b8d0;letter-spacing:.04em;pointer-events:none}
+.svgtxt.b{fill:#fff;font-size:10.5px;font-weight:600}
+.svgtxt.s{font-size:8px;fill:#6b7a93}
+
+/* ---- M2: terraform stepper ---- */
+.tfwrap{display:grid;grid-template-columns:1fr 1fr}
+@media(max-width:860px){.tfwrap{grid-template-columns:1fr}}
+.tfterm{background:#04060a;padding:18px;font-family:var(--mono);font-size:12.2px;line-height:1.72;
+  min-height:400px;max-height:460px;overflow-y:auto;border-right:1px solid var(--line-soft)}
+.tfterm .ln{white-space:pre-wrap;word-break:break-word}
+.tfterm .c-g{color:var(--green)}.tfterm .c-a{color:var(--amber)}.tfterm .c-b{color:var(--azure)}
+.tfterm .c-d{color:#5b6b85}.tfterm .c-p{color:var(--tf)}.tfterm .c-w{color:#e8edf6}
+.tfgraph{padding:20px;position:relative}
+.tfstage{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--tf);margin-bottom:14px}
+.tfres{display:flex;align-items:center;gap:11px;padding:8px 11px;border-radius:8px;margin-bottom:7px;
+  border:1px solid transparent;font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);
+  transition:all .35s}
+.tfres .dot{width:7px;height:7px;border-radius:50%;background:#2a3a52;flex:none;transition:all .35s}
+.tfres.pend{border-color:var(--line-soft)}
+.tfres.run{border-color:var(--amber);background:rgba(242,181,68,.07);color:var(--ink)}
+.tfres.run .dot{background:var(--amber);animation:pulse 1s infinite}
+.tfres.done{border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.05);color:var(--ink-dim)}
+.tfres.done .dot{background:var(--green)}
+.tfres .t{margin-left:auto;font-size:10px;color:var(--ink-faint)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ---- M3: CI/CD pipeline ---- */
+.pipe{padding:22px 20px 26px}
+.pipe-track{display:flex;align-items:stretch;gap:0;overflow-x:auto;padding-bottom:14px}
+.pstage{flex:1;min-width:94px;position:relative;text-align:center;padding:0 4px}
+.pstage:not(:last-child):after{content:"";position:absolute;top:26px;left:calc(50% + 24px);
+  right:calc(-50% + 24px);height:2px;background:var(--line);z-index:0}
+.pstage.done:not(:last-child):after{background:var(--green)}
+.pstage .ic{width:52px;height:52px;border-radius:14px;border:1.6px solid var(--line);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 10px;position:relative;z-index:1;
+  background:var(--panel);transition:all .3s;font-size:20px}
+.pstage.run .ic{border-color:var(--amber);background:rgba(242,181,68,.12);
+  box-shadow:0 0 0 6px rgba(242,181,68,.09);animation:pulse 1.1s infinite}
+.pstage.done .ic{border-color:var(--green);background:rgba(74,222,128,.12)}
+.pstage.fail .ic{border-color:var(--red);background:rgba(244,112,122,.14)}
+.pstage .nm2{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--ink-faint);line-height:1.4}
+.pstage.run .nm2,.pstage.done .nm2{color:var(--ink)}
+.pipe-log{background:#04060a;border:1px solid var(--line-soft);border-radius:10px;margin-top:20px;
+  padding:14px 16px;font-family:var(--mono);font-size:11.8px;line-height:1.7;height:180px;
+  overflow-y:auto;color:#9fb0c8}
+.pipe-log .ok{color:var(--green)}.pipe-log .wa{color:var(--amber)}.pipe-log .er{color:var(--red)}
+.pipe-log .dim{color:#4c5b74}
+.pipe-ctl{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
+
+/* ---- M4: rolling update ---- */
+.roll{padding:22px 20px 26px}
+.podgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:9px;margin:18px 0}
+.pod{aspect-ratio:1;border-radius:10px;border:1.4px solid var(--line);display:flex;
+  flex-direction:column;align-items:center;justify-content:center;font-family:var(--mono);
+  font-size:9.5px;color:var(--ink-faint);transition:all .4s;background:var(--panel);gap:2px}
+.pod.v1{border-color:var(--azure-soft);background:rgba(29,111,208,.14);color:#9fc9f5}
+.pod.v2{border-color:var(--k8s);background:rgba(74,214,196,.14);color:#9ff0e5}
+.pod.starting{border-color:var(--amber);background:rgba(242,181,68,.1);color:var(--amber);
+  animation:pulse 1s infinite}
+.pod.dying{opacity:.2;transform:scale(.82)}
+.pod .st{font-size:7.5px;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+.sliders{display:flex;gap:22px;flex-wrap:wrap;margin:6px 0 4px}
+.sl{flex:1;min-width:180px}
+.sl label{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-faint);display:flex;justify-content:space-between;margin-bottom:7px}
+.sl label b{color:var(--azure);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--azure);height:3px}
+.statrow{display:flex;gap:26px;flex-wrap:wrap;margin-top:16px;font-family:var(--mono);font-size:11px;
+  color:var(--ink-faint);letter-spacing:.06em}
+.statrow b{display:block;font-size:20px;color:var(--ink);font-weight:600;letter-spacing:-.01em}
+.statrow .good b{color:var(--green)}
+.statrow .bad b{color:var(--red)}
+
+/* ---- M5: resilience sandbox ---- */
+.resi{padding:22px 20px 26px}
+.nodes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:18px 0}
+.nodebox{border:1.4px solid var(--line);border-radius:12px;padding:12px;background:var(--panel);
+  transition:all .4s;min-height:126px}
+.nodebox.dead{border-color:var(--red);background:rgba(244,112,122,.07);opacity:.55}
+.nodebox .nh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-faint);display:flex;justify-content:space-between;margin-bottom:10px}
+.nodebox.dead .nh{color:var(--red)}
+.minipods{display:flex;flex-wrap:wrap;gap:5px}
+.mp{width:19px;height:19px;border-radius:5px;border:1.2px solid var(--k8s);
+  background:rgba(74,214,196,.16);transition:all .35s}
+.mp.new{animation:pop .5s ease-out}
+@keyframes pop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+.gauge{height:7px;border-radius:6px;background:var(--line-soft);overflow:hidden;margin:14px 0 6px}
+.gauge i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--amber),var(--red));
+  width:20%;transition:width .4s}
+
+/* ---------- table ---------- */
+table{width:100%;border-collapse:collapse;margin:24px 0;font-size:14.5px}
+th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-faint);padding:10px 12px;border-bottom:1px solid var(--line)}
+td{padding:12px;border-bottom:1px solid var(--line-soft);color:var(--ink-dim);vertical-align:top}
+td:first-child{color:var(--ink);font-weight:500}
+@media(max-width:640px){
+  table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    border:1px solid var(--line-soft);border-radius:10px;padding:0 10px;font-size:13.5px}
+  th,td{min-width:118px}
+  th:first-child,td:first-child{min-width:96px}
+}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line-soft);margin-top:90px;padding:46px 0 70px;
+  color:var(--ink-faint);font-size:13.5px}
+footer .wrap>p{color:var(--ink-faint);font-size:13.5px}
+hr.soft{border:0;border-top:1px solid var(--line-soft);margin:56px 0}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* ============================================================
+   SITE CHROME — shared with niluniverse.com / www.nileshmohite.com
+   Namespaced to --chrome-* so it can never collide with this
+   article's own --bg/--panel/--line/etc design tokens above.
+   ============================================================ */
+:root{
+  --chrome-bg:#14171D; --chrome-panel:#1B1F27; --chrome-panel-2:#212630; --chrome-line:#2E3440;
+  --chrome-accent:#C9A24B; --chrome-accent-hi:#E6C06E; --chrome-on-accent:#14171D;
+  --chrome-head:#F3F5F8; --chrome-dim:#8891A0; --chrome-ok:#7FBF8E;
+  --chrome-shadow:rgba(0,0,0,.5);
+}
+.nu-shell{max-width:1100px;margin:0 auto;padding:0 24px}
+header.site{border-bottom:1px solid var(--chrome-line);background:var(--chrome-bg);position:relative;z-index:30}
+header.site nav{display:flex;align-items:center;justify-content:space-between;gap:20px;height:64px}
+header.site .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--chrome-head);
+  font-family:var(--mono);font-weight:600;font-size:15px;border-bottom:none}
+header.site .brand-mark{width:28px;height:28px;flex:none}
+header.site .b-nil{color:var(--chrome-accent)}
+.theme-toggle{display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex:none;
+  border:1px solid var(--chrome-line);border-radius:50%;background:var(--chrome-panel);
+  color:var(--chrome-accent);cursor:pointer;transition:background .18s,border-color .18s,transform .18s}
+.theme-toggle:hover{background:var(--chrome-panel-2);border-color:var(--chrome-accent);transform:rotate(-8deg)}
+.theme-toggle svg{width:18px;height:18px}
+.theme-toggle .icon-sun,.theme-toggle .icon-moon{display:none}
+html[data-theme="cinema"] .theme-toggle .icon-moon{display:block}
+html[data-theme="linkedin"] .theme-toggle .icon-sun{display:block}
+
+.back-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:16px 24px}
+.back-link{font-family:var(--mono);font-size:.76rem;letter-spacing:.03em;color:var(--chrome-dim);
+  text-decoration:none;border-bottom:none;display:inline-flex;align-items:center;gap:7px;transition:color .2s,gap .2s}
+.back-link:hover{color:var(--chrome-accent);gap:10px;border-bottom:none}
+.share-row{display:flex;align-items:center;gap:8px}
+.share-label{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--chrome-dim);margin-right:2px}
+.share-btn{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;
+  flex:none;border:1px solid var(--chrome-line);background:var(--chrome-panel);color:var(--chrome-dim);
+  cursor:pointer;text-decoration:none;transition:color .18s,border-color .18s,background .18s,transform .18s}
+.share-btn:hover{color:var(--chrome-accent);border-color:var(--chrome-accent);background:var(--chrome-panel-2);
+  transform:translateY(-1px);border-bottom:none}
+.share-btn svg{width:14px;height:14px}
+.share-btn.copied{color:var(--chrome-ok);border-color:var(--chrome-ok)}
+
+.tags-row{max-width:820px;margin:0 auto;padding:0 24px 8px;display:flex;flex-wrap:wrap;gap:.5rem}
+.tags-row .tagchip{font-size:.72rem;letter-spacing:.05em;color:var(--ink-dim);background:var(--panel);
+  border:1px solid var(--line-soft);padding:.28rem .6rem;border-radius:20px;font-family:var(--mono)}
+
+.end-back{display:flex;flex-direction:column;align-items:center;gap:16px;padding:10px 24px 60px}
+.end-back .back-link{justify-content:center;font-size:.82rem}
+
+footer.sitefoot{border-top:1px solid var(--chrome-line);background:var(--chrome-bg)}
+footer.sitefoot .foot-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  flex-wrap:wrap;padding:26px 24px;font-family:var(--mono);font-size:.76rem;color:var(--chrome-dim)}
+footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
+
+/* reading-progress rail — same widget as the rest of the site */
+.rp-bar{position:fixed;top:0;left:0;width:100%;height:3px;background:transparent;z-index:9999;pointer-events:none}
+.rp-fill{height:100%;width:0%;
+  background:linear-gradient(90deg,var(--azure),var(--tf),var(--k8s));transition:width .1s linear}
+.rp-toc{position:fixed;right:20px;bottom:20px;z-index:9998;font-family:var(--mono)}
+.rp-toggle{width:52px;height:52px;border-radius:50%;flex:none;background:var(--chrome-panel);
+  border:1px solid var(--chrome-line);display:flex;align-items:center;justify-content:center;position:relative;
+  cursor:pointer;box-shadow:0 8px 24px var(--chrome-shadow);padding:0}
+.rp-ring{position:absolute;inset:0;width:52px;height:52px;transform:rotate(-90deg)}
+.rp-ring-bg{fill:none;stroke:var(--chrome-line);stroke-width:2.5}
+.rp-ring-fg{fill:none;stroke:var(--chrome-accent);stroke-width:2.5;stroke-linecap:round;
+  stroke-dasharray:97.4;stroke-dashoffset:97.4;transition:stroke-dashoffset .15s linear}
+.rp-pct{font-size:10.5px;color:var(--chrome-head);font-weight:600;position:relative;z-index:1}
+.rp-panel{position:absolute;right:0;bottom:64px;width:260px;max-height:60vh;overflow-y:auto;
+  background:var(--chrome-panel);border:1px solid var(--chrome-line);border-radius:10px;padding:14px;
+  box-shadow:0 20px 50px var(--chrome-shadow);opacity:0;transform:translateY(8px);pointer-events:none;
+  transition:opacity .18s,transform .18s}
+.rp-toc.open .rp-panel{opacity:1;transform:none;pointer-events:auto}
+.rp-panel-head{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--chrome-accent);
+  margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed var(--chrome-line)}
+.rp-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.rp-list li a{display:block;padding:7px 8px;border-radius:6px;font-size:12.5px;line-height:1.4;
+  color:var(--chrome-dim);text-decoration:none;transition:background .15s,color .15s;border-bottom:none}
+.rp-list li a:hover{background:var(--chrome-bg);color:var(--chrome-head)}
+.rp-list li.active a{color:var(--chrome-accent);background:var(--chrome-bg);font-weight:600}
+@media(max-width:640px){
+  .rp-toc{right:14px;bottom:14px}
+  .rp-toggle,.rp-ring{width:46px;height:46px}
+  .rp-panel{width:min(78vw,280px)}
+}
+@media(max-width:1180px){ #actnav{display:none} }
+
+/* ---- M0: the shared loop ---- */
+.loopwrap{display:grid;grid-template-columns:1fr 1fr}
+@media(max-width:820px){.loopwrap{grid-template-columns:1fr}}
+.loopviz{padding:20px;border-right:1px solid var(--line-soft);display:flex;align-items:center;justify-content:center}
+@media(max-width:820px){.loopviz{border-right:0;border-bottom:1px solid var(--line-soft)}}
+.loopinfo{padding:22px 24px 26px;background:rgba(5,8,14,.45)}
+.modetabs{display:flex;gap:8px;margin-bottom:18px}
+.modetabs button{flex:1;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  padding:10px 8px;border-radius:8px;border:1px solid var(--line);background:transparent;
+  color:var(--ink-faint);cursor:pointer;transition:all .2s;font-weight:600}
+.modetabs button:hover{color:var(--ink)}
+.modetabs button.on{color:#04121f;border-color:transparent}
+.modetabs button.on[data-m=tf]{background:var(--tf);color:#150a26}
+.modetabs button.on[data-m=k8s]{background:var(--k8s);color:#04211d}
+.loopinfo .stepname{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--azure);margin-bottom:8px}
+.loopinfo h5{margin:0 0 12px;font-size:17px;font-weight:600}
+.loopinfo p{font-size:15px;color:var(--ink-dim);margin:0 0 16px;min-height:96px;line-height:1.66}
+.loopinfo .cad{font-family:var(--mono);font-size:11px;color:var(--ink-faint);letter-spacing:.05em;
+  border-top:1px solid var(--line-soft);padding-top:14px;line-height:1.8}
+.lp-g rect{transition:all .3s}
+.lp-g.on rect{filter:url(#glow2)}
+
+/* ---- pipeline approval gate ---- */
+.pstage.wait .ic{border-color:var(--pink);background:rgba(244,114,182,.14);
+  box-shadow:0 0 0 6px rgba(244,114,182,.1);animation:pulse 1.4s infinite}
+.pstage.wait .nm2{color:var(--pink)}
+.gatebox{margin-top:16px;border:1px solid var(--pink);border-radius:12px;padding:16px 18px;
+  background:rgba(244,114,182,.06);display:none}
+.gatebox.show{display:block}
+.gatebox .gt{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--pink);margin-bottom:8px}
+.gatebox p{font-size:14px;color:var(--ink-dim);margin:0 0 14px}
+.btn.approve{background:var(--green);color:#032a13}
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:26px 0}
+.tier{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--panel)}
+.tier .tn{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--ink);margin-bottom:4px}
+.tier .tl{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  margin-bottom:12px}
+.tier.t1 .tl{color:var(--green)} .tier.t2 .tl{color:var(--amber)} .tier.t3 .tl{color:var(--red)}
+.tier ul{margin:0;padding-left:16px;font-size:13.5px;color:var(--ink-dim);line-height:1.7}
+  .nav-tagline {
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .03em;
+    color: var(--dim); text-align: center; margin: 0 auto; white-space: nowrap;
+  }
+  .nav-tagline b { color: var(--accent); font-weight: 500; }
+  @media (max-width: 620px) {
+    nav { flex-wrap: wrap; row-gap: 6px; }
+    .nav-tagline { flex-basis: 100%; order: 3; white-space: normal; font-size: .68rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="rp-bar" id="rpBar"><div class="rp-fill" id="rpFill"></div></div>
+<div class="rp-toc" id="rpToc">
+  <button class="rp-toggle" id="rpToggle" type="button" aria-expanded="false" aria-label="Reading progress and section list">
+    <svg class="rp-ring" viewBox="0 0 36 36"><circle class="rp-ring-bg" cx="18" cy="18" r="15.5"/><circle class="rp-ring-fg" id="rpRing" cx="18" cy="18" r="15.5"/></svg>
+    <span class="rp-pct" id="rpPct">0%</span>
+  </button>
+  <div class="rp-panel" id="rpPanel">
+    <div class="rp-panel-head" id="rpStatus">0% read</div>
+    <ol class="rp-list" id="rpList"></ol>
+  </div>
+</div>
+
+<header class="site">
+  <div class="nu-shell">
+    <nav>
+      <a class="brand" href="https://www.nileshmohite.com">
+        <svg class="brand-mark" viewBox="0 0 120 120" fill="none" aria-hidden="true"><rect x="4" y="4" width="112" height="112" rx="26" fill="var(--chrome-accent)"/><polyline points="30,42 54,62 30,82" stroke="var(--chrome-on-accent)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><rect x="62" y="74" width="30" height="14" rx="4" fill="var(--chrome-on-accent)"/></svg>
+        <span><span class="b-nil">nil</span>universe</span>
+      </a>
+      <span class="nav-tagline">Directed by <b>Nilesh Mohite</b> and Presented by AI</span>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" title="Switch to light theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<div class="nu-shell back-bar">
+  <a class="back-link" href="index.html">&larr; All stories</a>
+  <div class="share-row">
+    <a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fniluniverse.com%2Fterraform-kubernetes-theatre.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a>
+    <a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fniluniverse.com%2Fterraform-kubernetes-theatre.html&text=Terraform%20builds%20the%20theatre.%20Kubernetes%20conducts%20the%20show." target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a>
+    <a class="share-btn" href="mailto:?subject=Terraform%20builds%20the%20theatre.%20Kubernetes%20conducts%20the%20show.&body=https%3A%2F%2Fniluniverse.com%2Fterraform-kubernetes-theatre.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a>
+    <button class="share-btn" type="button" data-copy-url="https://niluniverse.com/terraform-kubernetes-theatre.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+  </div>
+</div>
+
+<nav id="actnav">
+  <a href="#cold"><span class="lab">Cold open</span><span class="dot"></span></a>
+  <a href="#heroes"><span class="lab">Two heroes</span><span class="dot"></span></a>
+  <a href="#act1"><span class="lab">I · The theatre</span><span class="dot"></span></a>
+  <a href="#act2"><span class="lab">II · The stage</span><span class="dot"></span></a>
+  <a href="#act3"><span class="lab">III · The score</span><span class="dot"></span></a>
+  <a href="#act4"><span class="lab">IV · The performance</span><span class="dot"></span></a>
+  <a href="#act5"><span class="lab">V · The fire</span><span class="dot"></span></a>
+  <a href="#end"><span class="lab">Credits</span><span class="dot"></span></a>
+</nav>
+
+<header class="hero">
+  <canvas id="stars"></canvas>
+  <div class="veil"></div>
+  <div class="hero-in">
+    <div class="kicker">Terraform · Azure Kubernetes Service · CI/CD</div>
+    <h1>Terraform builds<br>the <em>theatre</em>.</h1>
+    <p class="sub" style="font-family:var(--serif);font-size:25px;color:var(--ink);margin-bottom:26px">
+      Kubernetes conducts the show.</p>
+    <p class="sub">Two tools, two jobs, one idea underneath both. This is the story of how a .NET
+      monolith becomes a microservice ecosystem on Azure — told in five acts, with diagrams
+      you can touch.</p>
+    <div class="meta">15 August 2026 &middot; 18 min read &middot; Nilesh Mohite</div>
+  </div>
+  <div class="scrollcue">SCROLL</div>
+</header>
+
+<div class="tags-row">
+  <span class="tagchip">Terraform</span>
+  <span class="tagchip">Azure Kubernetes Service</span>
+  <span class="tagchip">Kubernetes</span>
+  <span class="tagchip">CI/CD</span>
+  <span class="tagchip">.NET</span>
+  <span class="tagchip">DevOps</span>
+</div>
+
+<!-- ============================== COLD OPEN ============================== -->
+<section class="act" id="cold">
+<div class="wrap reveal">
+  <div class="actmark">Cold open · 02:14 AM</div>
+  <h2>Black Friday, and one server is on fire</h2>
+
+  <div class="scene">
+    <div class="slug">INT. OPS ROOM — NIGHT</div>
+    <p>A single monitor glows. On it, a graph climbing like a heart rate that will not come back down.
+      Contoso's online store — one big <span style="color:var(--azure)">Contoso.Web.dll</span>, one big
+      IIS server — is drowning in traffic that only wants one thing: the shoe on sale.</p>
+    <p>The catalog page is what's melting. But checkout, cart, invoicing, the emails —
+      they all live inside that same binary, on that same box. To give the catalog more power,
+      you have to give <em>everything</em> more power. There is no volume knob for one instrument.
+      There is only the whole orchestra, louder.</p>
+    <p>Someone reaches for the deploy script. It is 400 lines of PowerShell. It has a comment at
+      the top that says <span style="color:var(--ink-faint)">"do not run twice."</span></p>
+  </div>
+
+  <p class="lede">There are two separate failures in that room, and it's worth being precise about
+    which is which — because they have two different heroes, and most articles only introduce one.</p>
+
+  <p><strong>The first failure is the venue.</strong> One server, built by hand, that nobody can
+    rebuild. It was assembled over eighteen months of portal clicks by four people, two of whom
+    have left. That machine is not infrastructure — it's an artifact. Nobody dares touch it and
+    nobody can reproduce it.</p>
+
+  <p><strong>The second failure is the show.</strong> Even with a perfect venue, someone still has
+    to decide what runs where, notice when a process dies, add capacity when the queue grows, and
+    replace instruments mid-performance without the audience hearing a gap. At 2 AM, that someone
+    is a human holding a laptop.</p>
+
+  <div class="scene">
+    <div class="slug">THE TWO HEROES</div>
+    <p><span style="color:var(--tf)">Terraform</span> solves the first one. It builds the venue
+      from a written plan, identically, every time, and it will build you a second one on
+      Tuesday if you ask.</p>
+    <p><span style="color:var(--k8s)">Kubernetes</span> solves the second. It reads the score,
+      watches every section, and keeps the performance going whether or not anybody is awake.</p>
+    <p>Neither is enough alone. A perfect cluster full of hand-deployed chaos is still chaos.
+      Beautiful Terraform pointing at nothing is a very well-documented empty room.</p>
+  </div>
+
+  <p>We'll follow one company, <strong>Contoso Commerce</strong>, as it breaks its monolith into
+    four .NET microservices and gets them running properly. Four services — enough to be real,
+    small enough to hold in your head:</p>
+
+  <table>
+    <tr><th>Service</th><th>Job</th><th>Why it's separate</th></tr>
+    <tr><td>catalog-api</td><td>Products, search, images</td><td>Read-heavy. Traffic spikes 40× on sale days. Needs to scale alone.</td></tr>
+    <tr><td>cart-api</td><td>Basket state per shopper</td><td>Chatty, backed by Redis. Different failure profile entirely.</td></tr>
+    <tr><td>orders-api</td><td>Checkout, payment, fulfilment</td><td>Must never lose a write. Deploys carefully, rarely.</td></tr>
+    <tr><td>identity-api</td><td>Sign-in, tokens</td><td>Security boundary. Own team, own release cadence.</td></tr>
+  </table>
+
+  <div class="note blue">
+    <div class="t">How to read this</div>
+    <p>The main text is the film — plain English, no prerequisites. Anywhere you see an
+      <strong>Under the hood</strong> panel, click it for the real Terraform, YAML and pipeline code.
+      Skip every one of them and the story still works.</p>
+  </div>
+</div>
+</section>
+
+<!-- ============================== TWO HEROES ============================== -->
+<section class="act" id="heroes">
+<div class="wrap reveal">
+  <div class="actmark">Setup · the shared secret</div>
+  <h2>Both heroes have the same superpower</h2>
+
+  <p class="lede">Before the acts begin, here's the thing that makes the rest of this article easy.
+    Terraform and Kubernetes look like completely different tools. They are the same tool, running
+    at two different speeds, on two different worlds.</p>
+
+  <p>Both of them refuse to take instructions. You cannot tell either one to "create a VM" or
+    "start a container" — not really. You can only tell them <strong>what should be true</strong>.
+    Then they go and make it true, and — this is the part that matters — they keep making it true
+    afterwards.</p>
+
+  <p>That behaviour has a name: a <strong>reconciliation loop</strong>. Four steps, forever.
+    Toggle between the two heroes below and watch the same loop wear two different costumes.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--pink);border-color:rgba(244,114,182,.35)">Diagram 1</span>
+    <span class="ttl">One loop, two heroes</span>
+    <span class="hint">switch hero · click a step →</span>
+  </div>
+  <div class="loopwrap">
+    <div class="loopviz">
+      <svg viewBox="0 0 340 300" width="100%" style="max-width:340px;display:block">
+        <defs>
+          <filter id="glow2"><feGaussianBlur stdDeviation="4" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <marker id="lparr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+            <polygon points="0 0, 8 4, 0 8" fill="#3d5476"/></marker>
+        </defs>
+        <path d="M170 62 A 88 88 0 0 1 258 150" fill="none" stroke="#2a3a52" stroke-width="1.4" marker-end="url(#lparr)"/>
+        <path d="M258 150 A 88 88 0 0 1 170 238" fill="none" stroke="#2a3a52" stroke-width="1.4" marker-end="url(#lparr)"/>
+        <path d="M170 238 A 88 88 0 0 1 82 150" fill="none" stroke="#2a3a52" stroke-width="1.4" marker-end="url(#lparr)"/>
+        <path d="M82 150 A 88 88 0 0 1 170 62" fill="none" stroke="#2a3a52" stroke-width="1.4" marker-end="url(#lparr)"/>
+
+        <g class="lp-g node-g" data-s="0">
+          <rect x="112" y="16" width="116" height="46" rx="10" fill="#14203a" stroke="#3aa0ff" stroke-width="1.5"/>
+          <text class="svgtxt b" x="170" y="36" text-anchor="middle">1 · DECLARE</text>
+          <text class="svgtxt s" x="170" y="50" text-anchor="middle">what should be true</text>
+        </g>
+        <g class="lp-g node-g" data-s="1">
+          <rect x="222" y="127" width="112" height="46" rx="10" fill="#14203a" stroke="#3aa0ff" stroke-width="1.5"/>
+          <text class="svgtxt b" x="278" y="147" text-anchor="middle">2 · OBSERVE</text>
+          <text class="svgtxt s" x="278" y="161" text-anchor="middle">what is true</text>
+        </g>
+        <g class="lp-g node-g" data-s="2">
+          <rect x="112" y="238" width="116" height="46" rx="10" fill="#14203a" stroke="#3aa0ff" stroke-width="1.5"/>
+          <text class="svgtxt b" x="170" y="258" text-anchor="middle">3 · DIFF</text>
+          <text class="svgtxt s" x="170" y="272" text-anchor="middle">the gap</text>
+        </g>
+        <g class="lp-g node-g" data-s="3">
+          <rect x="6" y="127" width="112" height="46" rx="10" fill="#14203a" stroke="#3aa0ff" stroke-width="1.5"/>
+          <text class="svgtxt b" x="62" y="147" text-anchor="middle">4 · ACT</text>
+          <text class="svgtxt s" x="62" y="161" text-anchor="middle">close the gap</text>
+        </g>
+        <text class="svgtxt s" id="loopCentre" x="170" y="153" text-anchor="middle"
+              style="font-size:10px;letter-spacing:.18em">TERRAFORM</text>
+      </svg>
+    </div>
+    <div class="loopinfo">
+      <div class="modetabs">
+        <button data-m="tf" class="on">Terraform</button>
+        <button data-m="k8s">Kubernetes</button>
+      </div>
+      <div class="stepname" id="loopStep">Step 1 · Declare</div>
+      <h5 id="loopTitle">You write it down</h5>
+      <p id="loopBody">…</p>
+      <div class="cad" id="loopCad">…</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <p>Same four boxes. What changes is the <strong>clock</strong> and the <strong>world</strong>.
+    Terraform's loop runs when you run it, takes minutes, and its world is your Azure subscription.
+    Kubernetes' loop runs a few times a second, forever, and its world is the inside of the cluster.</p>
+
+  <table>
+    <tr><th></th><th style="color:var(--tf)">Terraform</th><th style="color:var(--k8s)">Kubernetes</th></tr>
+    <tr><td>Builds</td><td>The theatre — clusters, networks, registries, identities</td><td>Nothing. It conducts what's already there.</td></tr>
+    <tr><td>Its world</td><td>Azure Resource Manager</td><td>The cluster's own state store (etcd)</td></tr>
+    <tr><td>Memory</td><td>A state file, in blob storage</td><td>etcd, managed for you</td></tr>
+    <tr><td>Loop speed</td><td>On demand — minutes</td><td>Continuous — seconds</td></tr>
+    <tr><td>Changes are</td><td>Reviewed by a human first</td><td>Applied instantly, then watched</td></tr>
+    <tr><td>Failure looks like</td><td>A plan that won't apply</td><td>A pod stuck in Pending</td></tr>
+  </table>
+
+  <div class="note green">
+    <div class="t">The payoff</div>
+    <p>Learn the loop once and both heroes stop being a pile of commands to memorise. Every
+      confusing thing either tool does — drift, <code>Pending</code> pods, "no changes",
+      surprise recreations — is the loop doing exactly what it promised with information you
+      didn't know it had.</p>
+  </div>
+</div>
+</section>
+
+<!-- ============================== ACT I ============================== -->
+<section class="act" id="act1">
+<div class="wrap reveal">
+  <div class="actmark">Act I · The theatre</div>
+  <h2>Terraform, or: how to build the same thing twice</h2>
+
+  <p class="lede">Our first hero enters with an unglamorous but radical proposal:
+    <strong>the environment is a text file in your repository.</strong> If it isn't in the file,
+    it doesn't exist. If someone clicks something in the portal, the next Terraform run will notice
+    and offer to undo it.</p>
+
+  <div class="scene">
+    <div class="slug">THE PITCH, IN ONE LINE</div>
+    <p>The Azure Portal is a <em>conversation</em>. Terraform is a <em>contract</em>.
+      Conversations are forgotten. Contracts get reviewed, versioned, signed — and can be
+      executed again next year by someone who wasn't in the room.</p>
+  </div>
+
+  <p>Remember the loop. Terraform's version of "observe" is unusually careful, because it's
+    comparing <em>three</em> things, not two — and understanding which three explains almost every
+    surprising plan you'll ever read.</p>
+
+  <table>
+    <tr><th>Source</th><th>What it is</th><th>Where it lives</th></tr>
+    <tr><td>Your .tf files</td><td>What you <em>want</em></td><td>Git — reviewed in pull requests</td></tr>
+    <tr><td>The state file</td><td>What Terraform <em>believes it built</em></td><td>An Azure Storage blob, locked while running</td></tr>
+    <tr><td>Azure itself</td><td>What actually <em>exists</em> right now</td><td>Read live via the ARM API on every plan</td></tr>
+  </table>
+
+  <p>When those three agree, the plan is empty and Terraform says the four most reassuring words in
+    infrastructure: <em class="term">No changes. Your infrastructure matches the configuration.</em>
+    When they disagree, the difference <em>is</em> the plan.</p>
+
+  <div class="note">
+    <div class="t">The rule that saves careers</div>
+    <p>Never keep the state file on a laptop. Put it in an Azure Storage account with blob
+      versioning on, and let Terraform take the native blob lease as its lock. That lock is the only
+      thing standing between you and two pipelines applying to the same cluster at the same moment —
+      which corrupts state in ways that take a very bad afternoon to unpick.</p>
+  </div>
+
+  <h3>Curtain up</h3>
+  <p>Below is what a real <code>terraform apply</code> feels like from the outside. Press play.
+    Watch the dependency graph resolve itself — you never told Terraform that the subnet must exist
+    before the cluster. It worked that out from the fact that one references the other.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--tf);border-color:rgba(154,108,240,.4)">Diagram 2</span>
+    <span class="ttl">terraform plan → apply · building the theatre</span>
+    <span class="hint">press play →</span>
+  </div>
+  <div class="tfwrap">
+    <div class="tfterm" id="tfTerm"><div class="ln c-d">$ _</div></div>
+    <div class="tfgraph">
+      <div class="tfstage" id="tfStage">idle · waiting for input</div>
+      <div id="tfList"></div>
+      <div class="pipe-ctl">
+        <button class="btn" id="tfPlay">▶ terraform apply</button>
+        <button class="btn ghost" id="tfReset">reset</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <p>Ten resources, one command, in the right order, with the independent ones running in parallel.
+    You described <strong>relationships</strong>; Terraform derived the <strong>steps</strong>.
+    That inversion is the entire value proposition, and it's why the same file works on an empty
+    subscription and on one where nine of the ten already exist.</p>
+
+  <p>The theatre now stands: a virtual network, a container registry, a Log Analytics workspace,
+    an AKS cluster with two node pools, and the identities that let them talk to each other without
+    a single password. What any of that <em>means</em> is Act II's job — this act only cares that it
+    was built from a file you can read, review and run again.</p>
+
+  <details class="hood">
+    <summary>Under the hood · the actual theatre, in HCL</summary>
+    <div class="hoodbody">
+      <p>Pin your provider versions. An unpinned provider is a time bomb that goes off on a Friday.
+        The <code>azurerm</code> provider is on the 4.x line — note that several argument names
+        changed from 3.x, which is the single most common reason a copied snippet won't apply.</p>
+      <div class="filetag">versions.tf</div>
+<pre><code><span class="kw">terraform</span> {
+  <span class="nm">required_version</span> = <span class="st">"~&gt; 1.9"</span>
+
+  <span class="nm">required_providers</span> {
+    <span class="nm">azurerm</span> = { <span class="nm">source</span> = <span class="st">"hashicorp/azurerm"</span>, <span class="nm">version</span> = <span class="st">"~&gt; 4.30"</span> }
+    <span class="nm">azuread</span> = { <span class="nm">source</span> = <span class="st">"hashicorp/azuread"</span>, <span class="nm">version</span> = <span class="st">"~&gt; 3.0"</span> }
+  }
+
+  <span class="cm"># remote state: shared, locked, versioned</span>
+  <span class="nm">backend</span> <span class="st">"azurerm"</span> {
+    <span class="nm">resource_group_name</span>  = <span class="st">"rg-tfstate"</span>
+    <span class="nm">storage_account_name</span> = <span class="st">"stcontosotfstate"</span>
+    <span class="nm">container_name</span>       = <span class="st">"tfstate"</span>
+    <span class="nm">key</span>                  = <span class="st">"prod/aks.tfstate"</span>
+    <span class="nm">use_azuread_auth</span>     = <span class="kw">true</span>   <span class="cm"># no storage keys anywhere</span>
+  }
+}
+
+<span class="kw">provider</span> <span class="st">"azurerm"</span> {
+  <span class="nm">features</span> {}
+  <span class="nm">use_oidc</span> = <span class="kw">true</span>   <span class="cm"># federated auth from CI — no client secret</span>
+}</code></pre>
+
+      <div class="filetag">network.tf</div>
+<pre><code><span class="kw">resource</span> <span class="st">"azurerm_virtual_network"</span> <span class="st">"main"</span> {
+  <span class="nm">name</span>                = <span class="st">"vnet-contoso-prod"</span>
+  <span class="nm">address_space</span>       = [<span class="st">"10.40.0.0/16"</span>]
+  <span class="nm">location</span>            = azurerm_resource_group.main.location
+  <span class="nm">resource_group_name</span> = azurerm_resource_group.main.name
+}
+
+<span class="kw">resource</span> <span class="st">"azurerm_subnet"</span> <span class="st">"aks"</span> {
+  <span class="nm">name</span>                 = <span class="st">"snet-aks-nodes"</span>
+  <span class="nm">resource_group_name</span>  = azurerm_resource_group.main.name
+  <span class="cm"># ↓ THIS reference is what creates the dependency edge.</span>
+  <span class="cm">#   No depends_on needed — Terraform reads the graph from your code.</span>
+  <span class="nm">virtual_network_name</span> = azurerm_virtual_network.main.name
+  <span class="nm">address_prefixes</span>     = [<span class="st">"10.40.0.0/20"</span>]
+}</code></pre>
+
+      <div class="filetag">aks.tf</div>
+<pre><code><span class="kw">resource</span> <span class="st">"azurerm_kubernetes_cluster"</span> <span class="st">"main"</span> {
+  <span class="nm">name</span>                = <span class="st">"aks-contoso-prod"</span>
+  <span class="nm">location</span>            = azurerm_resource_group.main.location
+  <span class="nm">resource_group_name</span> = azurerm_resource_group.main.name
+  <span class="nm">dns_prefix</span>          = <span class="st">"contoso-prod"</span>
+
+  <span class="cm"># Standard tier buys a financially-backed control-plane SLA.</span>
+  <span class="cm"># Free tier gives you an SLO and no money back. Use Standard in prod.</span>
+  <span class="nm">sku_tier</span>            = <span class="st">"Standard"</span>
+
+  <span class="nm">kubernetes_version</span>        = <span class="st">"1.35"</span>   <span class="cm"># AKS keeps 3 GA minors in support</span>
+  <span class="nm">automatic_upgrade_channel</span> = <span class="st">"patch"</span>  <span class="cm"># CVEs patch themselves</span>
+  <span class="nm">node_os_upgrade_channel</span>   = <span class="st">"NodeImage"</span>
+
+  <span class="cm"># passwordless everything</span>
+  <span class="nm">oidc_issuer_enabled</span>       = <span class="kw">true</span>
+  <span class="nm">workload_identity_enabled</span> = <span class="kw">true</span>
+  <span class="nm">local_account_disabled</span>    = <span class="kw">true</span>   <span class="cm"># no static kubeconfig admin creds</span>
+
+  <span class="nm">identity</span> { <span class="nm">type</span> = <span class="st">"SystemAssigned"</span> }
+
+  <span class="nm">azure_active_directory_role_based_access_control</span> {
+    <span class="nm">azure_rbac_enabled</span>     = <span class="kw">true</span>
+    <span class="nm">admin_group_object_ids</span> = [<span class="nm">var</span>.platform_admins_group_id]
+  }
+
+  <span class="nm">default_node_pool</span> {
+    <span class="nm">name</span>                 = <span class="st">"system"</span>
+    <span class="nm">vm_size</span>              = <span class="st">"Standard_D4as_v5"</span>
+    <span class="nm">vnet_subnet_id</span>       = azurerm_subnet.aks.id
+    <span class="nm">auto_scaling_enabled</span> = <span class="kw">true</span>     <span class="cm"># was enable_auto_scaling in azurerm 3.x</span>
+    <span class="nm">min_count</span>            = <span class="nu">2</span>
+    <span class="nm">max_count</span>            = <span class="nu">4</span>
+    <span class="nm">only_critical_addons_enabled</span> = <span class="kw">true</span>  <span class="cm"># keep apps off the system pool</span>
+    <span class="nm">zones</span>                = [<span class="st">"1"</span>, <span class="st">"2"</span>, <span class="st">"3"</span>]
+    <span class="nm">upgrade_settings</span> { <span class="nm">max_surge</span> = <span class="st">"33%"</span> }
+  }
+
+  <span class="nm">network_profile</span> {
+    <span class="cm"># Overlay: pods get IPs from a private space, not your VNet.</span>
+    <span class="cm"># You stop running out of subnet at 400 pods. Do this.</span>
+    <span class="nm">network_plugin</span>      = <span class="st">"azure"</span>
+    <span class="nm">network_plugin_mode</span> = <span class="st">"overlay"</span>
+    <span class="nm">network_policy</span>      = <span class="st">"cilium"</span>
+    <span class="nm">network_data_plane</span>  = <span class="st">"cilium"</span>
+    <span class="nm">pod_cidr</span>            = <span class="st">"192.168.0.0/16"</span>
+    <span class="nm">load_balancer_sku</span>   = <span class="st">"standard"</span>
+  }
+
+  <span class="nm">web_app_routing</span> {                     <span class="cm"># managed NGINX ingress</span>
+    <span class="nm">dns_zone_ids</span> = [azurerm_dns_zone.shop.id]
+  }
+
+  <span class="nm">oms_agent</span> {
+    <span class="nm">log_analytics_workspace_id</span>      = azurerm_log_analytics_workspace.main.id
+    <span class="nm">msi_auth_for_monitoring_enabled</span> = <span class="kw">true</span>
+  }
+
+  <span class="nm">lifecycle</span> {
+    <span class="cm"># the cluster autoscaler owns node_count at runtime — don't fight it</span>
+    <span class="nm">ignore_changes</span> = [default_node_pool[<span class="nu">0</span>].node_count]
+  }
+}
+
+<span class="cm"># app workloads live in their own pool, scaled independently</span>
+<span class="kw">resource</span> <span class="st">"azurerm_kubernetes_cluster_node_pool"</span> <span class="st">"apps"</span> {
+  <span class="nm">name</span>                  = <span class="st">"apps"</span>
+  <span class="nm">kubernetes_cluster_id</span> = azurerm_kubernetes_cluster.main.id
+  <span class="nm">vm_size</span>               = <span class="st">"Standard_D4as_v5"</span>
+  <span class="nm">vnet_subnet_id</span>        = azurerm_subnet.aks.id
+  <span class="nm">auto_scaling_enabled</span>  = <span class="kw">true</span>
+  <span class="nm">min_count</span>             = <span class="nu">3</span>
+  <span class="nm">max_count</span>             = <span class="nu">30</span>
+  <span class="nm">zones</span>                 = [<span class="st">"1"</span>, <span class="st">"2"</span>, <span class="st">"3"</span>]
+}
+
+<span class="cm"># let the cluster pull images without a single password</span>
+<span class="kw">resource</span> <span class="st">"azurerm_role_assignment"</span> <span class="st">"acr_pull"</span> {
+  <span class="nm">scope</span>                = azurerm_container_registry.main.id
+  <span class="nm">role_definition_name</span> = <span class="st">"AcrPull"</span>
+  <span class="nm">principal_id</span>         = azurerm_kubernetes_cluster.main.kubelet_identity[<span class="nu">0</span>].object_id
+}</code></pre>
+      <p><strong>Three lines worth arguing about in code review:</strong>
+        <code>network_plugin_mode = "overlay"</code> (stops you exhausting VNet IPs),
+        <code>local_account_disabled = true</code> (kills the shared admin kubeconfig that gets
+        pasted into Teams), and <code>ignore_changes</code> on node_count — without it, Terraform
+        and the cluster autoscaler will quietly wrestle each other forever, each one "fixing"
+        the other's work.</p>
+    </div>
+  </details>
+
+  <details class="hood">
+    <summary>Under the hood · workload identity — deleting your last connection string</summary>
+    <div class="hoodbody">
+      <p>The old way: a connection string in a Kubernetes Secret, base64-encoded — which is
+        <em>encoding, not encryption</em> — and which someone will eventually commit. The new way:
+        the pod proves who it is with a short-lived token, and Azure hands it a credential.
+        Nothing to leak, nothing to rotate, nothing to find in a git history two years from now.</p>
+<pre><code><span class="cm"># 1. the pod's Azure identity</span>
+<span class="kw">resource</span> <span class="st">"azurerm_user_assigned_identity"</span> <span class="st">"catalog"</span> {
+  <span class="nm">name</span>                = <span class="st">"id-catalog-api"</span>
+  <span class="nm">location</span>            = azurerm_resource_group.main.location
+  <span class="nm">resource_group_name</span> = azurerm_resource_group.main.name
+}
+
+<span class="cm"># 2. the trust: "the catalog-sa account in namespace 'shop' IS this identity"</span>
+<span class="kw">resource</span> <span class="st">"azurerm_federated_identity_credential"</span> <span class="st">"catalog"</span> {
+  <span class="nm">name</span>                = <span class="st">"fic-catalog-api"</span>
+  <span class="nm">resource_group_name</span> = azurerm_resource_group.main.name
+  <span class="nm">parent_id</span>           = azurerm_user_assigned_identity.catalog.id
+  <span class="nm">audience</span>            = [<span class="st">"api://AzureADTokenExchange"</span>]
+  <span class="nm">issuer</span>              = azurerm_kubernetes_cluster.main.oidc_issuer_url
+  <span class="nm">subject</span>             = <span class="st">"system:serviceaccount:shop:catalog-sa"</span>
+}
+
+<span class="cm"># 3. and what it's allowed to touch — nothing more</span>
+<span class="kw">resource</span> <span class="st">"azurerm_role_assignment"</span> <span class="st">"catalog_kv"</span> {
+  <span class="nm">scope</span>                = azurerm_key_vault.main.id
+  <span class="nm">role_definition_name</span> = <span class="st">"Key Vault Secrets User"</span>
+  <span class="nm">principal_id</span>         = azurerm_user_assigned_identity.catalog.principal_id
+}</code></pre>
+      <p>On the .NET side that's the whole change — one line, no secret:</p>
+<pre><code>builder.Configuration.<span class="fn">AddAzureKeyVault</span>(
+    <span class="kw">new</span> <span class="fn">Uri</span>(<span class="st">"https://kv-contoso.vault.azure.net/"</span>),
+    <span class="kw">new</span> <span class="fn">DefaultAzureCredential</span>());   <span class="cm">// picks up workload identity automatically</span></code></pre>
+    </div>
+  </details>
+
+  <details class="hood">
+    <summary>Under the hood · modules, environments, and not copy-pasting prod</summary>
+    <div class="hoodbody">
+      <p>One folder per environment, one shared module. Dev and prod differ by a variables file,
+        never by a forked copy of the code — the moment they diverge, "it works in dev" stops
+        meaning anything.</p>
+<pre><code>infra/
+├── modules/
+│   └── aks-platform/        <span class="cm"># cluster + network + acr + identities</span>
+│       ├── main.tf
+│       ├── variables.tf
+│       └── outputs.tf
+└── envs/
+    ├── dev/
+    │   ├── main.tf          <span class="cm"># module "platform" { source = "../../modules/aks-platform" }</span>
+    │   └── dev.tfvars       <span class="cm"># node_min=1  node_max=3  sku_tier="Free"</span>
+    └── prod/
+        ├── main.tf
+        └── prod.tfvars      <span class="cm"># node_min=3  node_max=30 sku_tier="Standard"</span></code></pre>
+<pre><code><span class="cm"># envs/prod/main.tf</span>
+<span class="kw">module</span> <span class="st">"platform"</span> {
+  <span class="nm">source</span> = <span class="st">"../../modules/aks-platform"</span>
+
+  <span class="nm">environment</span>   = <span class="st">"prod"</span>
+  <span class="nm">location</span>      = <span class="st">"westeurope"</span>
+  <span class="nm">node_min</span>      = <span class="nu">3</span>
+  <span class="nm">node_max</span>      = <span class="nu">30</span>
+  <span class="nm">sku_tier</span>      = <span class="st">"Standard"</span>
+}</code></pre>
+    </div>
+  </details>
+</div>
+</section>
+
+<!-- ============================== ACT II ============================== -->
+<section class="act" id="act2">
+<div class="wrap reveal">
+  <div class="actmark">Act II · The stage</div>
+  <h2>What Terraform just built, and who's now in charge of it</h2>
+
+  <p class="lede">The theatre stands. Our second hero walks on — and here is the single most useful
+    thing to understand about AKS, which almost nobody says plainly:
+    <strong>a cluster is two halves, and Microsoft only runs one of them.</strong></p>
+
+  <p>The half Microsoft runs is the <strong>control plane</strong> — the brain. It holds the desired
+    state of your world ("there should be six catalog pods, always"), decides which machine each
+    container lands on, and never stops comparing what <em>is</em> against what <em>should be</em>.
+    You don't patch it, don't SSH into it, and on the Free tier don't pay for it. Terraform created
+    it in about three minutes and then had nothing more to do with it.</p>
+
+  <p>The half you own is the <strong>node pools</strong> — ordinary Azure virtual machines that do
+    the actual work. Your containers run here. You pay for these by the second, exactly like any
+    other VM.</p>
+
+  <div class="scene">
+    <div class="slug">THE METAPHOR, PAID OFF</div>
+    <p>The control plane is the conductor: it reads the score, watches every section, and points.
+      It plays no notes. The nodes are the musicians: they make all the sound and none of the
+      decisions. The moment a violinist walks off stage, the conductor notices — and a replacement
+      is already sitting down.</p>
+  </div>
+
+  <p>Click through the diagram. Every box was created by the Terraform you just watched run, and
+    every one is something you'll either configure in HCL or shout about during an incident.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--azure);border-color:rgba(58,160,255,.35)">Diagram 3</span>
+    <span class="ttl">Anatomy of the cluster Terraform built</span>
+    <span class="hint">click any box →</span>
+  </div>
+  <div class="anat">
+    <div class="anat-map">
+      <svg viewBox="0 0 560 430" width="100%" style="display:block">
+        <defs>
+          <filter id="glow"><feGaussianBlur stdDeviation="3.2" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <marker id="arw" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <polygon points="0 0, 7 3.5, 0 7" fill="#3d5476"/></marker>
+        </defs>
+
+        <rect x="14" y="14" width="532" height="104" rx="12" fill="rgba(58,160,255,.05)"
+              stroke="#1e3a5f" stroke-dasharray="4 4"/>
+        <text class="svgtxt s" x="26" y="32">MICROSOFT-MANAGED CONTROL PLANE — no VMs you can see</text>
+
+        <g class="node-g" data-k="api">
+          <rect class="box" x="28" y="42" width="118" height="62" rx="9" fill="#12243c" stroke="#3aa0ff"/>
+          <text class="svgtxt b" x="42" y="66">API server</text>
+          <text class="svgtxt" x="42" y="82">the front door</text>
+          <text class="svgtxt s" x="42" y="95">kubectl talks here</text>
+        </g>
+        <g class="node-g" data-k="etcd">
+          <rect class="box" x="158" y="42" width="106" height="62" rx="9" fill="#12243c" stroke="#3aa0ff"/>
+          <text class="svgtxt b" x="172" y="66">etcd</text>
+          <text class="svgtxt" x="172" y="82">desired state</text>
+          <text class="svgtxt s" x="172" y="95">source of truth</text>
+        </g>
+        <g class="node-g" data-k="sched">
+          <rect class="box" x="276" y="42" width="120" height="62" rx="9" fill="#12243c" stroke="#3aa0ff"/>
+          <text class="svgtxt b" x="290" y="66">Scheduler</text>
+          <text class="svgtxt" x="290" y="82">placement</text>
+          <text class="svgtxt s" x="290" y="95">which node?</text>
+        </g>
+        <g class="node-g" data-k="ctrl">
+          <rect class="box" x="408" y="42" width="124" height="62" rx="9" fill="#12243c" stroke="#3aa0ff"/>
+          <text class="svgtxt b" x="422" y="66">Controllers</text>
+          <text class="svgtxt" x="422" y="82">the fixers</text>
+          <text class="svgtxt s" x="422" y="95">the loop lives here</text>
+        </g>
+
+        <line x1="280" y1="120" x2="280" y2="146" stroke="#3d5476" stroke-width="1.4" marker-end="url(#arw)"/>
+        <text class="svgtxt s" x="290" y="138">instructions ↓ · heartbeats ↑</text>
+
+        <rect x="14" y="152" width="532" height="152" rx="12" fill="rgba(74,214,196,.04)" stroke="#1d4a45" stroke-dasharray="4 4"/>
+        <text class="svgtxt s" x="26" y="170">YOUR NODE POOLS — real Azure VMs, you pay per second</text>
+
+        <g class="node-g" data-k="sysnp">
+          <rect class="box" x="28" y="180" width="160" height="110" rx="9" fill="#0f1f24" stroke="#4ad6c4"/>
+          <text class="svgtxt b" x="42" y="202">System pool</text>
+          <text class="svgtxt" x="42" y="218">CoreDNS, metrics,</text>
+          <text class="svgtxt" x="42" y="231">CSI drivers</text>
+          <text class="svgtxt s" x="42" y="250">2–4 nodes · tainted</text>
+          <text class="svgtxt s" x="42" y="264">no app workloads</text>
+        </g>
+        <g class="node-g" data-k="usernp">
+          <rect class="box" x="200" y="180" width="176" height="110" rx="9" fill="#0f1f24" stroke="#4ad6c4"/>
+          <text class="svgtxt b" x="214" y="202">Apps pool</text>
+          <text class="svgtxt" x="214" y="218">catalog · cart</text>
+          <text class="svgtxt" x="214" y="231">orders · identity</text>
+          <text class="svgtxt s" x="214" y="250">autoscales 3 → 30</text>
+          <text class="svgtxt s" x="214" y="264">D4as_v5 · 3 zones</text>
+        </g>
+        <g class="node-g" data-k="spotnp">
+          <rect class="box" x="388" y="180" width="144" height="110" rx="9" fill="#231a2e" stroke="#9a6cf0"/>
+          <text class="svgtxt b" x="402" y="202">Spot pool</text>
+          <text class="svgtxt" x="402" y="218">batch, reports,</text>
+          <text class="svgtxt" x="402" y="231">image resize</text>
+          <text class="svgtxt s" x="402" y="250">up to ~90% off</text>
+          <text class="svgtxt s" x="402" y="264">can vanish anytime</text>
+        </g>
+
+        <g class="node-g" data-k="ingress">
+          <rect class="box" x="28" y="322" width="160" height="86" rx="9" fill="#1c1526" stroke="#f472b6"/>
+          <text class="svgtxt b" x="42" y="344">Ingress</text>
+          <text class="svgtxt" x="42" y="360">app routing add-on</text>
+          <text class="svgtxt s" x="42" y="378">one public IP,</text>
+          <text class="svgtxt s" x="42" y="391">routes by hostname</text>
+        </g>
+        <g class="node-g" data-k="acr">
+          <rect class="box" x="200" y="322" width="176" height="86" rx="9" fill="#1a1c2c" stroke="#7fa8ff"/>
+          <text class="svgtxt b" x="214" y="344">Container Registry</text>
+          <text class="svgtxt" x="214" y="360">your image shelf</text>
+          <text class="svgtxt s" x="214" y="378">contosoacr.azurecr.io</text>
+          <text class="svgtxt s" x="214" y="391">pulled via managed identity</text>
+        </g>
+        <g class="node-g" data-k="wid">
+          <rect class="box" x="388" y="322" width="144" height="86" rx="9" fill="#26200f" stroke="#f2b544"/>
+          <text class="svgtxt b" x="402" y="344">Workload Identity</text>
+          <text class="svgtxt" x="402" y="360">no passwords</text>
+          <text class="svgtxt s" x="402" y="378">pod → Entra ID</text>
+          <text class="svgtxt s" x="402" y="391">→ Key Vault, SQL</text>
+        </g>
+      </svg>
+    </div>
+    <div class="anat-info" id="anatInfo"></div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <h3>The loop, wearing its Kubernetes costume</h3>
+  <p>You met this in the setup. Here it is doing the job that makes Kubernetes feel alive:</p>
+
+  <div class="scene">
+    <div class="slug">THE LOOP · KUBERNETES CUT</div>
+    <p>You: "There should be six catalog pods."<br>
+       Kubernetes: "There are six. Fine."<br>
+       <span style="color:var(--red)">A node catches fire. Two pods die.</span><br>
+       Kubernetes: "There are four. That is not six."<br>
+       Kubernetes: schedules two more, somewhere healthy, in about twenty seconds.<br>
+       You: still asleep.</p>
+  </div>
+
+  <p>Nobody wrote "if a pod dies, start another one." There is no <em>if</em>. There is only the gap
+    between declared and actual, being closed, constantly. Terraform does this on demand, in minutes,
+    against Azure. Kubernetes does it continuously, in seconds, against the cluster.
+    <strong>Same hero, different shift.</strong></p>
+
+  <details class="hood">
+    <summary>Under the hood · the smallest useful Deployment</summary>
+    <div class="hoodbody">
+      <p>This is the declaration. <code>replicas: 6</code> is the "what you want." Everything else
+        tells the scheduler how to keep that promise safely.</p>
+<pre><code><span class="nm">apiVersion</span>: apps/v1
+<span class="nm">kind</span>: Deployment
+<span class="nm">metadata</span>:
+  <span class="nm">name</span>: catalog-api
+<span class="nm">spec</span>:
+  <span class="nm">replicas</span>: <span class="nu">6</span>
+  <span class="nm">selector</span>:
+    <span class="nm">matchLabels</span>: { <span class="nm">app</span>: catalog-api }
+  <span class="nm">template</span>:
+    <span class="nm">metadata</span>:
+      <span class="nm">labels</span>:
+        <span class="nm">app</span>: catalog-api
+        <span class="nm">azure.workload.identity/use</span>: <span class="st">"true"</span>
+    <span class="nm">spec</span>:
+      <span class="nm">serviceAccountName</span>: catalog-sa      <span class="cm"># ← matches the federated credential</span>
+      <span class="nm">containers</span>:
+      - <span class="nm">name</span>: api
+        <span class="nm">image</span>: contosoacr.azurecr.io/catalog-api:<span class="st">1.14.0</span>
+        <span class="nm">ports</span>: [{ <span class="nm">containerPort</span>: <span class="nu">8080</span> }]
+        <span class="cm"># requests = what the scheduler reserves. limits = the ceiling.</span>
+        <span class="nm">resources</span>:
+          <span class="nm">requests</span>: { <span class="nm">cpu</span>: <span class="st">"150m"</span>, <span class="nm">memory</span>: <span class="st">"192Mi"</span> }
+          <span class="nm">limits</span>:   { <span class="nm">cpu</span>: <span class="st">"800m"</span>, <span class="nm">memory</span>: <span class="st">"512Mi"</span> }
+        <span class="cm"># "am I alive?" — fail and I get restarted</span>
+        <span class="nm">livenessProbe</span>:
+          <span class="nm">httpGet</span>: { <span class="nm">path</span>: /healthz, <span class="nm">port</span>: <span class="nu">8080</span> }
+          <span class="nm">initialDelaySeconds</span>: <span class="nu">10</span>
+        <span class="cm"># "am I ready for traffic?" — fail and I'm pulled from the load balancer</span>
+        <span class="nm">readinessProbe</span>:
+          <span class="nm">httpGet</span>: { <span class="nm">path</span>: /readyz, <span class="nm">port</span>: <span class="nu">8080</span> }
+          <span class="nm">periodSeconds</span>: <span class="nu">5</span></code></pre>
+      <p><strong>The two probes are the most under-used feature in Kubernetes.</strong> Liveness
+        answers "should I be killed?" Readiness answers "should I get traffic?" Get readiness wrong
+        and every deploy drops requests, because traffic arrives before your .NET app has finished
+        warming its DI container and building the EF Core model.</p>
+      <p>In ASP.NET Core the endpoints are three lines:</p>
+<pre><code><span class="cm">// Program.cs</span>
+builder.Services.<span class="fn">AddHealthChecks</span>()
+    .<span class="fn">AddDbContextCheck</span>&lt;CatalogContext&gt;(<span class="st">"db"</span>, tags: [<span class="st">"ready"</span>]);
+
+app.<span class="fn">MapHealthChecks</span>(<span class="st">"/healthz"</span>, <span class="kw">new</span>() { Predicate = _ =&gt; <span class="kw">false</span> });      <span class="cm">// process is up</span>
+app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  <span class="kw">new</span>() { Predicate = r =&gt; r.Tags.<span class="fn">Contains</span>(<span class="st">"ready"</span>) });</code></pre>
+    </div>
+  </details>
+
+  <div class="note blue">
+    <div class="t">Where the two heroes hand off</div>
+    <p>Terraform owns the cluster. Kubernetes owns what runs inside it. The boundary is sharp and
+      worth defending: don't let Terraform apply your application manifests (it will fight the
+      controllers and its state file will drift every time a pod moves), and don't let Kubernetes
+      create Azure infrastructure it can't reason about. Each hero, its own world.</p>
+  </div>
+</div>
+</section>
+
+<!-- ============================== ACT III ============================== -->
+<section class="act" id="act3">
+<div class="wrap reveal">
+  <div class="actmark">Act III · The score</div>
+  <h2>Git is the score, and the pipeline is how it reaches the stage</h2>
+
+  <p class="lede">Terraform built the theatre. Kubernetes is ready to conduct. But something has to
+    carry the music from a developer's laptop to the stage — reliably, in minutes, many times a day,
+    with the right people looking at the right moments. That's the pipeline.</p>
+
+  <p>Start from the idea rather than the tooling. Both our heroes only accept one kind of input:
+    <strong>a written declaration of what should be true</strong>. So the question "how do we
+    deploy?" becomes a much better question: <strong>how does a change to that declaration get
+    proposed, reviewed, and adopted?</strong></p>
+
+  <p>Git already answers that. A branch is a proposal. A pull request is a review. A merge is
+    adoption. CI/CD is simply the machinery that makes a merge <em>mean</em> something in the
+    real world.</p>
+
+  <div class="scene">
+    <div class="slug">THE REFRAME</div>
+    <p>You are not "pushing code to servers." You are proposing an amendment to the description
+      of your production system, having it reviewed, and — once adopted — letting two
+      reconciliation loops make the world match the new description.</p>
+  </div>
+
+  <h3>Two pipelines, not one</h3>
+  <p>Here's the distinction that unlocks everything, and confusing it is the most common mistake
+    teams make. One hero's declaration changes weekly. The other's changes hourly. They should not
+    share a pipeline, a repository, or a set of permissions.</p>
+
+  <table>
+    <tr><th></th><th style="color:var(--tf)">Infrastructure pipeline</th><th style="color:var(--k8s)">Application pipeline</th></tr>
+    <tr><td>Changes</td><td>Cluster, network, ACR, identities</td><td>The four .NET services</td></tr>
+    <tr><td>Tool</td><td>Terraform</td><td>Docker + Helm/kubectl</td></tr>
+    <tr><td>Cadence</td><td>Weekly, maybe</td><td>Several times a day</td></tr>
+    <tr><td>Approval</td><td>A human reads the plan diff, always</td><td>Layered gates — mostly automatic, human where judgement is needed</td></tr>
+    <tr><td>Blast radius</td><td>Everything</td><td>One service</td></tr>
+    <tr><td>Repo</td><td><code>contoso-platform</code></td><td><code>contoso-catalog</code>, <code>-cart</code>, …</td></tr>
+  </table>
+
+  <div class="scene">
+    <div class="slug">WHY IT MATTERS</div>
+    <p>If deploying a one-line copy fix to the catalog page requires running Terraform, then every
+      deploy carries the risk of accidentally recreating a node pool. Keep the thing that changes
+      hourly far away from the thing that can delete a database.</p>
+  </div>
+
+  <h3>Who approves what — and why "no approvals" is the wrong goal</h3>
+
+  <p>There's a myth in this space worth killing: that continuous deployment means removing human
+    approval. It doesn't, and teams that chase that as the goal end up either reckless or, more
+    often, quietly reintroducing a Thursday-afternoon change board and feeling bad about it.</p>
+
+  <p><strong>Mature pipelines have more gates than manual processes did, not fewer.</strong>
+    What changes is who staffs them and when they fire. The old model had one gate, at the end,
+    staffed by a human reading a change ticket about software they'd never seen. The new model has
+    six or seven gates, most of them automatic, and the human ones sit precisely where a human
+    adds judgement that a machine cannot.</p>
+
+  <table>
+    <tr><th>Gate</th><th>The question it asks</th><th>Who answers</th><th>What it blocks</th></tr>
+    <tr><td>Pull request review</td><td>Is this change correct and well-designed?</td><td>A human teammate</td><td>The merge</td></tr>
+    <tr><td>Tests &amp; coverage</td><td>Did we break anything we knew about?</td><td>The pipeline</td><td>The build</td></tr>
+    <tr><td>Image scan &amp; signing</td><td>Are we shipping a known CVE?</td><td>The pipeline</td><td>The push to ACR</td></tr>
+    <tr><td>Staging smoke tests</td><td>Does it actually run when assembled?</td><td>The pipeline</td><td>Promotion</td></tr>
+    <tr><td>Canary analysis</td><td>Does real traffic behave? Latency, 5xx, saturation</td><td>Automated metric analysis</td><td>The full rollout</td></tr>
+    <tr><td>Environment approval</td><td>Should this ship <em>now</em>, given what else is happening?</td><td>Named humans — on high-risk services</td><td>Production deploy</td></tr>
+    <tr><td>Change freeze</td><td>Are we inside a protected window?</td><td>Policy</td><td>Everything</td></tr>
+  </table>
+
+  <p>Look at what the humans are being asked. Not "did 214 tests pass" — a human is strictly worse
+    at that than the machine, and asking them makes the approval a rubber stamp. They're asked the
+    one thing the pipeline genuinely cannot know: <strong>is now a good time, given everything
+    happening outside this repository?</strong> A sale starting in an hour. A payments provider
+    already having a bad morning. A regulator's audit window. That's judgement, and it belongs
+    to a person.</p>
+
+  <h3>Not every service earns the same gates</h3>
+  <p>Risk-tier your services and let the pipeline behave differently for each. Applying orders-api's
+    ceremony to catalog-api slows everyone down for nothing; applying catalog-api's speed to
+    orders-api is how you refund people by accident.</p>
+
+  <div class="tiers">
+    <div class="tier t1">
+      <div class="tn">catalog-api</div>
+      <div class="tl">Tier 3 · auto-promote</div>
+      <ul>
+        <li>Reversible in seconds</li>
+        <li>Read-mostly, no money moves</li>
+        <li>Canary metrics are the gate</li>
+        <li>Deploys itself, several times a day</li>
+      </ul>
+    </div>
+    <div class="tier t2">
+      <div class="tn">cart-api</div>
+      <div class="tl">Tier 2 · gated by data</div>
+      <ul>
+        <li>Session state at risk</li>
+        <li>Longer canary window</li>
+        <li>Human gate only when the schema changes</li>
+      </ul>
+    </div>
+    <div class="tier t3">
+      <div class="tn">orders-api · identity-api</div>
+      <div class="tl">Tier 1 · human required</div>
+      <ul>
+        <li>Takes money; touches the ledger</li>
+        <li>Security boundary</li>
+        <li>Two named reviewers before prod</li>
+        <li>Blocked during freeze windows</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note">
+    <div class="t">The honest cost of a human gate</div>
+    <p>Every human gate is a queue. It adds hours of latency, it batches unrelated changes together
+      (making the eventual failure harder to diagnose), and if it fires on every deploy it decays
+      into a reflex click within about three weeks. So gate deliberately: a gate that is always
+      approved is not a control, it's a delay with paperwork. If your approver has never once said
+      no, the gate is telling you something.</p>
+  </div>
+
+  <p>Run the pipeline below. The first button deploys catalog-api, which promotes itself on canary
+    metrics. The second deploys orders-api, which stops and waits for <em>you</em>. The third pushes
+    a commit with a vulnerable dependency, so you can watch an automatic gate do its job.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--green);border-color:rgba(74,222,128,.35)">Diagram 4</span>
+    <span class="ttl">The application pipeline · commit → canary → gate → production</span>
+    <span class="hint">pick a scenario →</span>
+  </div>
+  <div class="pipe">
+    <div class="pipe-track" id="pipeTrack"></div>
+    <div class="pipe-log" id="pipeLog"><span class="dim">// waiting for a commit…</span></div>
+    <div class="gatebox" id="pipeGate">
+      <div class="gt">⏸ Deployment paused · approval required</div>
+      <p id="gateTxt"></p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn approve" id="gateOk">✓ Approve &amp; deploy</button>
+        <button class="btn danger" id="gateNo">✕ Reject</button>
+      </div>
+    </div>
+    <div class="pipe-ctl">
+      <button class="btn" id="pipeRun">▶ deploy catalog-api</button>
+      <button class="btn" id="pipeGated" style="background:var(--pink);color:#2a0a1a">▶ deploy orders-api</button>
+      <button class="btn warn" id="pipeFail">▶ push a bad commit</button>
+      <button class="btn ghost" id="pipeReset">reset</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <h3>The moment the pipeline hands over</h3>
+  <p>There's a handoff worth naming, and it's where our two heroes trade places one last time.
+    The pipeline's job ends at <em class="term">helm upgrade</em> — it changes the desired state
+    and walks away. It does not "deploy" in the old sense of copying files onto servers. It files
+    an amendment. Kubernetes then does the actual work: pulling images, starting pods, waiting for
+    readiness, shifting traffic, killing the old ones.</p>
+
+  <p>Which means the pipeline's last real task is <strong>waiting and judging</strong>:
+    <code>kubectl rollout status</code> watches the rollout and fails the build if the new pods
+    never go ready. Without that line, a broken image gets a green checkmark and you find out
+    from a customer.</p>
+
+  <div class="note green">
+    <div class="t">Push vs. pull — the GitOps fork in the road</div>
+    <p>Everything above is <strong>push</strong>: the pipeline holds credentials and reaches into
+      the cluster. The alternative is <strong>pull</strong> — an agent inside the cluster (Argo CD,
+      or the AKS GitOps add-on based on Flux) watches a Git repo and applies changes itself. CI then
+      never touches the cluster at all; it just writes a new image tag into a manifests repo, and
+      approving a deploy becomes approving a pull request. Push is simpler to start. Pull scales
+      better past a handful of clusters, because the cluster's true state is always a commit you
+      can diff — which is the reconciliation loop applied to your delivery process itself.</p>
+  </div>
+
+  <details class="hood">
+    <summary>Under the hood · the build half (GitHub Actions → ACR)</summary>
+    <div class="hoodbody">
+      <p>Note there is no password anywhere. OIDC federation lets the workflow prove it's
+        <em>this repo, this branch</em> and receive a short-lived Azure token.</p>
+      <div class="filetag">.github/workflows/catalog-api.yml</div>
+<pre><code><span class="nm">name</span>: catalog-api
+<span class="nm">on</span>:
+  <span class="nm">push</span>:
+    <span class="nm">branches</span>: [main]
+    <span class="nm">paths</span>: [<span class="st">'src/Catalog/**'</span>]     <span class="cm"># only build what changed</span>
+
+<span class="nm">permissions</span>:
+  <span class="nm">id-token</span>: write            <span class="cm"># ← required for OIDC login</span>
+  <span class="nm">contents</span>: read
+
+<span class="nm">env</span>:
+  <span class="nm">ACR</span>: contosoacr.azurecr.io
+  <span class="nm">IMAGE</span>: catalog-api
+
+<span class="nm">jobs</span>:
+  <span class="nm">build</span>:
+    <span class="nm">runs-on</span>: ubuntu-latest
+    <span class="nm">steps</span>:
+      - <span class="nm">uses</span>: actions/checkout@v4
+
+      - <span class="nm">name</span>: Test
+        <span class="nm">run</span>: dotnet test ./src/Catalog --logger trx
+
+      - <span class="nm">uses</span>: azure/login@v2
+        <span class="nm">with</span>:
+          <span class="nm">client-id</span>:       ${{ secrets.AZURE_CLIENT_ID }}
+          <span class="nm">tenant-id</span>:       ${{ secrets.AZURE_TENANT_ID }}
+          <span class="nm">subscription-id</span>: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - <span class="nm">name</span>: Build &amp; push image
+        <span class="nm">run</span>: |
+          az acr login --name contosoacr
+          <span class="cm"># tag with the commit SHA — never 'latest' in production</span>
+          TAG=${GITHUB_SHA::7}
+          docker build -f src/Catalog/Dockerfile \
+            -t $ACR/$IMAGE:$TAG .
+          docker push $ACR/$IMAGE:$TAG
+
+      - <span class="nm">name</span>: Scan image
+        <span class="nm">uses</span>: aquasecurity/trivy-action@master
+        <span class="nm">with</span>:
+          <span class="nm">image-ref</span>: ${{ env.ACR }}/${{ env.IMAGE }}:${{ github.sha }}
+          <span class="nm">severity</span>: CRITICAL,HIGH
+          <span class="nm">exit-code</span>: <span class="st">'1'</span>          <span class="cm"># fail the build, don't just warn</span></code></pre>
+
+      <p>And the Dockerfile — multi-stage, non-root, chiselled runtime. Chiselled images have
+        no shell and no package manager, which removes most of what a scanner would complain about:</p>
+<pre><code><span class="kw">FROM</span> mcr.microsoft.com/dotnet/sdk:9.0 <span class="kw">AS</span> build
+<span class="kw">WORKDIR</span> /src
+<span class="kw">COPY</span> *.sln .
+<span class="kw">COPY</span> src/Catalog/*.csproj src/Catalog/
+<span class="kw">RUN</span> dotnet restore src/Catalog          <span class="cm"># cached layer: restore before copying code</span>
+<span class="kw">COPY</span> . .
+<span class="kw">RUN</span> dotnet publish src/Catalog -c Release -o /app
+
+<span class="kw">FROM</span> mcr.microsoft.com/dotnet/aspnet:9.0-noble-chiseled <span class="kw">AS</span> final
+<span class="kw">WORKDIR</span> /app
+<span class="kw">COPY</span> --from=build /app .
+<span class="kw">USER</span> $APP_UID                            <span class="cm"># non-root by default</span>
+<span class="kw">ENTRYPOINT</span> [<span class="st">"dotnet"</span>, <span class="st">"Contoso.Catalog.dll"</span>]</code></pre>
+    </div>
+  </details>
+
+  <details class="hood">
+    <summary>Under the hood · how the approval gate is actually configured</summary>
+    <div class="hoodbody">
+      <p>In GitHub Actions the gate is an <strong>environment</strong> with protection rules. The job
+        simply names the environment; GitHub does the pausing, the notifying, the audit trail, and
+        the "you can't approve your own deploy" rule. The same idea exists as Approvals and Checks
+        on Azure DevOps environments.</p>
+<pre><code>  <span class="nm">deploy-canary</span>:
+    <span class="nm">needs</span>: build
+    <span class="nm">runs-on</span>: ubuntu-latest
+    <span class="nm">environment</span>: production-canary      <span class="cm"># no reviewers — automatic</span>
+    <span class="nm">steps</span>:
+      - <span class="nm">run</span>: az aks get-credentials -g rg-contoso-prod -n aks-contoso-prod
+      - <span class="nm">run</span>: |
+          helm upgrade --install orders-canary ./charts/orders \
+            --namespace shop --set image.tag=${GITHUB_SHA::7} \
+            --set replicaCount=1 --set canary=true --atomic
+
+      - <span class="nm">name</span>: Analyse canary for 10 minutes
+        <span class="nm">run</span>: ./scripts/canary-analysis.sh --window 10m \
+                 --max-error-rate 0.5 --max-p95-regression 20
+
+  <span class="nm">deploy-prod</span>:
+    <span class="nm">needs</span>: deploy-canary
+    <span class="nm">runs-on</span>: ubuntu-latest
+    <span class="cm"># ↓ THIS is the human gate. Configured in repo settings:</span>
+    <span class="cm">#   Required reviewers: @contoso/payments-oncall (2)</span>
+    <span class="cm">#   Wait timer: 0 · Prevent self-review: on</span>
+    <span class="cm">#   Deployment branches: main only</span>
+    <span class="nm">environment</span>:
+      <span class="nm">name</span>: production
+      <span class="nm">url</span>: https://shop.contoso.com
+    <span class="nm">steps</span>:
+      - <span class="nm">run</span>: |
+          helm upgrade --install orders ./charts/orders \
+            --namespace shop --set image.tag=${GITHUB_SHA::7} \
+            --atomic --timeout 5m
+      - <span class="nm">run</span>: kubectl rollout status deploy/orders-api -n shop --timeout=180s</code></pre>
+      <p><strong>Two details that make the gate real rather than decorative.</strong>
+        <code>--atomic</code> means a rollout that doesn't go healthy inside the timeout is rolled
+        back automatically — so the approver is authorising an attempt, not a one-way door. And
+        <em>prevent self-review</em> means the person who wrote the change isn't the person who
+        approves it, which is the entire point of having one.</p>
+
+      <h4>The infrastructure pipeline is deliberately slower</h4>
+      <p>Plan on the pull request so reviewers see the diff. Apply only after a human clicks.</p>
+<pre><code><span class="nm">jobs</span>:
+  <span class="nm">plan</span>:
+    <span class="nm">runs-on</span>: ubuntu-latest
+    <span class="nm">steps</span>:
+      - <span class="nm">run</span>: terraform init
+      - <span class="nm">run</span>: terraform plan -out=tfplan -lock-timeout=5m
+      - <span class="nm">run</span>: terraform show -no-color tfplan &gt; plan.txt
+      - <span class="nm">uses</span>: actions/github-script@v7      <span class="cm"># post the plan as a PR comment</span>
+        <span class="nm">with</span>: { <span class="nm">script</span>: <span class="st">'...comment plan.txt on the PR...'</span> }
+      - <span class="nm">uses</span>: actions/upload-artifact@v4
+        <span class="nm">with</span>: { <span class="nm">name</span>: tfplan, <span class="nm">path</span>: tfplan }
+
+  <span class="nm">apply</span>:
+    <span class="nm">needs</span>: plan
+    <span class="nm">if</span>: github.ref == <span class="st">'refs/heads/main'</span>
+    <span class="nm">environment</span>: prod-infra          <span class="cm"># ← required reviewers live here too</span>
+    <span class="nm">steps</span>:
+      - <span class="nm">uses</span>: actions/download-artifact@v4
+        <span class="nm">with</span>: { <span class="nm">name</span>: tfplan }
+      <span class="cm"># apply the SAVED plan, not a fresh one — what was reviewed is what runs</span>
+      - <span class="nm">run</span>: terraform apply -auto-approve tfplan</code></pre>
+      <p><strong>Applying the saved plan file matters more than it looks.</strong> If you re-plan at
+        apply time, the thing that executes is not the thing anyone reviewed. Drift, a teammate's
+        portal click, or a new provider version can all change it in between — and then your
+        approval was for a document that no longer exists.</p>
+    </div>
+  </details>
+</div>
+</section>
+
+<!-- ============================== ACT IV ============================== -->
+<section class="act" id="act4">
+<div class="wrap reveal">
+  <div class="actmark">Act IV · The performance</div>
+  <h2>What "orchestration" actually means at 3 in the afternoon</h2>
+
+  <p class="lede">The pipeline has walked away. Kubernetes is alone on stage now, and this is where
+    our second hero earns top billing. Orchestration is a word that usually means "some Kubernetes
+    stuff happens." It's more specific than that: four jobs, running continuously, that nobody
+    has to ask for.</p>
+
+  <h3>Job one · Placement</h3>
+  <p>You said catalog-api needs 150 millicores and 192MB. The scheduler finds a node with room,
+    honours your rules ("spread these across three availability zones", "keep batch work off this
+    pool"), and puts the pod there. If no node has room, the <strong>cluster autoscaler</strong>
+    asks Azure for another VM — and about three minutes later there is one. Note that Terraform
+    declared the <em>range</em> (3 to 30 nodes); Kubernetes picks the number, minute by minute.</p>
+
+  <h3>Job two · Discovery</h3>
+  <p>orders-api needs to call catalog-api. It does not know an IP address. It calls
+    <code>http://catalog-api.shop.svc.cluster.local</code> — a name that resolves, inside the
+    cluster, to whichever pods are healthy <em>right now</em>. Pods die and are replaced with new
+    IPs every day. The name never changes.</p>
+
+  <div class="scene">
+    <div class="slug">THE OLD WAY / THE NEW WAY</div>
+    <p>Before: a config file with <span style="color:var(--red)">10.2.14.7</span> in it, and a
+      ticket to update it when the server is rebuilt.<br>
+      After: a name. The infrastructure keeps the promise behind it.</p>
+  </div>
+
+  <h3>Job three · Scale</h3>
+  <p>The <strong>Horizontal Pod Autoscaler</strong> watches CPU, memory, or a custom signal like
+    "messages waiting in the Service Bus queue," and adds pods. If the pods won't fit, the cluster
+    autoscaler adds nodes. Two loops, nested, both closing gaps.</p>
+
+  <h3>Job four · Change</h3>
+  <p>This is the one you'll care about most, because it runs during every single deploy.
+    Kubernetes replaces old pods with new ones <strong>gradually</strong>, and refuses to send
+    traffic to a new pod until that pod says it's ready. Two numbers control the whole dance —
+    play with them and watch what happens to your capacity mid-deploy.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--k8s);border-color:rgba(74,214,196,.35)">Diagram 5</span>
+    <span class="ttl">Rolling update simulator · catalog-api v1.14 → v1.15</span>
+    <span class="hint">drag the sliders, then deploy →</span>
+  </div>
+  <div class="roll">
+    <div class="sliders">
+      <div class="sl">
+        <label>Replicas <b id="lblRep">8</b></label>
+        <input type="range" id="slRep" min="3" max="14" value="8">
+      </div>
+      <div class="sl">
+        <label>maxSurge — extra pods allowed <b id="lblSurge">2</b></label>
+        <input type="range" id="slSurge" min="0" max="6" value="2">
+      </div>
+      <div class="sl">
+        <label>maxUnavailable — pods you may lose <b id="lblUnav">1</b></label>
+        <input type="range" id="slUnav" min="0" max="6" value="1">
+      </div>
+    </div>
+    <div class="podgrid" id="podGrid"></div>
+    <div class="statrow">
+      <div><span>serving traffic</span><b id="stServe">8</b></div>
+      <div><span>capacity vs. target</span><b id="stCap">100%</b></div>
+      <div id="stDropWrap" class="good"><span>requests dropped</span><b id="stDrop">0</b></div>
+      <div><span>elapsed</span><b id="stTime">0s</b></div>
+    </div>
+    <div class="pipe-ctl">
+      <button class="btn" id="rollGo">▶ deploy v1.15</button>
+      <button class="btn ghost" id="rollReset">reset</button>
+      <span id="rollMsg" style="font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)"></span>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <p>Set <code>maxUnavailable</code> to 0 and the rollout never dips below full capacity — it costs
+    you a few extra pods' worth of compute for a couple of minutes. Set it to 4 and the deploy is
+    faster but you're running at half capacity in the middle of it, which is fine at 3am and a
+    disaster during a sale. <strong>This is the trade, and it's yours to make per service</strong> —
+    the same risk-tiering that decided who needs a human approval decides these two numbers too.</p>
+
+  <details class="hood">
+    <summary>Under the hood · rollout strategy, autoscaling and disruption budgets</summary>
+    <div class="hoodbody">
+<pre><code><span class="nm">spec</span>:
+  <span class="nm">replicas</span>: <span class="nu">8</span>
+  <span class="nm">strategy</span>:
+    <span class="nm">type</span>: RollingUpdate
+    <span class="nm">rollingUpdate</span>:
+      <span class="nm">maxSurge</span>: <span class="nu">2</span>          <span class="cm"># may temporarily run 10</span>
+      <span class="nm">maxUnavailable</span>: <span class="nu">0</span>    <span class="cm"># never dip below 8 ready</span>
+  <span class="nm">minReadySeconds</span>: <span class="nu">10</span>       <span class="cm"># "ready" must hold for 10s before we trust it</span>
+  <span class="nm">template</span>:
+    <span class="nm">spec</span>:
+      <span class="nm">terminationGracePeriodSeconds</span>: <span class="nu">45</span>   <span class="cm"># let in-flight requests finish</span>
+      <span class="nm">topologySpreadConstraints</span>:              <span class="cm"># don't put all 8 in one zone</span>
+      - <span class="nm">maxSkew</span>: <span class="nu">1</span>
+        <span class="nm">topologyKey</span>: topology.kubernetes.io/zone
+        <span class="nm">whenUnsatisfiable</span>: ScheduleAnyway
+        <span class="nm">labelSelector</span>:
+          <span class="nm">matchLabels</span>: { <span class="nm">app</span>: catalog-api }</code></pre>
+
+      <h4>Scale on the thing that actually predicts load</h4>
+      <p>CPU is a lagging indicator. For orders-api, queue depth is a leading one — KEDA scales on
+        it directly, and can scale to zero when the queue is empty:</p>
+<pre><code><span class="nm">apiVersion</span>: keda.sh/v1alpha1
+<span class="nm">kind</span>: ScaledObject
+<span class="nm">metadata</span>: { <span class="nm">name</span>: orders-worker }
+<span class="nm">spec</span>:
+  <span class="nm">scaleTargetRef</span>: { <span class="nm">name</span>: orders-worker }
+  <span class="nm">minReplicaCount</span>: <span class="nu">1</span>
+  <span class="nm">maxReplicaCount</span>: <span class="nu">40</span>
+  <span class="nm">triggers</span>:
+  - <span class="nm">type</span>: azure-servicebus
+    <span class="nm">metadata</span>:
+      <span class="nm">queueName</span>: orders-to-fulfil
+      <span class="nm">messageCount</span>: <span class="st">"20"</span>       <span class="cm"># one pod per 20 queued messages</span>
+    <span class="nm">authenticationRef</span>: { <span class="nm">name</span>: azure-workload-identity }</code></pre>
+
+      <h4>Protect yourself from your own maintenance</h4>
+      <p>A PodDisruptionBudget stops <em>voluntary</em> disruption — node upgrades, autoscaler
+        consolidation — from taking down more than you can afford. Without it, an AKS node-image
+        upgrade can drain three nodes and briefly leave you with one pod:</p>
+<pre><code><span class="nm">apiVersion</span>: policy/v1
+<span class="nm">kind</span>: PodDisruptionBudget
+<span class="nm">metadata</span>: { <span class="nm">name</span>: catalog-pdb }
+<span class="nm">spec</span>:
+  <span class="nm">minAvailable</span>: <span class="st">"70%"</span>
+  <span class="nm">selector</span>:
+    <span class="nm">matchLabels</span>: { <span class="nm">app</span>: catalog-api }</code></pre>
+
+      <h4>And graceful shutdown on the .NET side</h4>
+      <p>Kubernetes sends SIGTERM and waits. If your app exits instantly, you drop whatever was
+        in flight. Generic Host handles this correctly if you let it:</p>
+<pre><code>builder.Services.<span class="fn">Configure</span>&lt;HostOptions&gt;(o =&gt;
+    o.ShutdownTimeout = TimeSpan.<span class="fn">FromSeconds</span>(<span class="nu">30</span>));   <span class="cm">// &lt; terminationGracePeriod</span></code></pre>
+    </div>
+  </details>
+</div>
+</section>
+
+<!-- ============================== ACT V ============================== -->
+<section class="act" id="act5">
+<div class="wrap reveal">
+  <div class="actmark">Act V · The fire</div>
+  <h2>Something breaks. Nobody wakes up.</h2>
+
+  <p class="lede">Every architecture is a theory until something goes wrong. Here's the part that
+    justifies all the ceremony: on the night an Azure host fails and takes a node with it, the
+    difference between the old world and this one is whether your phone rings.</p>
+
+  <div class="scene">
+    <div class="slug">INT. OPS ROOM — NIGHT (ONE YEAR LATER)</div>
+    <p>A node dies. Not gracefully — it simply stops answering.</p>
+    <p>Ten seconds pass. The control plane notices the missing heartbeat and marks the node
+      <span style="color:var(--red)">NotReady</span>. The endpoints controller pulls those pods out
+      of every service's routing table, so traffic stops going to ghosts. The deployment controller
+      does its arithmetic: seven pods, should be eight. The scheduler finds room on the survivors.
+      New pods start. Readiness probes pass. Traffic returns.</p>
+    <p>The autoscaler, meanwhile, has already asked Azure for a replacement VM — using the node pool
+      definition Terraform wrote months ago and hasn't thought about since.</p>
+    <p>Total elapsed time: under a minute. Total humans involved: zero. The monitor still glows,
+      but nobody is watching it, because there is nothing to watch.</p>
+  </div>
+
+  <p>Try it yourself. Kill a node, or turn the traffic up until the cluster has to grow.</p>
+</div>
+
+<div class="wide reveal">
+<div class="module">
+  <div class="module-head">
+    <span class="chip" style="color:var(--red);border-color:rgba(244,112,122,.35)">Diagram 6</span>
+    <span class="ttl">Resilience sandbox · break it and watch it heal</span>
+    <span class="hint">click a node to kill it →</span>
+  </div>
+  <div class="resi">
+    <div class="sl" style="max-width:420px">
+      <label>Incoming traffic <b id="lblTraf">1,200 rps</b></label>
+      <input type="range" id="slTraf" min="200" max="9000" step="200" value="1200">
+    </div>
+    <div class="gauge"><i id="gaugeFill"></i></div>
+    <div style="font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);letter-spacing:.08em"
+         id="loadLbl">average pod utilisation 24%</div>
+    <div class="nodes" id="nodeGrid"></div>
+    <div class="statrow">
+      <div><span>healthy nodes</span><b id="rsNodes">4</b></div>
+      <div><span>running pods</span><b id="rsPods">8</b></div>
+      <div id="rsHealthWrap" class="good"><span>service status</span><b id="rsHealth">OK</b></div>
+    </div>
+    <div class="pipe-ctl">
+      <button class="btn danger" id="rsKill">⚡ kill a random node</button>
+      <button class="btn ghost" id="rsReset">reset cluster</button>
+      <span id="rsMsg" style="font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)"></span>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="wrap reveal">
+  <h3>What neither hero can fix for you</h3>
+  <p>Self-healing has a hard boundary, and it's honest to name it. Kubernetes will restart a crashed
+    pod forever. It cannot tell you the pod crashes because of a null reference on line 84. It will
+    happily run eight replicas of a broken build. It will not notice that your latency doubled —
+    only that the process is alive. And Terraform will faithfully rebuild a badly-designed network
+    exactly as badly, every time, on demand.</p>
+
+  <p>Which is why the last piece of the picture is <strong>seeing</strong>. Container Insights and
+    Managed Prometheus feed metrics; Managed Grafana draws them; Application Insights follows a
+    single order across all four services and shows you which hop got slow. Without that, you have
+    an orchestra playing perfectly in a room with no windows.</p>
+
+  <details class="hood">
+    <summary>Under the hood · the four alerts worth having on day one</summary>
+    <div class="hoodbody">
+      <p>Alert on symptoms your customers feel, not on causes. High CPU is not an incident.
+        A 12% error rate is.</p>
+      <table>
+        <tr><th>Signal</th><th>Threshold</th><th>Why</th></tr>
+        <tr><td>CrashLoopBackOff</td><td>any pod, 5 min</td><td>A restart loop is a deploy that failed silently.</td></tr>
+        <tr><td>HTTP 5xx rate</td><td>&gt; 2% over 5 min</td><td>The only number a customer actually experiences.</td></tr>
+        <tr><td>p95 latency</td><td>&gt; 2× the 7-day baseline</td><td>Catches slow before it becomes down.</td></tr>
+        <tr><td>Node pool at max</td><td>at <code>max_count</code> &gt; 10 min</td><td>You've hit your ceiling; the autoscaler is out of moves.</td></tr>
+      </table>
+      <p>That last one is where the heroes talk to each other: the alert fires because Kubernetes
+        has run out of the room Terraform gave it. The fix is a pull request against
+        <code>max_count</code>, reviewed, planned and applied — not a portal click.</p>
+    </div>
+  </details>
+</div>
+</section>
+
+<!-- ============================== CREDITS ============================== -->
+<section class="act" id="end">
+<div class="wrap reveal">
+  <div class="actmark">Credits</div>
+  <h2>The whole thing, in one breath</h2>
+
+  <p class="lede">Terraform builds the theatre: it writes down what the world should look like and
+    makes Azure match, deliberately, with a human reading the diff. Kubernetes conducts the show:
+    it reads what should be running and spends the rest of its life closing the gap — placing pods,
+    resolving names, adding capacity, replacing the dead. Git is the score both of them read from,
+    and the pipeline is how a new page gets in.</p>
+
+  <p>That's it. Everything else is detail, and details are learnable. The idea is not.</p>
+
+  <div class="scene">
+    <div class="slug">THE THROUGH-LINE</div>
+    <p>Both heroes have the same superpower and neither can do the other's job.
+      Terraform: <em>declared vs. Azure</em>, minutes, on demand.
+      Kubernetes: <em>declared vs. running</em>, seconds, forever.
+      GitOps: <em>declared vs. cluster</em>, applied to your delivery process itself.
+      Learn the loop once and the whole ecosystem stops being a pile of tools and becomes
+      one idea, repeated at three speeds.</p>
+  </div>
+
+  <h3>If you're starting on Monday</h3>
+  <table>
+    <tr><th>#</th><th>Do this</th><th>Not this</th></tr>
+    <tr><td>1</td><td>Terraform first — one cluster, one node pool, from a file, from day zero</td><td>Clicking a cluster together "to try it" and never rebuilding it</td></tr>
+    <tr><td>2</td><td>Remote state in Azure Storage from the very first <code>init</code></td><td>Local state "just for now"</td></tr>
+    <tr><td>3</td><td>Workload identity and OIDC federation from day one</td><td>Retrofitting security after the secrets are everywhere</td></tr>
+    <tr><td>4</td><td>One service, deployed end to end by a pipeline, before adding a second</td><td>Designing a multi-region mesh before anything runs</td></tr>
+    <tr><td>5</td><td>Readiness probes and resource requests on every service</td><td>Defaults, then wondering why deploys drop traffic</td></tr>
+    <tr><td>6</td><td>Risk-tier your services and gate them differently</td><td>One approval policy for everything — or none at all</td></tr>
+    <tr><td>7</td><td>Observability wired up before your first real incident</td><td>Adding dashboards while production burns</td></tr>
+  </table>
+
+  <div class="note blue">
+    <div class="t">The uncomfortable question</div>
+    <p>Do you need any of this? If you run three services and deploy weekly, Azure Container Apps
+      or App Service will serve you better and cost far less in human attention — and Terraform is
+      still worth every minute regardless, because the first hero's argument has nothing to do with
+      Kubernetes. AKS earns its complexity when you have many services, many teams, real scaling
+      variance, and a platform group who owns the cluster. Choosing it too early is a common and
+      expensive mistake; choosing it too late is a painful one. Both are worth thinking about
+      honestly.</p>
+  </div>
+
+  <div class="note">
+    <div class="t">Colophon</div>
+    <p>Every diagram on this page is a live simulation, not a screenshot; the timings are
+      illustrative, the mechanics are real. Code samples target <code>azurerm</code> 4.x,
+      Kubernetes 1.34+ and .NET 9. AKS keeps three GA minor versions in support at a time, and
+      several provider argument names changed between azurerm 3.x and 4.x — check the docs for
+      your pinned versions before copying into production.</p>
+  </div>
+</div>
+</section>
+
+<div class="nu-shell end-back">
+  <a class="back-link" href="index.html">&larr; Back to all stories</a>
+  <div class="share-row">
+    <span class="share-label">Share</span>
+    <a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fniluniverse.com%2Fterraform-kubernetes-theatre.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a>
+    <a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fniluniverse.com%2Fterraform-kubernetes-theatre.html&text=Terraform%20builds%20the%20theatre.%20Kubernetes%20conducts%20the%20show." target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a>
+    <a class="share-btn" href="mailto:?subject=Terraform%20builds%20the%20theatre.%20Kubernetes%20conducts%20the%20show.&body=https%3A%2F%2Fniluniverse.com%2Fterraform-kubernetes-theatre.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a>
+    <button class="share-btn" type="button" data-copy-url="https://niluniverse.com/terraform-kubernetes-theatre.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+  </div>
+</div>
+
+<footer class="sitefoot">
+  <div class="nu-shell foot-inner">
+    <span>&copy; 2026 Nilesh Mohite &mdash; <a href="https://www.nileshmohite.com">www.nileshmohite.com</a></span>
+    <span>Written between deployments &middot; Amalner, India</span>
+  </div>
+</footer>
+
+<script>
+/* ============================ hero starfield ============================ */
+(function(){
+  const c=document.getElementById('stars'); if(!c) return;
+  const x=c.getContext('2d'); let w,h,parts=[];
+  function size(){ w=c.width=c.offsetWidth*devicePixelRatio; h=c.height=c.offsetHeight*devicePixelRatio; init(); }
+  function init(){
+    parts=[]; const n=Math.min(90,Math.floor(w*h/26000));
+    for(let i=0;i<n;i++) parts.push({
+      x:Math.random()*w,y:Math.random()*h,
+      vx:(Math.random()-.5)*.18*devicePixelRatio,vy:(Math.random()-.5)*.18*devicePixelRatio,
+      r:(Math.random()*1.5+.6)*devicePixelRatio
+    });
+  }
+  function loop(){
+    x.clearRect(0,0,w,h);
+    for(const p of parts){ p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0||p.x>w)p.vx*=-1; if(p.y<0||p.y>h)p.vy*=-1; }
+    const D=140*devicePixelRatio;
+    for(let i=0;i<parts.length;i++)for(let j=i+1;j<parts.length;j++){
+      const a=parts[i],b=parts[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy);
+      if(d<D){ x.strokeStyle='rgba(58,160,255,'+(0.20*(1-d/D))+')';
+        x.lineWidth=devicePixelRatio*.6; x.beginPath(); x.moveTo(a.x,a.y); x.lineTo(b.x,b.y); x.stroke(); }
+    }
+    for(const p of parts){ x.fillStyle='rgba(140,190,240,.65)';
+      x.beginPath(); x.arc(p.x,p.y,p.r,0,7); x.fill(); }
+    requestAnimationFrame(loop);
+  }
+  addEventListener('resize',size); size(); loop();
+})();
+
+/* ============================ act nav highlighting ============================ */
+(function(){
+  const links=[...document.querySelectorAll('#actnav a')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  function upd(){
+    let idx=0; secs.forEach((el,i)=>{ if(el && el.getBoundingClientRect().top<innerHeight*0.45) idx=i; });
+    links.forEach((a,i)=>a.classList.toggle('on',i===idx));
+  }
+  addEventListener('scroll',upd,{passive:true}); upd();
+})();
+
+/* ============================ site chrome: theme toggle ============================ */
+(function(){
+  const KEY='nu-theme';
+  const toggle=document.getElementById('themeToggle');
+  if(!toggle) return;
+  function apply(t){
+    document.documentElement.setAttribute('data-theme',t);
+    toggle.setAttribute('aria-pressed', t==='linkedin' ? 'true':'false');
+    toggle.setAttribute('title', t==='linkedin' ? 'Switch to dark theme' : 'Switch to light theme');
+  }
+  let saved=null; try{saved=localStorage.getItem(KEY);}catch(e){}
+  if(saved==='linkedin' || saved==='cinema') apply(saved);
+  toggle.addEventListener('click',function(){
+    const isLight=document.documentElement.getAttribute('data-theme')==='linkedin';
+    const next=isLight?'cinema':'linkedin';
+    apply(next);
+    try{localStorage.setItem(KEY,next);}catch(e){}
+  });
+})();
+
+/* ============================ site chrome: copy link ============================ */
+(function(){
+  document.querySelectorAll('[data-copy-url]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const url = btn.getAttribute('data-copy-url');
+      const done = function(){
+        const original = btn.getAttribute('aria-label');
+        btn.classList.add('copied');
+        btn.setAttribute('aria-label','Copied!');
+        setTimeout(function(){ btn.classList.remove('copied'); btn.setAttribute('aria-label', original); }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function(){});
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = url; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch(e){}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+})();
+
+/* ============================ site chrome: reading progress rail ============================ */
+(function(){
+  const headings = Array.prototype.slice.call(document.querySelectorAll('section.act h2'));
+  if (!headings.length) return;
+  const fill = document.getElementById('rpFill'), ring = document.getElementById('rpRing'),
+        pct = document.getElementById('rpPct'), status = document.getElementById('rpStatus'),
+        list = document.getElementById('rpList'), toc = document.getElementById('rpToc'),
+        toggle = document.getElementById('rpToggle');
+  if (!fill || !toc) return;
+  const RING_CIRC = 97.4; const seen = {};
+  const items = headings.map(function(h, i){
+    const base = 'rp-section-' + (i + 1);
+    if (!h.id) h.id = base;
+    while (seen[h.id]) { h.id = base + '-' + Math.random().toString(36).slice(2,6); }
+    seen[h.id] = true;
+    const li = document.createElement('li'), a = document.createElement('a');
+    a.href = '#' + h.id; a.textContent = h.textContent.replace(/\s+/g,' ').trim();
+    li.appendChild(a); list.appendChild(li);
+    return { heading: h, li: li };
+  });
+  function updateProgress(){
+    const doc = document.documentElement;
+    const scrollTop = window.scrollY || doc.scrollTop;
+    const height = doc.scrollHeight - doc.clientHeight;
+    const ratio = height > 0 ? Math.min(1, Math.max(0, scrollTop / height)) : 0;
+    const percent = Math.round(ratio * 100);
+    fill.style.width = percent + '%';
+    if (ring) ring.style.strokeDashoffset = String(RING_CIRC * (1 - ratio));
+    if (pct) pct.textContent = percent + '%';
+    if (status) status.textContent = percent >= 99 ? 'Finished reading' : percent + '% read';
+    let activeIdx = 0; const probe = scrollTop + window.innerHeight * 0.3;
+    for (let i = 0; i < items.length; i++) {
+      const top = items[i].heading.getBoundingClientRect().top + scrollTop;
+      if (top <= probe) activeIdx = i;
+    }
+    items.forEach(function(it, i){ it.li.classList.toggle('active', i === activeIdx); });
+  }
+  addEventListener('scroll', updateProgress, { passive: true });
+  addEventListener('resize', updateProgress);
+  updateProgress();
+  toggle.addEventListener('click', function(){
+    const open = toc.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', function(e){
+    if (!toc.contains(e.target)) toc.classList.remove('open');
+  });
+})();
+
+/* ============================ reveal on scroll ============================ */
+(function(){
+  const io=new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+  }),{threshold:.08,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+})();
+
+/* ============================ M0: the shared loop ============================ */
+(function(){
+  const D={
+    tf:{
+      name:'TERRAFORM', colour:'#9a6cf0',
+      cad:'clock: on demand, minutes · world: your Azure subscription<br>memory: a state file in blob storage · changes reviewed before they run',
+      steps:[
+        {t:'You write it down',
+         b:'You add <code>azurerm_kubernetes_cluster</code> to a .tf file, open a pull request, and merge it. That file is now the only legitimate description of what production should be. Nothing you click in the portal counts.'},
+        {t:'It reads the world',
+         b:'<code>terraform plan</code> loads the state file — its memory of what it built — and then calls the Azure ARM API to ask what actually exists right now. Three sources, one comparison.'},
+        {t:'It shows you the gap',
+         b:'<em>Plan: 10 to add, 2 to change, 0 to destroy.</em> This is the moment a human reads a diff and decides. It is the most valuable ten seconds in infrastructure work, and it happens before anything is touched.'},
+        {t:'It closes the gap — then stops',
+         b:'<code>terraform apply</code> calls Azure APIs until reality matches the file, updates its state, and exits. It will not run again until you ask. Drift can accumulate in the meantime; the next plan will find it.'}
+      ]},
+    k8s:{
+      name:'KUBERNETES', colour:'#4ad6c4',
+      cad:'clock: continuous, seconds · world: the inside of the cluster<br>memory: etcd, managed for you · changes applied first, watched after',
+      steps:[
+        {t:'You write it down',
+         b:'You apply a Deployment saying <code>replicas: 8</code>. The API server validates it and stores it in etcd. Notice: you have not started anything. You have recorded an intention.'},
+        {t:'It watches the world',
+         b:'Controllers watch the live cluster continuously. How many catalog-api pods are actually Ready? Which nodes sent a heartbeat in the last ten seconds? This never stops, for the life of the cluster.'},
+        {t:'It finds the gap',
+         b:'Seven pods Ready, eight wanted. Gap of one. No human is shown this diff and no human approves it — the whole point is that this happens at 3 AM in about twenty seconds.'},
+        {t:'It closes the gap — then loops',
+         b:'The scheduler places a new pod on a node with room; the kubelet pulls the image and starts it; the readiness probe passes; the endpoints controller adds it to the service. Then step 2 again, immediately, forever.'}
+      ]}
+  };
+  let mode='tf', step=0, timer=null;
+  const gs=[...document.querySelectorAll('.lp-g')];
+  const elStep=document.getElementById('loopStep'), elT=document.getElementById('loopTitle'),
+        elB=document.getElementById('loopBody'), elC=document.getElementById('loopCad'),
+        elCentre=document.getElementById('loopCentre');
+  const NAMES=['Declare','Observe','Diff','Act'];
+  function paint(){
+    const d=D[mode];
+    gs.forEach((g,i)=>{
+      g.classList.toggle('on',i===step);
+      const r=g.querySelector('rect');
+      r.setAttribute('stroke', i===step? d.colour : '#2f4straight'.replace('#2f4straight','#2a3a52'));
+      r.setAttribute('fill', i===step? 'rgba(255,255,255,.06)' : '#14203a');
+    });
+    elCentre.textContent=d.name; elCentre.style.fill=d.colour; elCentre.style.opacity=.9;
+    elStep.textContent='Step '+(step+1)+' · '+NAMES[step];
+    elStep.style.color=d.colour;
+    elT.textContent=d.steps[step].t;
+    elB.innerHTML=d.steps[step].b;
+    elC.innerHTML=d.cad;
+  }
+  function auto(){ clearInterval(timer); timer=setInterval(()=>{ step=(step+1)%4; paint(); },3400); }
+  gs.forEach((g,i)=>{
+    g.setAttribute('tabindex','0');
+    const pick=()=>{ step=i; paint(); auto(); };
+    g.addEventListener('click',pick);
+    g.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();pick();} });
+  });
+  document.querySelectorAll('.modetabs button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('.modetabs button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on'); mode=b.dataset.m; paint(); auto();
+    });
+  });
+  paint(); auto();
+})();
+
+/* ============================ M1: terraform apply ============================ */
+(function(){
+  const RES=[
+    {id:'azurerm_resource_group.main',t:900},
+    {id:'azurerm_virtual_network.main',t:1400},
+    {id:'azurerm_subnet.aks',t:1100},
+    {id:'azurerm_container_registry.main',t:1600},
+    {id:'azurerm_log_analytics_workspace.main',t:1300},
+    {id:'azurerm_kubernetes_cluster.main',t:3400},
+    {id:'azurerm_kubernetes_cluster_node_pool.apps',t:2200},
+    {id:'azurerm_user_assigned_identity.catalog',t:800},
+    {id:'azurerm_federated_identity_credential.catalog',t:900},
+    {id:'azurerm_role_assignment.acr_pull',t:700}
+  ];
+  const term=document.getElementById('tfTerm'), list=document.getElementById('tfList'),
+        stage=document.getElementById('tfStage'), play=document.getElementById('tfPlay'),
+        rst=document.getElementById('tfReset');
+  let timers=[], running=false;
+  function draw(){
+    list.innerHTML=RES.map((r,i)=>
+      '<div class="tfres pend" id="tfr'+i+'"><span class="dot"></span><span>'+
+      r.id.replace('azurerm_','')+'</span><span class="t"></span></div>').join('');
+  }
+  function w(txt,cls){
+    const d=document.createElement('div'); d.className='ln '+(cls||'c-w'); d.innerHTML=txt;
+    term.appendChild(d); term.scrollTop=term.scrollHeight;
+  }
+  function clearAll(){ timers.forEach(clearTimeout); timers=[]; }
+  function at(ms,fn){ timers.push(setTimeout(fn,ms)); }
+  function reset(){
+    clearAll(); running=false; play.disabled=false;
+    term.innerHTML='<div class="ln c-d">$ _</div>';
+    stage.textContent='idle · waiting for input'; stage.style.color='var(--tf)'; draw();
+  }
+  function run(){
+    if(running) return; running=true; play.disabled=true; term.innerHTML=''; draw();
+    stage.style.color='var(--tf)';
+    let t=0;
+    stage.textContent='initialising';
+    w('$ terraform init','c-b');
+    at(t+=350,()=>{ w('Initializing the backend...','c-d');
+      w('  <span class="c-p">azurerm</span> backend · state locked via blob lease','c-d'); });
+    at(t+=700,()=>{ w('Initializing provider plugins...','c-d');
+      w('- Installing hashicorp/azurerm v4.30.0...','c-d');
+      w('<span class="c-g">Terraform has been successfully initialized!</span>'); });
+    at(t+=800,()=>{ stage.textContent='refreshing state'; w(''); w('$ terraform plan -out=tfplan','c-b');
+      w('Acquiring state lock. This may take a few moments...','c-d');
+      w('Refreshing state... comparing config ↔ state ↔ Azure','c-d'); });
+    at(t+=1100,()=>{
+      w(''); w('Terraform will perform the following actions:','c-w');
+      RES.forEach(r=>w('  <span class="c-g">+</span> '+r.id,'c-d'));
+      w(''); w('<span class="c-a">Plan: '+RES.length+' to add, 0 to change, 0 to destroy.</span>');
+      w('<span class="c-p">// a human reads this diff and approves the PR ↑</span>');
+      stage.textContent='plan ready · '+RES.length+' to add';
+    });
+    at(t+=1400,()=>{ w(''); w('$ terraform apply tfplan','c-b'); stage.textContent='applying'; });
+    let acc=t+300;
+    RES.forEach((r,i)=>{
+      at(acc,()=>{
+        const el=document.getElementById('tfr'+i);
+        el.className='tfres run'; el.scrollIntoView({block:'nearest'});
+        w(r.id+': <span class="c-a">Creating...</span>');
+      });
+      acc+=r.t;
+      at(acc,()=>{
+        const el=document.getElementById('tfr'+i);
+        el.className='tfres done';
+        el.querySelector('.t').textContent=Math.max(1,Math.round(r.t/1000))+'s';
+        w(r.id+': <span class="c-g">Creation complete</span> after '+Math.max(1,Math.round(r.t/1000))+'s');
+      });
+      acc+=150;
+    });
+    at(acc+300,()=>{
+      w('');
+      w('<span class="c-g">Apply complete! Resources: '+RES.length+' added, 0 changed, 0 destroyed.</span>');
+      w(''); w('Outputs:','c-w');
+      w('cluster_name     = "aks-contoso-prod"','c-d');
+      w('acr_login_server = "contosoacr.azurecr.io"','c-d');
+      w('oidc_issuer_url  = "https://westeurope.oic.prod-aks.azure.com/…"','c-d');
+      w('');
+      w('<span class="c-p">// Run it again and it says: No changes. Your infrastructure matches the configuration.</span>');
+      stage.textContent='✓ apply complete · the theatre is built';
+      stage.style.color='var(--green)';
+      running=false; play.disabled=false;
+    });
+  }
+  play.addEventListener('click',run);
+  rst.addEventListener('click',reset);
+  reset();
+})();
+
+/* ============================ M2: AKS anatomy ============================ */
+(function(){
+  const DATA={
+    api:{n:'API server',r:'control plane · managed by Microsoft',
+      p:'The only way in. Every <code>kubectl</code> command, every controller, every pipeline talks to this one endpoint. It validates the request, checks your Entra ID permissions, and writes the result to etcd. It does not run your containers — it only records intentions.',
+      f:[['You pay','Nothing on Free tier; Standard tier buys an SLA'],['Locked down by','Entra ID + Azure RBAC, optional private cluster / IP allow-list'],['Fails how','New changes stop applying; already-running pods keep serving traffic']]},
+    etcd:{n:'etcd',r:'control plane · the source of truth',
+      p:'A distributed key-value store holding the entire desired state of the cluster. Every Deployment, Secret, ConfigMap and Service lives here. If you want to know "what should be running," this is literally the answer. It is to Kubernetes what the state file is to Terraform.',
+      f:[['Backed up by','Microsoft, automatically'],['You touch it','Never, directly'],['Why it matters','Anything not written here does not exist to Kubernetes']]},
+    sched:{n:'Scheduler',r:'control plane · placement',
+      p:'Given a pod that needs 150m CPU and 192MB, spread across zones, avoiding spot nodes — which machine? The scheduler filters every node down to the ones that can host it, scores them, and picks a winner. If none qualify, the pod sits in <code>Pending</code> and the cluster autoscaler takes the hint.',
+      f:[['Honours','requests, taints/tolerations, affinity, zone spread'],['Ignores','limits — those are enforced later, by the kernel'],['Common bug','No requests set → wildly unbalanced nodes']]},
+    ctrl:{n:'Controller manager',r:'control plane · where the loop lives',
+      p:'A crowd of small reconciliation loops, each obsessed with one gap. The deployment controller cares that 6 means 6. The endpoints controller keeps service routing tables pointing only at healthy pods. The node controller notices missing heartbeats. This is where self-healing physically happens.',
+      f:[['Runs','a few times per second, forever'],['Reacts to node loss in','~10s to mark NotReady, then eviction'],['Mental model','if X ≠ desired, nudge X toward desired']]},
+    sysnp:{n:'System node pool',r:'yours · the plumbing',
+      p:'Every cluster needs one. It runs CoreDNS, metrics-server, CSI storage drivers and other cluster services. Taint it with <code>only_critical_addons_enabled</code> so your application pods can never crowd out the DNS your application depends on.',
+      f:[['Declared by','Terraform, as default_node_pool'],['Best practice','Keep app workloads off it entirely'],['If it starves','DNS fails, and then everything fails confusingly']]},
+    usernp:{n:'Apps node pool',r:'yours · where your code lives',
+      p:'The four .NET services run here. Terraform declared the range — 3 to 30 nodes; Kubernetes picks the actual number minute by minute. When pods can’t be placed, the cluster autoscaler asks Azure for another VM; when nodes sit mostly empty, it consolidates and gives them back.',
+      f:[['Scales','3 → 30 nodes on demand'],['New node ready in','~2–4 minutes'],['Zones','1, 2, 3 — survives a single-zone failure']]},
+    spotnp:{n:'Spot node pool',r:'yours · cheap and disposable',
+      p:'Azure’s spare capacity at a steep discount, on the condition it can be taken back with 30 seconds’ notice. Perfect for nightly reports, image resizing and batch jobs. Catastrophic for your checkout API. Use taints so only workloads that explicitly tolerate eviction land here.',
+      f:[['Discount','often up to ~90% off pay-as-you-go'],['The catch','Evicted at any moment'],['Never put here','Anything a customer waits on']]},
+    ingress:{n:'Ingress controller',r:'yours · the front door',
+      p:'One public IP and an Azure load balancer in front of the whole cluster. It reads the hostname and path — <code>shop.contoso.com/api/catalog</code> — and routes to the right service inside. The managed app routing add-on gives you NGINX plus automatic TLS certificates from Key Vault, without running the controller yourself.',
+      f:[['Alternative','Application Gateway for Containers, for WAF + L7 at the edge'],['TLS','Managed certs, auto-renewed'],['Why not one LB per service','Each public IP costs money and complexity']]},
+    acr:{n:'Azure Container Registry',r:'yours · the image shelf',
+      p:'Your pipeline pushes images here; the cluster pulls them from here. Tag with the git SHA, never with <code>latest</code> — during an incident you want to point at an exact, byte-identical build. Turn on vulnerability scanning, and geo-replicate if you run in more than one region.',
+      f:[['Auth','AcrPull role on the kubelet identity — no passwords'],['Tagging','SHA-based, immutable'],['Extras','Content trust, retention policies, scanning']]},
+    wid:{n:'Workload identity',r:'yours · why you have no secrets',
+      p:'The pod gets a short-lived signed token from the cluster’s OIDC issuer. Entra ID trusts that issuer for one specific service account and swaps the token for a real Azure credential. Result: catalog-api reads Key Vault and queries SQL with zero connection strings, zero rotation, zero leaked credentials in a git history.',
+      f:[['Replaces','Secrets, connection strings, pod-managed identity (retired)'],['On the .NET side','<code>DefaultAzureCredential</code>, one line'],['Scoped to','One service account in one namespace']]}
+  };
+  const box=document.getElementById('anatInfo');
+  function show(k){
+    const d=DATA[k]; if(!d) return;
+    document.querySelectorAll('.anat .node-g').forEach(g=>g.classList.toggle('sel',g.dataset.k===k));
+    box.innerHTML='<h5>'+d.n+'</h5><div class="role">'+d.r+'</div><p>'+d.p+'</p>'+
+      '<ul class="facts">'+d.f.map(f=>'<li><b>'+f[0]+'</b><span>'+f[1]+'</span></li>').join('')+'</ul>';
+  }
+  document.querySelectorAll('.anat .node-g').forEach(g=>{
+    g.addEventListener('click',()=>show(g.dataset.k));
+    g.setAttribute('tabindex','0');
+    g.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();show(g.dataset.k);} });
+  });
+  show('api');
+})();
+
+/* ============================ M3: CI/CD pipeline + approval gate ============================ */
+(function(){
+  const ST=[
+    {k:'commit',ic:'⎇',n:'Commit',        dur:600},
+    {k:'build', ic:'⚙',n:'Restore & build',dur:1400},
+    {k:'test',  ic:'✓',n:'Unit tests',    dur:1500},
+    {k:'image', ic:'▣',n:'Docker build',   dur:1500},
+    {k:'scan',  ic:'⛨',n:'Scan & sign',    dur:1500},
+    {k:'push',  ic:'↥',n:'Push to ACR',    dur:1200},
+    {k:'stage', ic:'◷',n:'Deploy staging', dur:1500},
+    {k:'canary',ic:'◐',n:'Canary 10%',     dur:2000},
+    {k:'gate',  ic:'⏸',n:'Approval gate',  dur:1200},
+    {k:'prod',  ic:'★',n:'Production',     dur:2200}
+  ];
+  const LOG={
+    catalog:{
+      commit:[['dim','git push origin main'],['','▸ webhook received · sha 4f2a91c'],['','▸ path filter matched src/Catalog/**']],
+      build:[['','▸ dotnet restore  (cached, 2.1s)'],['','▸ dotnet build -c Release'],['ok','✓ 0 warnings, 0 errors']],
+      test:[['','▸ dotnet test Contoso.Catalog.Tests'],['ok','✓ 214 passed, 0 failed  (11.4s)'],['','▸ coverage 81.2% (gate: 75%) — PASS']],
+      image:[['','▸ FROM mcr.microsoft.com/dotnet/sdk:9.0'],['','▸ publishing to chiselled runtime'],['ok','✓ catalog-api:4f2a91c  ·  86 MB']],
+      scan:[['','▸ trivy image --severity CRITICAL,HIGH'],['ok','✓ 0 critical, 0 high — gate PASS'],['','▸ cosign sign — attestation attached']],
+      push:[['dim','az acr login --name contosoacr (OIDC, no secret)'],['ok','✓ pushed contosoacr.azurecr.io/catalog-api:4f2a91c']],
+      stage:[['','▸ helm upgrade --install catalog --atomic'],['ok','✓ 3/3 pods ready'],['','▸ smoke tests: 18/18 green — gate PASS']],
+      canary:[['','▸ shifting 10% of production traffic'],['','▸ analysing p95 latency + 5xx rate for 120s'],['ok','✓ p95 118ms (baseline 124ms) · 5xx 0.02% — gate PASS']],
+      prod:[['','▸ helm upgrade catalog -n shop --set image.tag=4f2a91c'],['','▸ rolling update: surge 2, unavailable 0'],['','▸ kubectl rollout status deploy/catalog-api'],['ok','✓ 8/8 pods ready · rollout complete'],['ok','✓ total pipeline time 4m 12s']]
+    },
+    orders:{
+      commit:[['dim','git push origin main'],['','▸ webhook received · sha b71e0d4'],['wa','⚠ service risk tier: 1 (handles payments)']],
+      build:[['','▸ dotnet restore  (cached, 3.4s)'],['','▸ dotnet build -c Release'],['ok','✓ 0 warnings, 0 errors']],
+      test:[['','▸ dotnet test Contoso.Orders.Tests'],['ok','✓ 486 passed, 0 failed  (28.1s)'],['ok','✓ contract tests vs payments-gateway: 12/12']],
+      image:[['','▸ multi-stage build, non-root user'],['ok','✓ orders-api:b71e0d4  ·  91 MB']],
+      scan:[['','▸ trivy image --severity CRITICAL,HIGH'],['ok','✓ 0 critical, 0 high — gate PASS'],['','▸ cosign sign + SBOM attached']],
+      push:[['ok','✓ pushed contosoacr.azurecr.io/orders-api:b71e0d4']],
+      stage:[['','▸ helm upgrade --install orders --atomic'],['ok','✓ 3/3 pods ready'],['','▸ smoke tests incl. sandbox payment: 34/34 — gate PASS']],
+      canary:[['','▸ 1 canary pod, 10% of checkout traffic'],['','▸ 10-minute analysis window'],['ok','✓ p95 204ms · 5xx 0.00% · 0 failed payments — gate PASS']],
+      prod:[['ok','✓ approved by @a.kaur and @m.silva at 14:07 UTC'],['','▸ helm upgrade orders -n shop --set image.tag=b71e0d4 --atomic'],['','▸ rolling update: surge 1, unavailable 0'],['ok','✓ 6/6 pods ready · rollout complete'],['ok','✓ audit entry written · deployment #1841']]
+    }
+  };
+  const track=document.getElementById('pipeTrack'), log=document.getElementById('pipeLog'),
+        bRun=document.getElementById('pipeRun'), bGated=document.getElementById('pipeGated'),
+        bFail=document.getElementById('pipeFail'), bRst=document.getElementById('pipeReset'),
+        gate=document.getElementById('pipeGate'), gateTxt=document.getElementById('gateTxt'),
+        gOk=document.getElementById('gateOk'), gNo=document.getElementById('gateNo');
+  let timers=[], mode='catalog';
+  function build(){
+    track.innerHTML=ST.map((s,i)=>
+      '<div class="pstage" id="ps'+i+'"><div class="ic">'+s.ic+'</div><div class="nm2">'+s.n+'</div></div>').join('');
+  }
+  function line(cls,txt){
+    const d=document.createElement('div'); d.className=cls||''; d.textContent=txt;
+    log.appendChild(d); log.scrollTop=log.scrollHeight;
+  }
+  function stop(){ timers.forEach(clearTimeout); timers=[]; }
+  function at(ms,fn){ timers.push(setTimeout(fn,ms)); }
+  function btns(on){ [bRun,bGated,bFail].forEach(b=>b.disabled=!on); }
+  function reset(){
+    stop(); build(); gate.classList.remove('show');
+    log.innerHTML='<span class="dim">// waiting for a commit…</span>'; btns(true);
+  }
+  function finish(){ btns(true); }
+
+  function play(i){
+    if(i>=ST.length){ finish(); return; }
+    const s=ST[i], el=document.getElementById('ps'+i);
+    el.className='pstage run';
+    el.scrollIntoView({block:'nearest',inline:'nearest'});
+    line('dim','── '+s.n.toUpperCase()+' ─────────────────');
+
+    if(s.k==='gate'){ return handleGate(i,el); }
+
+    if(mode==='bad' && s.k==='scan'){
+      at(500,()=>line('','▸ trivy image --severity CRITICAL,HIGH'));
+      at(1200,()=>{
+        el.className='pstage fail';
+        line('er','✗ CVE-2026-31337 in System.Text.Json 9.0.1 — CRITICAL');
+        line('er','✗ scan gate failed · exit code 1');
+        line('wa','⚠ pipeline halted. Nothing was pushed to ACR.');
+        line('wa','⚠ production still serving 1.14.0 — untouched.');
+        line('dim','// no human was asked. This gate needs no judgement,');
+        line('dim','// only a fact — so a machine answers it, in 1.2 seconds.');
+        finish();
+      });
+      return;
+    }
+
+    const src=(LOG[mode]||LOG.catalog)[s.k]||[];
+    src.forEach((L,j)=> at(s.dur*(j+1)/(src.length+1), ()=>line(L[0],L[1])) );
+    at(s.dur,()=>{ el.className='pstage done'; play(i+1); });
+  }
+
+  function handleGate(i,el){
+    if(mode==='catalog'){
+      at(400,()=>line('dim','▸ policy: catalog-api is risk tier 3 — auto-promote'));
+      at(900,()=>line('ok','✓ gate satisfied by canary analysis · no human required'));
+      at(1300,()=>{ el.className='pstage done'; play(i+1); });
+      return;
+    }
+    // orders: pause for a real human decision
+    el.className='pstage wait';
+    at(400,()=>line('wa','⏸ environment "production" has protection rules'));
+    at(900,()=>line('','▸ required reviewers: @contoso/payments-oncall (2 of 2)'));
+    at(1300,()=>line('','▸ prevent self-review: on · deployment branches: main only'));
+    at(1700,()=>{
+      line('wa','⏸ waiting — the job will sit here indefinitely.');
+      gateTxt.innerHTML='<strong>orders-api b71e0d4</strong> passed every automatic gate. '+
+        'What a machine cannot judge: a flash sale starts in 40 minutes, and this change '+
+        'touches the payment path. Ship now, or wait?';
+      gate.classList.add('show');
+      gate.scrollIntoView({block:'nearest',behavior:'smooth'});
+    });
+  }
+
+  gOk.addEventListener('click',()=>{
+    gate.classList.remove('show');
+    const i=ST.findIndex(s=>s.k==='gate');
+    document.getElementById('ps'+i).className='pstage done';
+    line('ok','✓ approved · deployment authorised, audit entry recorded');
+    play(i+1);
+  });
+  gNo.addEventListener('click',()=>{
+    gate.classList.remove('show'); stop();
+    const i=ST.findIndex(s=>s.k==='gate');
+    document.getElementById('ps'+i).className='pstage fail';
+    line('er','✕ rejected by @a.kaur — "after the sale window, please"');
+    line('','▸ image b71e0d4 stays in ACR, scanned and signed, ready to go');
+    line('','▸ nothing changed in the cluster · production untouched');
+    line('dim','// the gate did its job. Note what it cost: this change now waits,');
+    line('dim','// and will ship batched with whatever merges before the window closes.');
+    finish();
+  });
+
+  function run(m){
+    stop(); build(); log.innerHTML=''; btns(false);
+    gate.classList.remove('show'); mode=m; play(0);
+  }
+  bRun.addEventListener('click',()=>run('catalog'));
+  bGated.addEventListener('click',()=>run('orders'));
+  bFail.addEventListener('click',()=>run('bad'));
+  bRst.addEventListener('click',reset);
+  reset();
+})();
+
+/* ============================ M4: rolling update ============================ */
+(function(){
+  const grid=document.getElementById('podGrid');
+  const slRep=document.getElementById('slRep'), slS=document.getElementById('slSurge'), slU=document.getElementById('slUnav');
+  const lRep=document.getElementById('lblRep'), lS=document.getElementById('lblSurge'), lU=document.getElementById('lblUnav');
+  const stServe=document.getElementById('stServe'), stCap=document.getElementById('stCap'),
+        stDrop=document.getElementById('stDrop'), stTime=document.getElementById('stTime'),
+        stDropWrap=document.getElementById('stDropWrap'), msg=document.getElementById('rollMsg'),
+        go=document.getElementById('rollGo'), rs=document.getElementById('rollReset');
+  let pods=[], timers=[], running=false, drops=0, target=8;
+  function at(ms,fn){ timers.push(setTimeout(fn,ms)); }
+  function stop(){ timers.forEach(clearTimeout); timers=[]; }
+  function render(){
+    grid.innerHTML=pods.map(p=>
+      '<div class="pod '+p.s+'"><span>'+(p.v===1?'v1.14':'v1.15')+'</span>'+
+      '<span class="st">'+(p.s==='starting'?'start':p.s==='dying'?'term':'ready')+'</span></div>').join('');
+    const serving=pods.filter(p=>p.s==='v1'||p.s==='v2').length;
+    stServe.textContent=serving;
+    const pct=Math.round(serving/target*100);
+    stCap.textContent=pct+'%';
+    stCap.style.color = pct>=100?'var(--green)':pct>=80?'var(--amber)':'var(--red)';
+    stDrop.textContent=drops.toLocaleString();
+    stDropWrap.className = drops>0?'bad':'good';
+  }
+  function reset(){
+    stop(); running=false; go.disabled=false; drops=0; target=+slRep.value;
+    pods=Array.from({length:target},()=>({v:1,s:'v1'}));
+    stTime.textContent='0s'; msg.textContent=''; render();
+  }
+  function sync(){ lRep.textContent=slRep.value; lS.textContent=slS.value; lU.textContent=slU.value;
+    if(!running) reset(); }
+  [slRep,slS,slU].forEach(s=>s.addEventListener('input',sync));
+  function deploy(){
+    if(running) return; running=true; go.disabled=true; drops=0;
+    const surge=+slS.value, unav=+slU.value;
+    let tick=0;
+    if(surge===0 && unav===0){
+      msg.textContent='⚠ both zero = deadlock. Kubernetes rejects this config.';
+      msg.style.color='var(--red)'; running=false; go.disabled=false; return;
+    }
+    msg.style.color='var(--ink-faint)'; msg.textContent='rolling…';
+    function step(){
+      const old=pods.filter(p=>p.s==='v1').length;
+      const serving=old+pods.filter(p=>p.s==='v2').length;
+      const total=pods.length;
+      if(old===0 && pods.length===target && pods.every(p=>p.s==='v2')){
+        msg.textContent='✓ rollout complete · '+(tick*2)+'s';
+        msg.style.color='var(--green)'; running=false; go.disabled=false; render(); return;
+      }
+      if(serving<target){ drops += (target-serving)*180; }
+      const v2total=pods.filter(p=>p.v===2).length;
+      const canAdd=Math.min(Math.max(0,(target+surge)-total), target-v2total);
+      for(let i=0;i<canAdd;i++) pods.push({v:2,s:'starting'});
+      const minServing=target-unav;
+      let killable=Math.max(0, serving-minServing);
+      for(let i=0;i<pods.length && killable>0;i++){
+        if(pods[i].s==='v1'){ pods[i].s='dying'; killable--; }
+      }
+      render(); tick++;
+      at(700,()=>{
+        pods.forEach(p=>{ if(p.s==='starting') p.s='v2'; });
+        pods=pods.filter(p=>p.s!=='dying');
+        render(); stTime.textContent=(tick*2)+'s'; at(500,step);
+      });
+    }
+    step();
+  }
+  go.addEventListener('click',deploy);
+  rs.addEventListener('click',reset);
+  sync(); reset();
+})();
+
+/* ============================ M5: resilience sandbox ============================ */
+(function(){
+  const grid=document.getElementById('nodeGrid'), slT=document.getElementById('slTraf'),
+        lT=document.getElementById('lblTraf'), gauge=document.getElementById('gaugeFill'),
+        loadLbl=document.getElementById('loadLbl'),
+        rsNodes=document.getElementById('rsNodes'), rsPods=document.getElementById('rsPods'),
+        rsHealth=document.getElementById('rsHealth'), rsHealthWrap=document.getElementById('rsHealthWrap'),
+        msg=document.getElementById('rsMsg'),
+        bKill=document.getElementById('rsKill'), bRst=document.getElementById('rsReset');
+  const MAXNODES=8, PODS_PER_NODE=4, RPS_PER_POD=280;
+  let nodes=[], timers=[];
+  function at(ms,fn){ timers.push(setTimeout(fn,ms)); }
+  function stop(){ timers.forEach(clearTimeout); timers=[]; }
+  const pl=n=> n===1?'1 pod':n+' pods';
+  function render(fresh){
+    grid.innerHTML=nodes.map((n,i)=>
+      '<div class="nodebox'+(n.dead?' dead':'')+'" data-i="'+i+'">'+
+      '<div class="nh"><span>aks-apps-'+String(i).padStart(2,'0')+'</span>'+
+      '<span>'+(n.dead?'NotReady':'Ready')+'</span></div>'+
+      '<div class="minipods">'+Array.from({length:n.pods},()=>
+        '<div class="mp'+((fresh&&n.new)?' new':'')+'"></div>').join('')+'</div></div>').join('');
+    grid.querySelectorAll('.nodebox').forEach(el=>{
+      el.style.cursor='pointer';
+      el.addEventListener('click',()=>kill(+el.dataset.i));
+    });
+    const alive=nodes.filter(n=>!n.dead);
+    const pods=alive.reduce((a,n)=>a+n.pods,0);
+    rsNodes.textContent=alive.length; rsPods.textContent=pods;
+    const rps=+slT.value, cap=pods*RPS_PER_POD, util=cap>0? rps/cap : 2;
+    gauge.style.width=Math.min(100,util*100)+'%';
+    loadLbl.textContent='average pod utilisation '+Math.round(Math.min(200,util*100))+'%';
+    if(util>1){ rsHealth.textContent='SATURATED'; rsHealthWrap.className='bad'; rsHealth.style.color=''; }
+    else if(util>0.8){ rsHealth.textContent='HOT'; rsHealthWrap.className=''; rsHealth.style.color='var(--amber)'; }
+    else { rsHealth.textContent='OK'; rsHealthWrap.className='good'; rsHealth.style.color=''; }
+  }
+  function distribute(total){
+    const alive=nodes.filter(n=>!n.dead); if(!alive.length) return;
+    alive.forEach(n=>n.pods=0);
+    for(let i=0;i<total;i++) alive[i%alive.length].pods++;
+    alive.forEach(n=>{ if(n.pods>PODS_PER_NODE+2) n.pods=PODS_PER_NODE+2; });
+  }
+  function autoscale(){
+    const rps=+slT.value;
+    const needPods=Math.max(4,Math.ceil(rps/RPS_PER_POD*1.25));
+    const needNodes=Math.min(MAXNODES,Math.max(2,Math.ceil(needPods/PODS_PER_NODE)));
+    const alive=nodes.filter(n=>!n.dead);
+    if(alive.length<needNodes){
+      msg.style.color='var(--amber)';
+      msg.textContent='cluster autoscaler: requesting '+(needNodes-alive.length)+' more node(s)…';
+      at(1600,()=>{
+        while(nodes.filter(n=>!n.dead).length<needNodes && nodes.length<MAXNODES+3){
+          nodes.push({pods:0,dead:false,new:true});
+        }
+        distribute(needPods); render(true);
+        msg.style.color='var(--green)'; msg.textContent='✓ scaled out · pods rescheduled';
+        at(2400,()=>{ msg.textContent=''; });
+      });
+    } else { distribute(needPods); render(true); }
+  }
+  function kill(i){
+    if(nodes[i].dead) return;
+    const lost=nodes[i].pods;
+    nodes[i].dead=true; nodes[i].pods=0; render();
+    msg.style.color='var(--red)';
+    msg.textContent='node lost · '+pl(lost)+' gone · endpoints updated in ~10s';
+    at(1200,()=>{ msg.style.color='var(--amber)';
+      msg.textContent='controller: rescheduling '+pl(lost)+' onto healthy nodes…'; });
+    at(2400,()=>autoscale());
+  }
+  function reset(){
+    stop(); nodes=Array.from({length:4},()=>({pods:2,dead:false,new:false}));
+    slT.value=1200; lT.textContent='1,200 rps';
+    autoscale(); render(); msg.textContent='';
+  }
+  slT.addEventListener('input',()=>{
+    lT.textContent=(+slT.value).toLocaleString()+' rps';
+    render(); clearTimeout(window.__rsT);
+    window.__rsT=setTimeout(autoscale,450);
+  });
+  bKill.addEventListener('click',()=>{
+    const alive=nodes.map((n,i)=>({n,i})).filter(x=>!x.n.dead);
+    if(alive.length<=1){ msg.style.color='var(--red)'; msg.textContent='only one node left — reset the cluster'; return; }
+    kill(alive[Math.floor(Math.random()*alive.length)].i);
+  });
+  bRst.addEventListener('click',reset);
+  reset();
+})();
+</script>
+</body>
+</html>
