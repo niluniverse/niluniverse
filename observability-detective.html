@@ -3,8 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Case of the Vanishing Request — Observability &amp; Distributed Tracing</title>
-<meta name="description" content="A developer puts on a detective's hat. Somewhere across forty services, a request failed, and only observability can identify the cause. A clear, practical guide to distributed tracing in microservices.">
+<title>The Case of the Vanishing Request: Distributed Tracing | Nilesh Mohite</title>
+<meta name="description" content="A request failed somewhere across forty services. A clear, practical guide to distributed tracing and observability in microservices, with live diagrams.">
+<meta name="author" content="Nilesh Mohite">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://niluniverse.com/observability-detective.html">
 <meta property="og:title" content="The Case of the Vanishing Request: Distributed Tracing" />
 <meta property="og:description" content="A request failed somewhere across forty services, with no clear cause. Using three signals and one shared trace ID, a waterfall chart can crack the case in one screen." />
 <meta property="og:url" content="https://niluniverse.com/observability-detective.html" />
@@ -396,6 +399,34 @@
   .engage-stat svg { width: 14px; height: 14px; opacity: .75; flex: none; }
   .engage-row[hidden] { display: none; }
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "The Case of the Vanishing Request: Distributed Tracing",
+  "description": "A request failed somewhere across forty services. A clear, practical guide to distributed tracing and observability in microservices, with live diagrams.",
+  "image": "https://niluniverse.com/observability-detective-banner.jpg",
+  "url": "https://niluniverse.com/observability-detective.html",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://niluniverse.com/observability-detective.html"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "Nilesh Mohite",
+    "url": "https://www.nileshmohite.com"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Niluniverse",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://niluniverse.com/favicon-180.png"
+    }
+  },
+  "keywords": "distributed tracing, observability, microservices, OpenTelemetry, APM"
+}
+</script>
 </head>
 <body>
 <div class="rp-bar" id="rpBar"><div class="rp-fill" id="rpFill"></div></div>
@@ -606,6 +637,23 @@ activity?.<span class="t-fn">SetStatus</span>(<span class="t-type">ActivityStatu
   els.forEach(e=>io.observe(e));
 })();
 </script>
+<div class="wrap related-section" style="padding:44px 0 8px;border-top:1px solid var(--line);margin-top:8px">
+  <h2 style="margin-bottom:22px">Continue exploring</h2>
+  <div style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+    <a href="keystone-mission-control.html" style="display:block;text-decoration:none">
+      <div style="font-family:var(--serif);font-size:1.05rem;font-weight:600;margin-bottom:6px">Project Keystone &rarr;</div>
+      <div style="font-size:.92rem;opacity:.8;line-height:1.5">Azure DevOps pipelines for a microservice ecosystem.</div>
+    </a>
+    <a href="outbox-pattern.html" style="display:block;text-decoration:none">
+      <div style="font-family:var(--serif);font-size:1.05rem;font-weight:600;margin-bottom:6px">The Outbox Pattern &rarr;</div>
+      <div style="font-size:.92rem;opacity:.8;line-height:1.5">One table, one transaction, zero lost events.</div>
+    </a>
+    <a href="terraform-kubernetes-theatre.html" style="display:block;text-decoration:none">
+      <div style="font-family:var(--serif);font-size:1.05rem;font-weight:600;margin-bottom:6px">Terraform Builds the Theatre &rarr;</div>
+      <div style="font-size:.92rem;opacity:.8;line-height:1.5">Terraform and AKS, told in five acts.</div>
+    </a>
+  </div>
+</div>
 <div class="wrap comments-section">
   <h2 class="comments-heading">Discussion</h2>
   <script src="https://giscus.app/client.js"

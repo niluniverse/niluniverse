@@ -3,8 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Outbox Pattern — The Silent Hero of the Distributed Services Ecosystem</title>
-<meta name="description" content="How the Outbox pattern quietly keeps events from being lost. It helps a system survive broker outages, pod evictions, and traffic spikes, without asking for credit.">
+<title>The Outbox Pattern: Silent Hero of Distributed Services | Nilesh Mohite</title>
+<meta name="description" content="How one database table and one transaction absorb broker outages, retries and traffic spikes, so your microservices do not have to.">
+<meta name="author" content="Nilesh Mohite">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://niluniverse.com/outbox-pattern.html">
 <meta property="og:title" content="The Outbox Pattern: The Silent Hero of Distributed Services" />
 <meta property="og:description" content="How one database table and one transaction can absorb broker outages, retries, and traffic spikes, so your microservices do not have to." />
 <meta property="og:url" content="https://niluniverse.com/outbox-pattern.html" />
@@ -423,6 +426,34 @@
   .engage-stat svg { width: 14px; height: 14px; opacity: .75; flex: none; }
   .engage-row[hidden] { display: none; }
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "The Outbox Pattern: Silent Hero of Distributed Services",
+  "description": "How one database table and one transaction absorb broker outages, retries and traffic spikes, so your microservices do not have to.",
+  "image": "https://niluniverse.com/outbox-pattern-banner.jpg",
+  "url": "https://niluniverse.com/outbox-pattern.html",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://niluniverse.com/outbox-pattern.html"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "Nilesh Mohite",
+    "url": "https://www.nileshmohite.com"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Niluniverse",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://niluniverse.com/favicon-180.png"
+    }
+  },
+  "keywords": "outbox pattern, event-driven architecture, distributed systems, message reliability"
+}
+</script>
 </head>
 <body>
 <div class="rp-bar" id="rpBar"><div class="rp-fill" id="rpFill"></div></div>
@@ -757,6 +788,23 @@
   els.forEach(e=>io.observe(e));
 })();
 </script>
+<div class="wrap related-section" style="padding:44px 0 8px;border-top:1px solid var(--line);margin-top:8px">
+  <h2 style="margin-bottom:22px">Continue exploring</h2>
+  <div style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+    <a href="observability-detective.html" style="display:block;text-decoration:none">
+      <div style="font-family:var(--serif);font-size:1.05rem;font-weight:600;margin-bottom:6px">The Case of the Vanishing Request &rarr;</div>
+      <div style="font-size:.92rem;opacity:.8;line-height:1.5">Cracking a cross-service failure with distributed tracing.</div>
+    </a>
+    <a href="keystone-mission-control.html" style="display:block;text-decoration:none">
+      <div style="font-family:var(--serif);font-size:1.05rem;font-weight:600;margin-bottom:6px">Project Keystone &rarr;</div>
+      <div style="font-size:.92rem;opacity:.8;line-height:1.5">Azure DevOps pipelines for a microservice ecosystem.</div>
+    </a>
+    <a href="deterministic-ai-systems.html" style="display:block;text-decoration:none">
+      <div style="font-family:var(--serif);font-size:1.05rem;font-weight:600;margin-bottom:6px">Same Show Every Night &rarr;</div>
+      <div style="font-size:.92rem;opacity:.8;line-height:1.5">Making LLMs behave the same way, every single time.</div>
+    </a>
+  </div>
+</div>
 <div class="wrap comments-section">
   <h2 class="comments-heading">Discussion</h2>
   <script src="https://giscus.app/client.js"

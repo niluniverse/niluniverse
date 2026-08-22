@@ -3,8 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Same Show Every Night — Building Deterministic Systems from Non-Deterministic AI</title>
-<meta name="description" content="You have hired a brilliant improv actor for a role that demands the same performance every night. A clear, practical guide to making LLMs reliable using schemas, validators, evals, and a deterministic system design.">
+<title>Same Show Every Night: Deterministic AI Systems | Nilesh Mohite</title>
+<meta name="description" content="You hired a brilliant improv actor for a role that demands the same performance nightly. A practical guide to reliable LLMs: schemas, validators, evals.">
+<meta name="author" content="Nilesh Mohite">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://niluniverse.com/deterministic-ai-systems.html">
 <meta property="og:title" content="Same Show Every Night: Deterministic Systems from Non-Deterministic AI" />
 <meta property="og:description" content="You have hired a brilliant improv actor for a role that must be performed the same way, eight shows a week. This article covers schemas, validators, a deterministic orchestration pattern, and evals." />
 <meta property="og:url" content="https://niluniverse.com/deterministic-ai-systems.html" />
@@ -393,6 +396,34 @@
   .engage-stat svg { width: 14px; height: 14px; opacity: .75; flex: none; }
   .engage-row[hidden] { display: none; }
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Same Show Every Night: Deterministic AI Systems",
+  "description": "You hired a brilliant improv actor for a role that demands the same performance nightly. A practical guide to reliable LLMs: schemas, validators, evals.",
+  "image": "https://niluniverse.com/deterministic-ai-systems-banner.jpg",
+  "url": "https://niluniverse.com/deterministic-ai-systems.html",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://niluniverse.com/deterministic-ai-systems.html"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "Nilesh Mohite",
+    "url": "https://www.nileshmohite.com"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Niluniverse",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://niluniverse.com/favicon-180.png"
+    }
+  },
+  "keywords": "LLM reliability, AI engineering, deterministic systems, evals, prompt validation"
+}
+</script>
 </head>
 <body>
 <div class="rp-bar" id="rpBar"><div class="rp-fill" id="rpFill"></div></div>
@@ -685,6 +716,23 @@
   els.forEach(e=>io.observe(e));
 })();
 </script>
+<div class="wrap related-section" style="padding:44px 0 8px;border-top:1px solid var(--line);margin-top:8px">
+  <h2 style="margin-bottom:22px">Continue exploring</h2>
+  <div style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+    <a href="observability-detective.html" style="display:block;text-decoration:none">
+      <div style="font-family:var(--serif);font-size:1.05rem;font-weight:600;margin-bottom:6px">The Case of the Vanishing Request &rarr;</div>
+      <div style="font-size:.92rem;opacity:.8;line-height:1.5">Cracking a cross-service failure with distributed tracing.</div>
+    </a>
+    <a href="outbox-pattern.html" style="display:block;text-decoration:none">
+      <div style="font-family:var(--serif);font-size:1.05rem;font-weight:600;margin-bottom:6px">The Outbox Pattern &rarr;</div>
+      <div style="font-size:.92rem;opacity:.8;line-height:1.5">One table, one transaction, zero lost events.</div>
+    </a>
+    <a href="adf-night-dispatcher.html" style="display:block;text-decoration:none">
+      <div style="font-family:var(--serif);font-size:1.05rem;font-weight:600;margin-bottom:6px">The Night Dispatcher &rarr;</div>
+      <div style="font-size:.92rem;opacity:.8;line-height:1.5">How Azure Data Factory keeps 340 stores in sync, every night.</div>
+    </a>
+  </div>
+</div>
 <div class="wrap comments-section">
   <h2 class="comments-heading">Discussion</h2>
   <script src="https://giscus.app/client.js"
