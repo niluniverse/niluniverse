@@ -1,0 +1,123 @@
+/*!
+ * niluniverse.com custom giscus theme
+ * Mirrors the site's "cinema" dark palette (see index.html [data-theme="cinema"]).
+ * Adapted from giscus's custom_example.css (MIT, GitHub Primer colors).
+ */
+
+:host, html {
+  --font-family-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-monospace: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  --font-family-default: var(--font-family-sans);
+}
+
+main {
+  /* code syntax highlighting - left close to GitHub's dark defaults */
+  --color-prettylights-syntax-comment: #768390;
+  --color-prettylights-syntax-constant: #6cb6ff;
+  --color-prettylights-syntax-entity: #dcbdfb;
+  --color-prettylights-syntax-storage-modifier-import: #adbac7;
+  --color-prettylights-syntax-entity-tag: #8ddb8c;
+  --color-prettylights-syntax-keyword: #f47067;
+  --color-prettylights-syntax-string: #96d0ff;
+  --color-prettylights-syntax-variable: #f69d50;
+  --color-prettylights-syntax-brackethighlighter-unmatched: #e5534b;
+  --color-prettylights-syntax-invalid-illegal-text: #cdd9e5;
+  --color-prettylights-syntax-invalid-illegal-bg: #922323;
+  --color-prettylights-syntax-carriage-return-text: #cdd9e5;
+  --color-prettylights-syntax-carriage-return-bg: #ad2e2c;
+  --color-prettylights-syntax-string-regexp: #8ddb8c;
+  --color-prettylights-syntax-markup-list: #eac55f;
+  --color-prettylights-syntax-markup-heading: #6cb6ff;
+  --color-prettylights-syntax-markup-italic: #adbac7;
+  --color-prettylights-syntax-markup-bold: #adbac7;
+  --color-prettylights-syntax-markup-deleted-text: #ffd8d3;
+  --color-prettylights-syntax-markup-deleted-bg: #78191b;
+  --color-prettylights-syntax-markup-inserted-text: #b4f1b4;
+  --color-prettylights-syntax-markup-inserted-bg: #1b4721;
+  --color-prettylights-syntax-markup-changed-text: #ffddb0;
+  --color-prettylights-syntax-markup-changed-bg: #682d0f;
+  --color-prettylights-syntax-markup-ignored-text: #adbac7;
+  --color-prettylights-syntax-markup-ignored-bg: #255ab2;
+  --color-prettylights-syntax-meta-diff-range: #dcbdfb;
+  --color-prettylights-syntax-brackethighlighter-angle: #768390;
+  --color-prettylights-syntax-sublimelinter-gutter-mark: #545d68;
+  --color-prettylights-syntax-constant-other-reference-link: #96d0ff;
+
+  /* buttons - default (matches .share-btn / .foot-icon hover pattern) */
+  --color-btn-text: #CBD1DA;
+  --color-btn-bg: #1B1F27;
+  --color-btn-border: #2E3440;
+  --color-btn-shadow: 0 0 transparent;
+  --color-btn-inset-shadow: 0 0 transparent;
+  --color-btn-hover-bg: #212630;
+  --color-btn-hover-border: #C9A24B;
+  --color-btn-active-bg: #212630;
+  --color-btn-active-border: #C9A24B;
+  --color-btn-selected-bg: #212630;
+
+  /* buttons - primary (the gold CTA, e.g. "Sign in with GitHub") */
+  --color-btn-primary-text: #14171D;
+  --color-btn-primary-bg: #C9A24B;
+  --color-btn-primary-border: #C9A24B;
+  --color-btn-primary-shadow: 0 0 transparent;
+  --color-btn-primary-inset-shadow: 0 0 transparent;
+  --color-btn-primary-hover-bg: #E6C06E;
+  --color-btn-primary-hover-border: #E6C06E;
+  --color-btn-primary-selected-bg: #C9A24B;
+  --color-btn-primary-selected-shadow: 0 0 transparent;
+  --color-btn-primary-disabled-text: rgb(203 209 218 / 50%);
+  --color-btn-primary-disabled-bg: rgb(201 162 75 / 45%);
+  --color-btn-primary-disabled-border: rgb(201 162 75 / 45%);
+
+  --color-action-list-item-default-hover-bg: rgb(136 145 160 / 12%);
+  --color-segmented-control-bg: rgb(136 145 160 / 10%);
+  --color-segmented-control-button-bg: #1B1F27;
+  --color-segmented-control-button-selected-border: #C9A24B;
+
+  /* text */
+  --color-fg-default: #CBD1DA;
+  --color-fg-muted: #8891A0;
+  --color-fg-subtle: #6b7280;
+
+  /* surfaces */
+  --color-canvas-default: #14171D;
+  --color-canvas-overlay: #1B1F27;
+  --color-canvas-inset: #1B1F27;
+  --color-canvas-subtle: #212630;
+
+  /* borders */
+  --color-border-default: #2E3440;
+  --color-border-muted: #242832;
+  --color-neutral-muted: rgb(46 52 64 / 40%);
+
+  /* accent (gold) */
+  --color-accent-fg: #C9A24B;
+  --color-accent-emphasis: #C9A24B;
+  --color-accent-muted: rgb(201 162 75 / 40%);
+  --color-accent-subtle: rgb(201 162 75 / 12%);
+
+  /* status colors */
+  --color-success-fg: #7FBF8E;
+  --color-attention-fg: #E6C06E;
+  --color-attention-muted: rgb(230 192 110 / 40%);
+  --color-attention-subtle: rgb(230 192 110 / 15%);
+  --color-danger-fg: #e5534b;
+  --color-danger-muted: rgb(229 83 75 / 40%);
+  --color-danger-subtle: rgb(229 83 75 / 10%);
+
+  --color-primer-shadow-inset: 0 0 transparent;
+  --color-scale-gray-7: #2E3440;
+  --color-scale-blue-8: rgb(201 162 75 / 30%);
+
+  /* reaction pills */
+  --color-social-reaction-bg-hover: var(--color-scale-gray-7);
+  --color-social-reaction-bg-reacted-hover: var(--color-scale-blue-8);
+}
+
+main .pagination-loader-container {
+  background-image: none;
+}
+
+.gsc-homepage-bg {
+  background-color: #14171D;
+}

@@ -66,12 +66,28 @@
   .brand-mark { width: 26px; height: 26px; flex: none; }
   .brand .b-nil { color: var(--accent); }
 
+  /* ---- comments (giscus) ---- */
+  .comments-section { padding: 44px 0 8px; border-top: 1px solid var(--line); margin-top: 8px; }
+  .comments-heading {
+    font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 1.35rem;
+    color: var(--head); margin: 0 0 22px; text-align: center;
+  }
+
   /* ---- footer ---- */
   footer { border-top: 1px solid var(--line); padding: 26px 0 34px; }
   .foot-inner {
-    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
     font-family: var(--mono); font-size: 12px; color: var(--dim);
   }
+  .foot-social { display: inline-flex; align-items: center; gap: 8px; }
+  .foot-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 50%; flex: none;
+    border: 1px solid var(--line); color: var(--dim); text-decoration: none;
+    transition: color .18s, border-color .18s, background .18s, transform .18s;
+  }
+  .foot-icon:hover { color: var(--accent); border-color: var(--accent); background: var(--panel-2); transform: translateY(-1px); }
+  .foot-icon svg { width: 14px; height: 14px; }
 </style>
 <style>
 /* ============================================================
@@ -354,18 +370,12 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
     text-decoration: none; letter-spacing: .01em;
   }
   .credit-line a:hover { color: var(--accent-hi); text-decoration: underline; }
-  .tagline-marketing {
-    text-align: center; font-family: var(--mono); font-size: .7rem; font-weight: 500;
-    letter-spacing: .06em; text-transform: uppercase; color: var(--dim);
-    padding: 2px 20px 20px; margin: 0 auto; opacity: .78;
-  }
   @media (max-width: 760px) {
     nav { flex-wrap: wrap; row-gap: 6px; height: auto; padding: 10px 0; }
     .credit-line {
       flex-basis: 100%; order: 3; white-space: normal; overflow: visible; text-overflow: clip;
       font-size: .82rem; padding: 0;
     }
-    .tagline-marketing { font-size: .64rem; padding: 0 16px 16px; }
   }
   .engage-row {
     display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
@@ -413,7 +423,6 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.79"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.79" y2="4.22"/></svg>
       </button>
     </nav>
-    <p class="tagline-marketing">Cloud engineering, Kubernetes &amp; AI &mdash; told like cinema.</p>
   </div>
 </header>
 
@@ -903,9 +912,31 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
 <div class="engage-row" data-engage="spark-magician"><button class="like-btn" type="button" aria-pressed="false" aria-label="Like this article"><svg class="like-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.6a5 5 0 0 0 0-7.1z"/></svg><span class="like-count">&ndash;</span></button><span class="engage-stat views-stat" aria-label="Views"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span class="views-count">&ndash;</span></span><span class="engage-stat shares-stat" aria-label="Shares"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg><span class="shares-count">&ndash;</span></span></div>
 </div>
 
+<div class="wrap comments-section">
+  <h2 class="comments-heading">Discussion</h2>
+  <script src="https://giscus.app/client.js"
+    data-repo="niluniverse/niluniverse"
+    data-repo-id="R_kgDOTx5tWg"
+    data-category="Comments"
+    data-category-id="DIC_kwDOTx5tWs4DD7gV"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="bottom"
+    data-theme="https://www.niluniverse.com/giscus-theme.css"
+    data-lang="en"
+    crossorigin="anonymous"
+    async>
+  </script>
+</div>
 <footer>
   <div class="wrap foot-inner">
     <span>&copy; 2026 Nilesh Mohite &mdash; <a href="https://www.nileshmohite.com" style="color:var(--accent)">www.nileshmohite.com</a></span>
+    <span class="foot-social">
+      <a class="foot-icon" href="https://www.linkedin.com/in/nileshmohite/" target="_blank" rel="noopener" aria-label="LinkedIn profile"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a>
+      <a class="foot-icon" href="https://github.com/niluniverse?tab=repositories" target="_blank" rel="noopener" aria-label="GitHub profile"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.05 11.05 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.8 1.19 1.83 1.19 3.09 0 4.43-2.7 5.41-5.26 5.7.41.36.78 1.07.78 2.15 0 1.56-.01 2.81-.01 3.19 0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12c0-6.27-5.23-11.5-11.5-11.5z"/></svg></a>
+    </span>
     <span>Written between deployments &middot; Amalner, India</span>
   </div>
   <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:14px;font-family:var(--mono)">Every diagram on this page is live and interactive &mdash; refresh and play with them again.</p>
