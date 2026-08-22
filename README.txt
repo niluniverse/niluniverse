@@ -1,4 +1,4 @@
-blog.niluniverse.com — BLOG SUBDOMAIN
+www.niluniverse.com — BLOG SUBDOMAIN
 =====================================
 Now uses the SAME design system as niluniverse.com:
  - Same fonts (IBM Plex Sans/Mono + Fraunces)
@@ -34,7 +34,7 @@ HEART COUNTER
    1. workflow yml must have  api_location: "api"
    2. create a Storage Account, add app setting
         STORAGE_CONNECTION = <connection string>
-   3. check https://blog.niluniverse.com/api/health
+   3. check https://www.niluniverse.com/api/health
 
  The counter hides itself if the API is unreachable, so readers never
  see a dead zero.
