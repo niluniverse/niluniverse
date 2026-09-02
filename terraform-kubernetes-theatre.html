@@ -221,6 +221,7 @@ pre{background:#05070c;border:1px solid var(--line-soft);border-radius:10px;padd
 code{font-family:var(--mono);font-size:.88em;background:rgba(58,160,255,.1);
   padding:2px 6px;border-radius:4px;color:#9fc9f5}
 pre code{background:none;padding:0;color:inherit;font-size:13px}
+:not(pre)>code{overflow-wrap:anywhere;word-break:break-word}
 .cm{color:#5b6b85}      /* comment */
 .kw{color:#c792ea}      /* keyword */
 .st{color:#a5e3a0}      /* string */
@@ -639,8 +640,7 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
     <p class="sub" style="font-family:var(--serif);font-size:25px;color:var(--ink);margin-bottom:26px">
       Kubernetes conducts the show.</p>
     <p class="sub">Two tools, two jobs, one idea underneath both. This is the story of how a .NET
-      monolith becomes a microservice ecosystem on Azure — told in five acts, with diagrams
-      you can touch.</p>
+      monolith becomes a microservice ecosystem on Azure, told in five acts, with diagrams you can touch.</p>
     <div class="meta">15 August 2026 &middot; 18 min read &middot; Nilesh Mohite</div>
   </div>
   <div class="scrollcue">SCROLL</div>
@@ -666,16 +666,14 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
     <p>A single monitor glows. On it, a graph climbing like a heart rate that will not come back down.
       Contoso's online store — one big <span style="color:var(--azure)">Contoso.Web.dll</span>, one big
       IIS server — is drowning in traffic that only wants one thing: the shoe on sale.</p>
-    <p>The catalog page is what's melting. But checkout, cart, invoicing, the emails —
-      they all live inside that same binary, on that same box. To give the catalog more power,
+    <p>The catalog page is what's melting. But checkout, cart, invoicing, the emails: they all live inside that same binary, on that same box. To give the catalog more power,
       you have to give <em>everything</em> more power. There is no volume knob for one instrument.
       There is only the whole orchestra, louder.</p>
     <p>Someone reaches for the deploy script. It is 400 lines of PowerShell. It has a comment at
       the top that says <span style="color:var(--ink-faint)">"do not run twice."</span></p>
   </div>
 
-  <p class="lede">There are two separate failures in that room, and it's worth being precise about
-    which is which — because they have two different heroes, and most articles only introduce one.</p>
+  <p class="lede">There are two separate failures in that room, and it's worth being precise about which is which, because they have two different heroes, and most articles only introduce one.</p>
 
   <p><strong>The first failure is the venue.</strong> One server, built by hand, that nobody can
     rebuild. It was assembled over eighteen months of portal clicks by four people, two of whom
@@ -699,8 +697,7 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   </div>
 
   <p>We'll follow one company, <strong>Contoso Commerce</strong>, as it breaks its monolith into
-    four .NET microservices and gets them running properly. Four services — enough to be real,
-    small enough to hold in your head:</p>
+    four .NET microservices and gets them running properly. Four services, enough to be real and small enough to hold in your head:</p>
 
   <table>
     <tr><th>Service</th><th>Job</th><th>Why it's separate</th></tr>
@@ -725,12 +722,12 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   <div class="actmark">Setup · the shared secret</div>
   <h2>Both heroes have the same superpower</h2>
 
-  <p class="lede">Before the acts begin, here's the thing that makes the rest of this article easy.
+  <p class="lede">Before the acts begin, one idea makes the rest of this article easy.
     Terraform and Kubernetes look like completely different tools. They are the same tool, running
     at two different speeds, on two different worlds.</p>
 
   <p>Both of them refuse to take instructions. You cannot tell either one to "create a VM" or
-    "start a container" — not really. You can only tell them <strong>what should be true</strong>.
+    "start a container". You can only tell them <strong>what should be true</strong>.
     Then they go and make it true, and — this is the part that matters — they keep making it true
     afterwards.</p>
 
@@ -836,12 +833,11 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   <div class="scene">
     <div class="slug">THE PITCH, IN ONE LINE</div>
     <p>The Azure Portal is a <em>conversation</em>. Terraform is a <em>contract</em>.
-      Conversations are forgotten. Contracts get reviewed, versioned, signed — and can be
-      executed again next year by someone who wasn't in the room.</p>
+      Conversations are forgotten. Contracts get reviewed, versioned, signed, and can be executed again next year by someone who wasn't in the room.</p>
   </div>
 
   <p>Remember the loop. Terraform's version of "observe" is unusually careful, because it's
-    comparing <em>three</em> things, not two — and understanding which three explains almost every
+    comparing <em>three</em> things, not two, and understanding which three explains almost every
     surprising plan you'll ever read.</p>
 
   <table>
@@ -859,14 +855,13 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
     <div class="t">The rule that saves careers</div>
     <p>Never keep the state file on a laptop. Put it in an Azure Storage account with blob
       versioning on, and let Terraform take the native blob lease as its lock. That lock is the only
-      thing standing between you and two pipelines applying to the same cluster at the same moment —
-      which corrupts state in ways that take a very bad afternoon to unpick.</p>
+      thing standing between you and two pipelines applying to the same cluster at the same moment, which corrupts state in ways that take a very bad afternoon to unpick.</p>
   </div>
 
   <h3>Curtain up</h3>
   <p>Below is what a real <code>terraform apply</code> feels like from the outside. Press play.
-    Watch the dependency graph resolve itself — you never told Terraform that the subnet must exist
-    before the cluster. It worked that out from the fact that one references the other.</p>
+    Watch the dependency graph resolve itself: you never told Terraform that the subnet must exist
+    before the cluster. It worked that out because one references the other.</p>
 </div>
 
 <div class="wide reveal">
@@ -898,15 +893,14 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
 
   <p>The theatre now stands: a virtual network, a container registry, a Log Analytics workspace,
     an AKS cluster with two node pools, and the identities that let them talk to each other without
-    a single password. What any of that <em>means</em> is Act II's job — this act only cares that it
+    a single password. What any of that <em>means</em> is Act II's job; this act only cares that it
     was built from a file you can read, review and run again.</p>
 
   <details class="hood">
     <summary>Under the hood · the actual theatre, in HCL</summary>
     <div class="hoodbody">
       <p>Pin your provider versions. An unpinned provider is a time bomb that goes off on a Friday.
-        The <code>azurerm</code> provider is on the 4.x line — note that several argument names
-        changed from 3.x, which is the single most common reason a copied snippet won't apply.</p>
+        The <code>azurerm</code> provider is on the 4.x line; note that several argument names changed from 3.x, which is the single most common reason a copied snippet won't apply.</p>
       <div class="filetag">versions.tf</div>
 <pre><code><span class="kw">terraform</span> {
   <span class="nm">required_version</span> = <span class="st">"~&gt; 1.9"</span>
@@ -1034,8 +1028,7 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
       <p><strong>Three lines worth arguing about in code review:</strong>
         <code>network_plugin_mode = "overlay"</code> (stops you exhausting VNet IPs),
         <code>local_account_disabled = true</code> (kills the shared admin kubeconfig that gets
-        pasted into Teams), and <code>ignore_changes</code> on node_count — without it, Terraform
-        and the cluster autoscaler will quietly wrestle each other forever, each one "fixing"
+        pasted into Teams), and <code>ignore_changes</code> on node_count: without it, Terraform and the cluster autoscaler will wrestle each other forever, each one "fixing"
         the other's work.</p>
     </div>
   </details>
@@ -1081,7 +1074,7 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
     <summary>Under the hood · modules, environments, and not copy-pasting prod</summary>
     <div class="hoodbody">
       <p>One folder per environment, one shared module. Dev and prod differ by a variables file,
-        never by a forked copy of the code — the moment they diverge, "it works in dev" stops
+        never by a forked copy of the code; the moment they diverge, "it works in dev" stops
         meaning anything.</p>
 <pre><code>infra/
 ├── modules/
@@ -1117,17 +1110,16 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   <div class="actmark">Act II · The stage</div>
   <h2>What Terraform just built, and who's now in charge of it</h2>
 
-  <p class="lede">The theatre stands. Our second hero walks on — and here is the single most useful
-    thing to understand about AKS, which almost nobody says plainly:
+  <p class="lede">The theatre stands. Our second hero walks on, and here is the single most useful thing to understand about AKS, which almost nobody says plainly:
     <strong>a cluster is two halves, and Microsoft only runs one of them.</strong></p>
 
-  <p>The half Microsoft runs is the <strong>control plane</strong> — the brain. It holds the desired
+  <p>The half Microsoft runs is the <strong>control plane</strong>, the brain. It holds the desired
     state of your world ("there should be six catalog pods, always"), decides which machine each
     container lands on, and never stops comparing what <em>is</em> against what <em>should be</em>.
     You don't patch it, don't SSH into it, and on the Free tier don't pay for it. Terraform created
     it in about three minutes and then had nothing more to do with it.</p>
 
-  <p>The half you own is the <strong>node pools</strong> — ordinary Azure virtual machines that do
+  <p>The half you own is the <strong>node pools</strong>, ordinary Azure virtual machines that do
     the actual work. Your containers run here. You pay for these by the second, exactly like any
     other VM.</p>
 
@@ -1334,7 +1326,7 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
   <h2>Git is the score, and the pipeline is how it reaches the stage</h2>
 
   <p class="lede">Terraform built the theatre. Kubernetes is ready to conduct. But something has to
-    carry the music from a developer's laptop to the stage — reliably, in minutes, many times a day,
+    carry the music from a developer's laptop to the stage, reliably, in minutes, many times a day,
     with the right people looking at the right moments. That's the pipeline.</p>
 
   <p>Start from the idea rather than the tooling. Both our heroes only accept one kind of input:
@@ -1343,14 +1335,13 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
     proposed, reviewed, and adopted?</strong></p>
 
   <p>Git already answers that. A branch is a proposal. A pull request is a review. A merge is
-    adoption. CI/CD is simply the machinery that makes a merge <em>mean</em> something in the
+    adoption. CI/CD is the machinery that makes a merge <em>mean</em> something in the
     real world.</p>
 
   <div class="scene">
     <div class="slug">THE REFRAME</div>
     <p>You are not "pushing code to servers." You are proposing an amendment to the description
-      of your production system, having it reviewed, and — once adopted — letting two
-      reconciliation loops make the world match the new description.</p>
+      of your production system, having it reviewed and, once adopted, letting two reconciliation loops make the world match the new description.</p>
   </div>
 
   <h3>Two pipelines, not one</h3>
@@ -1379,7 +1370,7 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
 
   <p>There's a myth in this space worth killing: that continuous deployment means removing human
     approval. It doesn't, and teams that chase that as the goal end up either reckless or, more
-    often, quietly reintroducing a Thursday-afternoon change board and feeling bad about it.</p>
+    often, reintroducing a Thursday-afternoon change board and feeling bad about it.</p>
 
   <p><strong>Mature pipelines have more gates than manual processes did, not fewer.</strong>
     What changes is who staffs them and when they fire. The old model had one gate, at the end,
@@ -1392,14 +1383,13 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
     <tr><td>Pull request review</td><td>Is this change correct and well-designed?</td><td>A human teammate</td><td>The merge</td></tr>
     <tr><td>Tests &amp; coverage</td><td>Did we break anything we knew about?</td><td>The pipeline</td><td>The build</td></tr>
     <tr><td>Image scan &amp; signing</td><td>Are we shipping a known CVE?</td><td>The pipeline</td><td>The push to ACR</td></tr>
-    <tr><td>Staging smoke tests</td><td>Does it actually run when assembled?</td><td>The pipeline</td><td>Promotion</td></tr>
+    <tr><td>Staging smoke tests</td><td>Does it run when assembled?</td><td>The pipeline</td><td>Promotion</td></tr>
     <tr><td>Canary analysis</td><td>Does real traffic behave? Latency, 5xx, saturation</td><td>Automated metric analysis</td><td>The full rollout</td></tr>
     <tr><td>Environment approval</td><td>Should this ship <em>now</em>, given what else is happening?</td><td>Named humans — on high-risk services</td><td>Production deploy</td></tr>
     <tr><td>Change freeze</td><td>Are we inside a protected window?</td><td>Policy</td><td>Everything</td></tr>
   </table>
 
-  <p>Look at what the humans are being asked. Not "did 214 tests pass" — a human is strictly worse
-    at that than the machine, and asking them makes the approval a rubber stamp. They're asked the
+  <p>Look at what the humans are being asked. Not "did 214 tests pass"; a human is strictly worse at that than the machine, and asking them makes the approval a rubber stamp. They're asked the
     one thing the pipeline genuinely cannot know: <strong>is now a good time, given everything
     happening outside this repository?</strong> A sale starting in an hour. A payments provider
     already having a bad morning. A regulator's audit window. That's judgement, and it belongs
@@ -1487,7 +1477,7 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
 <div class="wrap reveal">
   <h3>The moment the pipeline hands over</h3>
   <p>There's a handoff worth naming, and it's where our two heroes trade places one last time.
-    The pipeline's job ends at <em class="term">helm upgrade</em> — it changes the desired state
+    The pipeline's job ends at <em class="term">helm upgrade</em>: it changes the desired state
     and walks away. It does not "deploy" in the old sense of copying files onto servers. It files
     an amendment. Kubernetes then does the actual work: pulling images, starting pods, waiting for
     readiness, shifting traffic, killing the old ones.</p>
@@ -1500,12 +1490,11 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
   <div class="note green">
     <div class="t">Push vs. pull — the GitOps fork in the road</div>
     <p>Everything above is <strong>push</strong>: the pipeline holds credentials and reaches into
-      the cluster. The alternative is <strong>pull</strong> — an agent inside the cluster (Argo CD,
+      the cluster. The alternative is <strong>pull</strong>: an agent inside the cluster (Argo CD,
       or the AKS GitOps add-on based on Flux) watches a Git repo and applies changes itself. CI then
       never touches the cluster at all; it just writes a new image tag into a manifests repo, and
       approving a deploy becomes approving a pull request. Push is simpler to start. Pull scales
-      better past a handful of clusters, because the cluster's true state is always a commit you
-      can diff — which is the reconciliation loop applied to your delivery process itself.</p>
+      better past a handful of clusters, because the cluster's true state is always a commit you can diff, which is the reconciliation loop applied to your delivery process itself.</p>
   </div>
 
   <details class="hood">
@@ -1578,10 +1567,10 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
   </details>
 
   <details class="hood">
-    <summary>Under the hood · how the approval gate is actually configured</summary>
+    <summary>Under the hood · how the approval gate is configured</summary>
     <div class="hoodbody">
       <p>In GitHub Actions the gate is an <strong>environment</strong> with protection rules. The job
-        simply names the environment; GitHub does the pausing, the notifying, the audit trail, and
+        names the environment; GitHub does the pausing, the notifying, the audit trail, and
         the "you can't approve your own deploy" rule. The same idea exists as Approvals and Checks
         on Azure DevOps environments.</p>
 <pre><code>  <span class="nm">deploy-canary</span>:
@@ -1616,8 +1605,7 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
             --atomic --timeout 5m
       - <span class="nm">run</span>: kubectl rollout status deploy/orders-api -n shop --timeout=180s</code></pre>
       <p><strong>Two details that make the gate real rather than decorative.</strong>
-        <code>--atomic</code> means a rollout that doesn't go healthy inside the timeout is rolled
-        back automatically — so the approver is authorising an attempt, not a one-way door. And
+        <code>--atomic</code> means a rollout that doesn't go healthy inside the timeout is rolled back automatically, so the approver is authorising an attempt, not a one-way door. And
         <em>prevent self-review</em> means the person who wrote the change isn't the person who
         approves it, which is the entire point of having one.</p>
 
@@ -1657,7 +1645,7 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
 <section class="act" id="act4">
 <div class="wrap reveal">
   <div class="actmark">Act IV · The performance</div>
-  <h2>What "orchestration" actually means at 3 in the afternoon</h2>
+  <h2>What "orchestration" means at 3 in the afternoon</h2>
 
   <p class="lede">The pipeline has walked away. Kubernetes is alone on stage now, and this is where
     our second hero earns top billing. Orchestration is a word that usually means "some Kubernetes
@@ -1673,7 +1661,7 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
 
   <h3>Job two · Discovery</h3>
   <p>orders-api needs to call catalog-api. It does not know an IP address. It calls
-    <code>http://catalog-api.shop.svc.cluster.local</code> — a name that resolves, inside the
+    <code>http://catalog-api.shop.svc.cluster.local</code>, a name that resolves, inside the
     cluster, to whichever pods are healthy <em>right now</em>. Pods die and are replaced with new
     IPs every day. The name never changes.</p>
 
@@ -1692,8 +1680,7 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
   <h3>Job four · Change</h3>
   <p>This is the one you'll care about most, because it runs during every single deploy.
     Kubernetes replaces old pods with new ones <strong>gradually</strong>, and refuses to send
-    traffic to a new pod until that pod says it's ready. Two numbers control the whole dance —
-    play with them and watch what happens to your capacity mid-deploy.</p>
+    traffic to a new pod until that pod says it's ready. Two numbers control the whole dance; play with them and watch what happens to your capacity mid-deploy.</p>
 </div>
 
 <div class="wide reveal">
@@ -1735,11 +1722,9 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
 </div>
 
 <div class="wrap reveal">
-  <p>Set <code>maxUnavailable</code> to 0 and the rollout never dips below full capacity — it costs
-    you a few extra pods' worth of compute for a couple of minutes. Set it to 4 and the deploy is
+  <p>Set <code>maxUnavailable</code> to 0 and the rollout never dips below full capacity; it costs you a few extra pods' worth of compute for a couple of minutes. Set it to 4 and the deploy is
     faster but you're running at half capacity in the middle of it, which is fine at 3am and a
-    disaster during a sale. <strong>This is the trade, and it's yours to make per service</strong> —
-    the same risk-tiering that decided who needs a human approval decides these two numbers too.</p>
+    disaster during a sale. <strong>This is the trade, and it's yours to make per service</strong>: the same risk-tiering that decided who needs a human approval decides these two numbers too.</p>
 
   <details class="hood">
     <summary>Under the hood · rollout strategy, autoscaling and disruption budgets</summary>
@@ -1762,9 +1747,8 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
         <span class="nm">labelSelector</span>:
           <span class="nm">matchLabels</span>: { <span class="nm">app</span>: catalog-api }</code></pre>
 
-      <h4>Scale on the thing that actually predicts load</h4>
-      <p>CPU is a lagging indicator. For orders-api, queue depth is a leading one — KEDA scales on
-        it directly, and can scale to zero when the queue is empty:</p>
+      <h4>Scale on the thing that predicts load</h4>
+      <p>CPU is a lagging indicator. For orders-api, queue depth is a leading one; KEDA scales on it directly, and can scale to zero when the queue is empty:</p>
 <pre><code><span class="nm">apiVersion</span>: keda.sh/v1alpha1
 <span class="nm">kind</span>: ScaledObject
 <span class="nm">metadata</span>: { <span class="nm">name</span>: orders-worker }
@@ -1813,16 +1797,21 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
 
   <div class="scene">
     <div class="slug">INT. OPS ROOM — NIGHT (ONE YEAR LATER)</div>
-    <p>A node dies. Not gracefully — it simply stops answering.</p>
-    <p>Ten seconds pass. The control plane notices the missing heartbeat and marks the node
+    <p>A node dies. No warning, no drain — it stops answering.</p>
+    <p>Forty seconds pass, four missed heartbeats, and the control plane marks the node
       <span style="color:var(--red)">NotReady</span>. The endpoints controller pulls those pods out
-      of every service's routing table, so traffic stops going to ghosts. The deployment controller
-      does its arithmetic: seven pods, should be eight. The scheduler finds room on the survivors.
-      New pods start. Readiness probes pass. Traffic returns.</p>
-    <p>The autoscaler, meanwhile, has already asked Azure for a replacement VM — using the node pool
-      definition Terraform wrote months ago and hasn't thought about since.</p>
-    <p>Total elapsed time: under a minute. Total humans involved: zero. The monitor still glows,
-      but nobody is watching it, because there is nothing to watch.</p>
+      of every service's routing table, so traffic stops going to ghosts inside the minute.</p>
+    <p>Then nothing happens for five more. That is the default toleration on the
+      <code>node.kubernetes.io/unreachable</code> taint, and the wait is deliberate: Kubernetes
+      would rather ride out a network blip than reshuffle your whole workload because a switch
+      hiccupped. When it expires, the pods are evicted for real. The deployment controller does its
+      arithmetic: seven pods, should be eight. The scheduler finds room on the survivors. New pods
+      start. Readiness probes pass. Capacity is whole again.</p>
+    <p>The autoscaler, meanwhile, has already asked Azure for a replacement VM, using the node pool definition Terraform wrote months ago and hasn't thought about since.</p>
+    <p>Traffic protected in under a minute, capacity restored in about five, humans involved: zero.
+      If five minutes of running short is too long for you, lower <code>tolerationSeconds</code> on
+      the pod spec and accept that a flapping network will now cost you a reshuffle. The monitor
+      still glows, but nobody is watching it, because there is nothing to watch.</p>
   </div>
 
   <p>Try it yourself. Kill a node, or turn the traffic up until the cluster has to grow.</p>
@@ -1862,8 +1851,8 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
   <h3>What neither hero can fix for you</h3>
   <p>Self-healing has a hard boundary, and it's honest to name it. Kubernetes will restart a crashed
     pod forever. It cannot tell you the pod crashes because of a null reference on line 84. It will
-    happily run eight replicas of a broken build. It will not notice that your latency doubled —
-    only that the process is alive. And Terraform will faithfully rebuild a badly-designed network
+    run eight replicas of a broken build without complaint. It will not notice that your latency doubled —
+    only that the process is alive. And Terraform will rebuild a badly-designed network
     exactly as badly, every time, on demand.</p>
 
   <p>Which is why the last piece of the picture is <strong>seeing</strong>. Container Insights and
@@ -1879,7 +1868,7 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
       <table>
         <tr><th>Signal</th><th>Threshold</th><th>Why</th></tr>
         <tr><td>CrashLoopBackOff</td><td>any pod, 5 min</td><td>A restart loop is a deploy that failed silently.</td></tr>
-        <tr><td>HTTP 5xx rate</td><td>&gt; 2% over 5 min</td><td>The only number a customer actually experiences.</td></tr>
+        <tr><td>HTTP 5xx rate</td><td>&gt; 2% over 5 min</td><td>The only number a customer experiences.</td></tr>
         <tr><td>p95 latency</td><td>&gt; 2× the 7-day baseline</td><td>Catches slow before it becomes down.</td></tr>
         <tr><td>Node pool at max</td><td>at <code>max_count</code> &gt; 10 min</td><td>You've hit your ceiling; the autoscaler is out of moves.</td></tr>
       </table>
@@ -1930,8 +1919,7 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
   <div class="note blue">
     <div class="t">The uncomfortable question</div>
     <p>Do you need any of this? If you run three services and deploy weekly, Azure Container Apps
-      or App Service will serve you better and cost far less in human attention — and Terraform is
-      still worth every minute regardless, because the first hero's argument has nothing to do with
+      or App Service will serve you better and cost far less in human attention, and Terraform is still worth every minute regardless, because the first hero's argument has nothing to do with
       Kubernetes. AKS earns its complexity when you have many services, many teams, real scaling
       variance, and a platform group who owns the cluster. Choosing it too early is a common and
       expensive mistake; choosing it too late is a painful one. Both are worth thinking about
@@ -1943,8 +1931,7 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
     <p>Every diagram on this page is a live simulation, not a screenshot; the timings are
       illustrative, the mechanics are real. Code samples target <code>azurerm</code> 4.x,
       Kubernetes 1.34+ and .NET 9. AKS keeps three GA minor versions in support at a time, and
-      several provider argument names changed between azurerm 3.x and 4.x — check the docs for
-      your pinned versions before copying into production.</p>
+      several provider argument names changed between azurerm 3.x and 4.x; check the docs for your pinned versions before copying into production.</p>
   </div>
 </div>
 </section>
@@ -1990,7 +1977,7 @@ app.<span class="fn">MapHealthChecks</span>(<span class="st">"/readyz"</span>,  
     data-reactions-enabled="1"
     data-emit-metadata="0"
     data-input-position="bottom"
-    data-theme="https://www.niluniverse.com/giscus-theme.css"
+    data-theme="https://niluniverse.com/giscus-theme.css"
     data-lang="en"
     crossorigin="anonymous"
     async>

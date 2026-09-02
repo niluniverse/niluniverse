@@ -512,7 +512,7 @@
       <div class="witness w-traces">
         <div class="wname">Traces</div>
         <div class="wrole">The eyewitness who followed him</div>
-        <p>This is the star witness. It followed the request from the front door through every service it touched, timing each stop, and noting exactly where it stumbled. This witness is the one who actually breaks the case — the connecting thread that the other two can only point toward.</p>
+        <p>This is the star witness. It followed the request from the front door through every service it touched, timing each stop, and noting exactly where it stumbled. This witness is the one who breaks the case — the connecting thread the other two can only point toward.</p>
       </div>
     </div>
 
@@ -525,10 +525,10 @@
   <div class="section reveal">
     <h2><span class="tag">THE THREAD — CORRELATION</span>One ID to connect their testimonies</h2>
     <p>This is one of the oldest tricks in detective work: give every witness the same case number, and require them to cite it. In distributed tracing, that number is called the <strong>trace ID</strong>. It is created the instant a request enters the system, and it is then carried across every network hop in the request headers. Each service that touches the request opens a <strong>span</strong> — its own record of "I received it at T, did this work, and handed it off at T+Δ" — and every span is stamped with the same trace ID.</p>
-    <p>The modern standard for this is <a href="https://opentelemetry.io/" target="_blank" rel="noopener">OpenTelemetry</a> (OTel). It is vendor-neutral, and it is the reason your traces, metrics, and logs can finally work together. In .NET, it is built on <code>System.Diagnostics.Activity</code> and the W3C <code>traceparent</code> header, so context propagates across HTTP calls and message-bus hops without you having to pass IDs around by hand.</p>
+    <p>The modern standard for this is <a href="https://opentelemetry.io/" target="_blank" rel="noopener">OpenTelemetry</a> (OTel). It is vendor-neutral, and it is the reason your traces, metrics, and logs can finally work together. In .NET, it is built on <code>System.Diagnostics.Activity</code> and the W3C <code>traceparent</code> header, so context rides along on HTTP calls without you passing IDs around by hand. Queues are the exception: a message carries no headers unless you put them there, which is the one place the trail breaks by default.</p>
 
     <div class="code-wrap">
-      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">Program.cs — deputizing OpenTelemetry (.NET / Azure)</span></div>
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">Program.cs — deputising OpenTelemetry (.NET / Azure)</span></div>
 <pre><code><span class="t-com">// Wire the whole app to testify: traces + metrics, auto-propagated.</span>
 builder.Services.<span class="t-fn">AddOpenTelemetry</span>()
     .<span class="t-fn">ConfigureResource</span>(r =&gt; r.<span class="t-fn">AddService</span>(<span class="t-str">"checkout-api"</span>))
@@ -585,7 +585,7 @@ activity?.<span class="t-fn">SetStatus</span>(<span class="t-type">ActivityStatu
       <div class="exhibit-note">Reading the exhibit: the gateways at the top look fine. <b>payment-svc → gateway-api</b> held the request for 1,180 ms and then returned a timeout — the entire 500 error traces back to this one downstream call. The case is solved on one screen, instead of after six hours of searching logs.</div>
     </div>
 
-    <p>This is the real payoff. Without the trace, you would have to log into six different services and read through logs, guessing at the order of events. With the trace, the guilty span is <em>literally the longest red bar on the screen</em>. The detective's job becomes much simpler: instead of searching the whole city, you just read the one testimony that followed the request all the way to the end.</p>
+    <p>This is the real payoff. Without the trace, you would have to log into six different services and read through logs, guessing at the order of events. With the trace, the guilty span is <em>the longest red bar on the screen</em>. The detective's job becomes much simpler: instead of searching the whole city, you just read the one testimony that followed the request all the way to the end.</p>
   </div>
 
   <div class="section reveal">
@@ -615,7 +615,7 @@ activity?.<span class="t-fn">SetStatus</span>(<span class="t-type">ActivityStatu
 
   <div class="section reveal">
     <h2>The closing statement</h2>
-    <p>The request that vanished at 2:14 a.m. was never really gone. It left a trail the whole way through the system, waiting for someone with the right tools to read it. That is what observability really is: not a dashboard, and not a graph for show, but the practice of building a system that can <em>explain itself</em> when something goes wrong.</p>
+    <p>The request that vanished at 2:14 a.m. was never gone. It left a trail the whole way through the system, waiting for someone with the right tools to read it. That trail is what observability buys you: a system that can <em>explain itself</em> when something goes wrong, rather than a wall of dashboards that can only tell you it did.</p>
     <p>Do the work up front: set up OpenTelemetry once, put a trace ID on every hop, and make your logs aware of their case number. After that, the next 2 a.m. page stops being a long manhunt. It becomes what good detective work always is: a quiet, methodical reading of the evidence, with a clear answer written down before the coffee even goes cold.</p>
     <p>Put on the hat. The system is talking. All you have to do is make it impossible for it to stay silent.</p>
   </div>
@@ -666,7 +666,7 @@ activity?.<span class="t-fn">SetStatus</span>(<span class="t-type">ActivityStatu
     data-reactions-enabled="1"
     data-emit-metadata="0"
     data-input-position="bottom"
-    data-theme="https://www.niluniverse.com/giscus-theme.css"
+    data-theme="https://niluniverse.com/giscus-theme.css"
     data-lang="en"
     crossorigin="anonymous"
     async>

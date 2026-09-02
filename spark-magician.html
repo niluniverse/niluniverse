@@ -265,6 +265,8 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
   body{font-size:17px}
   figure.fig{padding:14px;border-radius:16px}
   .chapter{padding:60px 0 20px}
+  table.tbl{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .pill{white-space:normal;max-width:100%;box-sizing:border-box}
 }
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.001s !important;transition-duration:.001s !important}
@@ -480,13 +482,13 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
   <div class="ch-num">Chapter One</div>
   <h2>The Village That Drowned in Its Own Ledgers</h2>
 
-  <p class="lede drop">There was once a village called Mahadata. It was a happy village. Every shop, every bullock cart, every phone call, every click — all of it was written down in big fat ledgers and kept safely in the village godown.</p>
+  <p class="lede drop">There was once a village called Mahadata. It was a happy village. Every shop, every bullock cart, every phone call, every click, all of it was written down in big fat ledgers and kept safely in the village godown.</p>
 
   <p>In the beginning, one accountant was enough. His name was Single Machine. He was a good man, very sincere. Every night he would sit with one lamp, open one ledger, and add up the day's numbers. By morning, the report was ready. The village was happy.</p>
 
   <p>But the village grew. Then it grew again. Then it grew in a way nobody had planned for. Ledgers became a hundred. A hundred became a lakh. Soon the godown was so full that the doors would not close.</p>
 
-  <p>Poor Single Machine kept sitting with his one lamp. He was not lazy — he was simply <em>one</em>. He could read only one page at a time. By the time he finished the morning report, it was already evening, and one more day of data was waiting outside the door, tapping its foot.</p>
+  <p>Poor Single Machine kept sitting with his one lamp. He was not lazy. He was <em>one</em>. He could read only one page at a time. By the time he finished the morning report, it was already evening, and one more day of data was waiting outside the door, tapping its foot.</p>
 
   <blockquote>
     "Give me a bigger table, a bigger lamp, a bigger chair," Single Machine begged.<br>
@@ -517,7 +519,7 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
     <span class="pill" id="handsTime">— </span>
     <button class="btn primary" id="handsRun">Run the night's work</button>
   </div>
-  <figcaption><b>What you are seeing:</b> 96 ledgers (data blocks) must be totalled. Each worker picks up one ledger at a time. Add workers and the same mountain finishes sooner — not because anyone became faster, but because the work got <em>divided</em>. This one idea is the foundation of every big data engine ever built. In Spark's language, each ledger is a <span style="color:#f6c65b">partition</span> and each worker is a <span style="color:#f6c65b">core inside an executor</span>.</figcaption>
+  <figcaption><b>What you are seeing:</b> 96 ledgers (data blocks) must be totalled. Each worker picks up one ledger at a time. Add workers and the same mountain finishes sooner, because the work got <em>divided</em>. Nobody became faster. This one idea is the foundation of every big data engine ever built. In Spark's language, each ledger is a <span style="color:#f6c65b">partition</span> and each worker is a <span style="color:#f6c65b">core inside an executor</span>.</figcaption>
 </figure>
 </div>
 </section>
@@ -546,7 +548,7 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
     <b>Why disk hurts so much:</b> reading from memory (RAM) is like taking a book from the table in front of you. Reading from disk is like sending a boy on a cycle to the godown, two kilometres away. Even a fast cycle is no match for your own hand. In real numbers, memory is roughly a hundred times quicker than disk — and machine learning or interactive queries want the same data ten, twenty, fifty times in a row.
   </div>
 
-  <p>So a job that needed ten steps made twenty trips to the godown. The workers spent more time cycling than counting. And the village — which now wanted answers in seconds, not overnight — began to grow restless again.</p>
+  <p>So a job that needed ten steps made twenty trips to the godown. The workers spent more time cycling than counting. And the village, which now wanted answers in seconds rather than overnight, began to grow restless again.</p>
 
   <p>Watch the two methods run the same ten-step job.</p>
 </div>
@@ -563,7 +565,7 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
     <span class="pill" id="raceMR">Sage MapReduce: ready</span>
     <span class="pill" id="raceSP">Magician Spark: ready</span>
   </div>
-  <figcaption><b>What you are seeing:</b> the same ten-stage job. The sage completes a stage, then makes the long trip to disk and back before the next stage may begin. The magician keeps the working data in memory and simply carries on. Nothing about the <em>counting</em> got faster — only the fetching. For iterative work like training a model, this single change was worth <strong>10x to 100x</strong>.</figcaption>
+  <figcaption><b>What you are seeing:</b> the same ten-stage job. The sage completes a stage, then makes the long trip to disk and back before the next stage may begin. The magician keeps the working data in memory and carries on. Nothing about the <em>counting</em> got faster — only the fetching. For iterative work like training a model, this single change was worth <strong>10x to 100x</strong>.</figcaption>
 </figure>
 </div>
 </section>
@@ -597,11 +599,11 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
 <div class="container reveal">
   <h3 style="font-size:26px;margin:60px 0 10px;color:var(--gold)">Power One — I break the mountain before I lift it</h3>
 
-  <p>The magician never looks at a mountain and thinks "mountain". He looks at it and immediately sees <span class="term">partitions</span> — hundreds of small, bite-sized pieces, each one small enough to fit comfortably in a worker's hands.</p>
+  <p>The magician never looks at a mountain and thinks "mountain". He looks at it and immediately sees <span class="term">partitions</span>: hundreds of small, bite-sized pieces, each one small enough to fit comfortably in a worker's hands.</p>
 
   <p>Then he sends those pieces out to his workers, who are called <span class="term">executors</span>. Each executor is a separate machine (or a separate slice of one) with its own memory and its own hands, sitting in a big hall called the <span class="term">cluster</span>.</p>
 
-  <p>The magician himself does not do the counting. He sits in the middle as the <span class="term">driver</span> — the one who holds the plan, decides who does what, and collects the final answer. A good general does not fight; he directs.</p>
+  <p>The magician himself does not do the counting. He sits in the middle as the <span class="term">driver</span>, the one who holds the plan, decides who does what, and collects the final answer. A good general does not fight; he directs.</p>
 
   <div class="aside">
     <b>Remember the shape:</b> One <b>driver</b> (the brain, holds the plan) → many <b>executors</b> (the hands, hold data and do work) → each executor has several <b>cores</b> (each core handles one partition at a time). Get this picture right and 80% of Spark stops feeling mysterious.
@@ -630,7 +632,7 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
     </div>
     <button class="btn primary" id="clusterRun">Send the work out</button>
   </div>
-  <figcaption><b>Play with it:</b> Too few partitions and some executors sit idle with nothing to do — you paid for hands you did not use. Too many tiny partitions and the magician wastes his breath just giving instructions (scheduling overhead). The sweet spot is roughly <strong>2 to 4 partitions per available core</strong>. This is the single most common reason a Spark job is slow, and it is not a mystery — it is arithmetic.</figcaption>
+  <figcaption><b>Play with it:</b> Too few partitions and some executors sit idle with nothing to do — you paid for hands you did not use. Too many tiny partitions and the magician wastes his breath just giving instructions (scheduling overhead). The sweet spot is roughly <strong>2 to 4 partitions per available core</strong>. This is the single most common reason a Spark job is slow, and it is arithmetic, not a mystery.</figcaption>
 </figure>
 </div>
 
@@ -641,9 +643,9 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
 
   <p>When a worker fell sick in the sage's time, the whole job had to be restarted, or the sage had to go dig up the last paper he had written. That is why he wrote so much paper.</p>
 
-  <p>The magician does something cleverer. He does not save copies of the data everywhere. Instead, <strong>he remembers exactly how every piece of data was made</strong> — which file it came from, which filter was applied, which column was added, in which order.</p>
+  <p>The magician does something cleverer. He does not save copies of the data everywhere. Instead, <strong>he remembers exactly how every piece of data was made</strong>: which file it came from, which filter was applied, which column was added, in which order.</p>
 
-  <p>This memory of steps is called <span class="term">lineage</span>, and the picture it forms is called a <span class="term">DAG</span> — a Directed Acyclic Graph. Say it simply: <em>an arrow-diagram of steps that never goes backwards in a circle.</em></p>
+  <p>This memory of steps is called <span class="term">lineage</span>, and the picture it forms is called a <span class="term">DAG</span>, a Directed Acyclic Graph. Put plainly: <em>an arrow-diagram of steps that never goes backwards in a circle.</em></p>
 
   <p>So when a worker collapses and a piece of data is lost, the magician does not panic and does not restart everything. He looks at his DAG, finds the one branch that was destroyed, and recreates <em>only that branch</em>. Two seconds of work instead of two hours.</p>
 
@@ -666,14 +668,14 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
     <button class="btn" id="dagReset">Rebuild the tree</button>
     <span class="pill" id="dagMsg">Click any glowing node to destroy that piece of data</span>
   </div>
-  <figcaption><b>What you are seeing:</b> a real lineage graph — read a file, filter it, add a column, group it, and write the result. Destroy any node and Spark walks <em>backwards</em> along the arrows to the nearest surviving ancestor, then recomputes forward. It never needs a backup copy, because the recipe <em>is</em> the backup. This is why Spark can run happily on cheap, ordinary machines that fail all the time.</figcaption>
+  <figcaption><b>What you are seeing:</b> a real lineage graph — read a file, filter it, add a column, group it, and write the result. Destroy any node and Spark walks <em>backwards</em> along the arrows to the nearest surviving ancestor, then recomputes forward. It never needs a backup copy, because the recipe <em>is</em> the backup. This is why Spark runs on cheap, ordinary machines that fail all the time.</figcaption>
 </figure>
 </div>
 
 <div class="container reveal">
   <h3 style="font-size:26px;margin:60px 0 10px;color:var(--gold)">Power Three — I listen to your whole wish before I lift a finger</h3>
 
-  <p>Now, the power that most people find strange the first time.</p>
+  <p>Now, the power that looks strange the first time you meet it.</p>
 
   <p>You go to the magician and say: "Read this file." He nods. Nothing happens.</p>
 
@@ -687,7 +689,7 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
 
   <p>Think of a tailor. If you tell him "cut the cloth" and he cuts immediately, then you say "actually make it smaller", the cloth is already wasted. A wise tailor listens to your <em>full</em> requirement, measures everything, plans every cut on the whole cloth, and only then picks up the scissors — once, correctly.</p>
 
-  <p>In Spark's vocabulary: the instructions you give are <span class="term">transformations</span> (lazy — they only add to the plan). The moment you ask for a result, that is an <span class="term">action</span> (eager — it triggers the whole thing).</p>
+  <p>In Spark's vocabulary: the instructions you give are <span class="term">transformations</span> (lazy: they only add to the plan). The moment you ask for a result, that is an <span class="term">action</span> (eager: it triggers the whole thing).</p>
 
   <div class="aside">
     <b>Transformations (lazy, nothing runs):</b> <code>filter</code>, <code>select</code>, <code>withColumn</code>, <code>join</code>, <code>groupBy</code>, <code>map</code><br>
@@ -722,17 +724,17 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
 
   <p>Beside the magician sits a quiet, brilliant minister named <span class="term">Catalyst</span>.</p>
 
-  <p>When you hand over your wish, Catalyst does not run it. He first <em>improves</em> it — and he does this without ever changing your answer. Only the route changes, never the destination.</p>
+  <p>When you hand over your wish, Catalyst does not run it. He first <em>improves</em> it, and he does this without ever changing your answer. Only the route changes, never the destination.</p>
 
   <p>His three favourite corrections are so simple you will laugh, and so powerful you will not:</p>
 
   <p><strong>One — filter first, carry less.</strong> You wrote: "load the whole ten-crore-row table, join it with another table, then keep only Pune." Catalyst rewrites it to: "keep only Pune first, <em>then</em> join." Same answer. You just carried a suitcase instead of a truck. This is called <span class="term">predicate pushdown</span>.</p>
 
-  <p><strong>Two — carry only what you asked for.</strong> Your table has 200 columns; your report needs 4. Catalyst reads only those 4 from the disk. In a columnar file format like Parquet or Delta, this is not a trick — the columns really are stored separately. This is <span class="term">column pruning</span>.</p>
+  <p><strong>Two — carry only what you asked for.</strong> Your table has 200 columns; your report needs 4. Catalyst reads only those 4 from the disk. In a columnar file format like Parquet or Delta this is no trick at all: the columns are stored separately on disk. This is <span class="term">column pruning</span>.</p>
 
   <p><strong>Three — if one side is small, don't move the big one.</strong> Joining ten crore sales rows with a 200-row list of city names? Do not drag the sales data across the network. Send the tiny city list to every machine instead. This is a <span class="term">broadcast join</span>, and it turns hours into minutes.</p>
 
-  <p>And there is one more thing, added later, which is genuinely the cleverest part: <span class="term">Adaptive Query Execution (AQE)</span>. Catalyst makes his plan, but then he <em>watches the job while it runs</em>. If the real data turns out different from what he assumed — one district has ten times more rows than expected — he changes the plan mid-flight. Very few planners in this world have the humility to do that.</p>
+  <p>And there is one more thing, added later, which is genuinely the cleverest part: <span class="term">Adaptive Query Execution (AQE)</span>. Catalyst makes his plan, but then he <em>watches the job while it runs</em>. If the real data turns out different from what he assumed (one district has ten times more rows than expected), he changes the plan mid-flight. Very few planners in this world have the humility to do that.</p>
 </div>
 
 <div class="wide reveal">
@@ -747,7 +749,7 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
     <button class="btn ghost" id="catReset">Show my original plan</button>
     <span class="pill" id="catStat">Rows carried: —</span>
   </div>
-  <figcaption><b>What you are seeing:</b> the same query as you wrote it (left) and as Catalyst decided to actually run it (right). Notice the filter climbing down towards the source and the small table turning into a broadcast. You did not write better code. Spark simply refused to run your code literally — and that is a feature.</figcaption>
+  <figcaption><b>What you are seeing:</b> the same query as you wrote it (left) and as Catalyst decided to run it (right). Notice the filter climbing down towards the source and the small table turning into a broadcast. You did not write better code. Spark refused to run your code word for word, and that is a feature.</figcaption>
 </figure>
 </div>
 
@@ -756,11 +758,11 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
 
   <p>Every hero must have a weakness, otherwise the story is boring and, more importantly, untrue.</p>
 
-  <p>The magician's workers are fast because each one works alone on its own piece. But some questions cannot be answered alone. "How many sales in each district?" — for that, every record of Pune must come together in one place, no matter which worker was holding it.</p>
+  <p>The magician's workers are fast because each one works alone on its own piece. But some questions cannot be answered alone. "How many sales in each district?" For that, every record of Pune must come together in one place, no matter which worker was holding it.</p>
 
   <p>So the data must cross the hall. Records fly from every machine to every other machine, over the network, through the disk. This crossing is called the <span class="term">shuffle</span>, and it is the slowest, heaviest, most expensive thing Spark ever does.</p>
 
-  <p>You cannot remove the shuffle — <code>groupBy</code>, <code>join</code>, <code>distinct</code>, <code>orderBy</code> all need it. But a good engineer learns to <em>respect</em> it: filter before you shuffle, broadcast the small side, and never shuffle the same data twice when you could cache it once.</p>
+  <p>You cannot remove the shuffle: <code>groupBy</code>, <code>join</code>, <code>distinct</code>, <code>orderBy</code> all need it. But a good engineer learns to <em>respect</em> it: filter before you shuffle, broadcast the small side, and never shuffle the same data twice when you could cache it once.</p>
 </div>
 
 <div class="wide reveal">
@@ -790,31 +792,31 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
 
   <p class="lede drop">Now, a magician alone in a forest is only a story. A magician with a school, a discipline and a stage becomes a civilisation.</p>
 
-  <p>The same people who created Spark in that Berkeley lab — Matei Zaharia and his colleagues — did something unusual. They gave Spark away, free, to the whole world through the Apache Foundation. Then, in 2013, they founded a gurukul to raise him properly.</p>
+  <p>The same people who created Spark in that Berkeley lab, Matei Zaharia and his colleagues, did something unusual. They gave Spark away, free, to the whole world through the Apache Foundation. Then, in 2013, they founded a gurukul to raise him properly.</p>
 
   <p>That gurukul is <span class="term" style="color:#ff6b52">Databricks</span>.</p>
 
   <p>People often confuse the two, so let us settle it in one line, once and for all:</p>
 
   <div class="aside" style="border-color:#5a2a24;background:linear-gradient(90deg,rgba(255,54,33,.08),transparent)">
-    <b>Apache Spark</b> is the engine — free, open source, yours to run anywhere. <b>Databricks</b> is the fully-built vehicle around that engine — the chassis, the gearbox, the air conditioning, the security guard and the service centre. You can absolutely build your own car around the engine. Most teams would simply rather drive.
+    <b>Apache Spark</b> is the engine — free, open source, yours to run anywhere. <b>Databricks</b> is the fully-built vehicle around that engine — the chassis, the gearbox, the air conditioning, the security guard and the service centre. You can absolutely build your own car around the engine. Most teams would rather drive.
   </div>
 
   <p>And in the gurukul, the magician learned four new disciplines that he could never have learned alone.</p>
 
   <h3 style="font-size:24px;margin:50px 0 10px;color:var(--gold)">Discipline one — Delta Lake, the honest ledger</h3>
 
-  <p>Spark was always brilliant at <em>reading</em>. But the godown itself — plain files sitting in cloud storage — was a lawless place. If a job crashed halfway through writing, you were left with half-written garbage. If one person was reading while another was writing, who knows what you got. And nobody could tell you what the data looked like last Tuesday.</p>
+  <p>Spark was always brilliant at <em>reading</em>. But the godown itself, plain files sitting in cloud storage, was a lawless place. If a job crashed halfway through writing, you were left with half-written garbage. If one person was reading while another was writing, who knows what you got. And nobody could tell you what the data looked like last Tuesday.</p>
 
   <p>So the gurukul gave the village a proper ledger: <span class="term">Delta Lake</span>. It sits on top of your ordinary files and adds three things every accountant has demanded since the beginning of time:</p>
 
-  <p><strong>ACID transactions</strong> — a write either fully happens or fully does not. No half-truths. <strong>Time travel</strong> — you can literally ask for the table as it stood twenty versions ago, which has saved more careers than any monitoring dashboard. <strong>Schema enforcement</strong> — if someone tries to push a string into a number column, the ledger refuses politely instead of quietly corrupting six months of reports.</p>
+  <p><strong>ACID transactions</strong> — a write either fully happens or fully does not. No half-truths. <strong>Time travel</strong> — you can ask for the table as it stood twenty versions ago, which has saved more careers than any monitoring dashboard. <strong>Schema enforcement</strong> — if someone tries to push a string into a number column, the ledger refuses politely instead of corrupting six months of reports.</p>
 
   <h3 style="font-size:24px;margin:50px 0 10px;color:var(--gold)">Discipline two — the Lakehouse and the three vessels</h3>
 
   <p>For years the village kept two separate godowns and argued about them endlessly. A <span class="term">data lake</span> — cheap, holds anything, messy. A <span class="term">data warehouse</span> — clean, fast, structured, expensive, and refuses to hold your photos and logs.</p>
 
-  <p>Databricks asked the obvious question that nobody had asked: why two? Keep the cheap open storage of the lake, and put warehouse-grade discipline on top of it. They called it the <span class="term">Lakehouse</span>, and today it is simply how modern data platforms are built.</p>
+  <p>Databricks asked the obvious question that nobody had asked: why two? Keep the cheap open storage of the lake, and put warehouse-grade discipline on top of it. They called it the <span class="term">Lakehouse</span>, and today it is how modern data platforms are built.</p>
 
   <p>Inside it, data flows through three vessels, and every data engineer in the world now speaks this language:</p>
 </div>
@@ -839,13 +841,13 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
 
   <p>Here the gurukul did something that surprised even the magician.</p>
 
-  <p>Spark's original body was built in Scala and runs on the JVM — flexible, portable, wonderful. But for pure number-crunching, a JVM has a ceiling. So Databricks quietly built the magician a second heart, written in C++, and named it <span class="term">Photon</span>.</p>
+  <p>Spark's original body was built in Scala and runs on the JVM — flexible, portable, wonderful. But for pure number-crunching, a JVM has a ceiling. So Databricks built the magician a second heart, written in C++, and named it <span class="term">Photon</span>.</p>
 
-  <p>Photon's trick is called <span class="term">vectorisation</span>. The old way processed one row at a time — check this row, then the next, then the next. Photon takes a whole <em>batch</em> of values and applies the operation to all of them in a single stroke, using the SIMD instructions sitting unused inside every modern CPU.</p>
+  <p>Photon's trick is called <span class="term">vectorisation</span>. The old way processed one row at a time: check this row, then the next, then the next. Photon takes a whole <em>batch</em> of values and applies the operation to all of them in a single stroke, using the SIMD instructions sitting unused inside every modern CPU.</p>
 
-  <p>Think of it as the difference between stamping one envelope, then the next, then the next — versus a machine that stamps forty envelopes in one press.</p>
+  <p>Think of it as the difference between stamping one envelope, then the next, then the next, versus a machine that stamps forty envelopes in one press.</p>
 
-  <p>And the most beautiful part: you do not rewrite a single line of your code. Same SQL, same DataFrame. Photon simply takes over the parts it can handle and hands the rest back. The magician got faster without changing his spells.</p>
+  <p>And the most beautiful part: you do not rewrite a single line of your code. Same SQL, same DataFrame. Photon takes over the parts it can handle and hands the rest back. The magician got faster without changing his spells.</p>
 </div>
 
 <div class="wide reveal">
@@ -869,9 +871,9 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
 
   <p>Power without control is a problem waiting for a Monday morning. The last discipline the gurukul taught was not about speed at all.</p>
 
-  <p><span class="term">Unity Catalog</span> is the dwarpal — the gatekeeper — standing at the entrance of the whole lakehouse. One place that decides who may see which table, which column, even which row. One place that records where every piece of data came from and which dashboard it eventually fed. That last one is called <span class="term">lineage</span> again — the same beautiful idea as the DAG, but now for your entire organisation instead of one job.</p>
+  <p><span class="term">Unity Catalog</span> is the dwarpal, the gatekeeper, standing at the entrance of the whole lakehouse. One place that decides who may see which table, which column, even which row. One place that records where every piece of data came from and which dashboard it eventually fed. That last one is called <span class="term">lineage</span> again, the same beautiful idea as the DAG, but now for your entire organisation instead of one job.</p>
 
-  <p>And in 2026 this gatekeeper had to learn something new, because the visitors changed. It is no longer only humans and dashboards asking for data. It is <strong>AI agents</strong> — programs that decide for themselves which table to query and which tool to call. So governance quietly grew from "who can open this door" into "what is this agent allowed to actually do once inside, and what did it do last Tuesday at 3 AM."</p>
+  <p>And in 2026 this gatekeeper had to learn something new, because the visitors changed. It is no longer only humans and dashboards asking for data. It is <strong>AI agents</strong>, programs that decide for themselves which table to query and which tool to call. So governance grew from "who can open this door" into "what is this agent allowed to do once inside, and what did it do last Tuesday at 3 AM."</p>
 
   <p>The magician who once only counted rows is now the one who feeds the machines that think.</p>
 </div>
@@ -885,23 +887,23 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
   <div class="ch-num">Chapter Five</div>
   <h2>Where the Magician Stands Today</h2>
 
-  <p class="lede drop">It is 2026. The small research project from Berkeley is now the engine underneath an enormous share of the world's data work — in banks, hospitals, telecom towers, e-commerce warehouses and, quite likely, in whatever app you opened this morning.</p>
+  <p class="lede drop">It is 2026. The small research project from Berkeley is now the engine underneath an enormous share of the world's data work: in banks, hospitals, telecom towers, e-commerce warehouses and, quite likely, in whatever app you opened this morning.</p>
 
-  <p>Spark crossed into its fourth major age with <strong>Spark 4.0</strong>, and the line has kept moving steadily — <strong>4.2.0 arrived in July 2026</strong>. The changes tell you exactly where the magician is walking.</p>
+  <p>Spark crossed into its fourth major age with <strong>Spark 4.0</strong>, and the line has kept moving steadily: <strong>4.2.0 arrived in July 2026</strong>. The changes tell you exactly where the magician is walking.</p>
 
-  <p><strong>He became lighter.</strong> With <span class="term">Spark Connect</span>, your code no longer has to sit inside the cluster shouting at it. A thin client — a mere 1.5 MB, and it does not even need Java installed anymore — talks to Spark over a proper protocol. Your laptop, your notebook, your web app, your agent: all can speak to the magician from a distance.</p>
+  <p><strong>He became lighter.</strong> With <span class="term">Spark Connect</span>, your code no longer has to sit inside the cluster shouting at it. A thin client (a mere 1.5 MB, and it no longer needs Java installed) talks to Spark over a proper protocol. Your laptop, your notebook, your web app, your agent: all can speak to the magician from a distance.</p>
 
-  <p><strong>He became stricter, in a good way.</strong> ANSI SQL mode is now the default. Earlier, a bad number would quietly become <code>null</code> and your report would be silently wrong. Now it raises its hand and says "this is an error." Loud failure is a kindness; silent wrongness is not.</p>
+  <p><strong>He became stricter, in a good way.</strong> ANSI SQL mode is now the default. Earlier, a bad number would become <code>null</code> and your report would be wrong with no error anywhere. Now it raises its hand and says "this is an error." Loud failure is a kindness; silent wrongness is not.</p>
 
-  <p><strong>He learned to hold messy shapes.</strong> The new <span class="term">VARIANT</span> type stores semi-structured JSON properly — flexible like a document store, but still fast to query, because half the world's data arrives as untidy JSON and pretending otherwise never worked.</p>
+  <p><strong>He learned to hold messy shapes.</strong> The new <span class="term">VARIANT</span> type stores semi-structured JSON properly, flexible like a document store, but still fast to query, because half the world's data arrives as untidy JSON and pretending otherwise never worked.</p>
 
   <p><strong>He became more Pythonic.</strong> A native plotting API, a Python Data Source API so you can teach Spark to read anything you like in pure Python, Python UDTFs, and a much friendlier profiler. Spark stopped asking Python people to learn Scala.</p>
 
   <div class="aside">
-    <b>Quick timeline:</b> 2009 — born as a research project at UC Berkeley's AMPLab. 2010 — open sourced. 2013 — donated to the Apache Foundation; Databricks founded. 2014 — Spark 1.0, and it wins the Daytona GraySort record. 2016 — Spark 2.0 brings DataFrames, Catalyst and Structured Streaming. 2020 — Spark 3.0 brings Adaptive Query Execution. 2025 — Spark 4.0. 2026 — Spark 4.2, and the lakehouse becomes the ground floor of enterprise AI.
+    <b>Quick timeline:</b> 2009 — born as a research project at UC Berkeley's AMPLab. 2010 — open sourced. 2013 — donated to the Apache Foundation; Databricks founded. 2014 — Spark 1.0, and it wins the Daytona GraySort record. 2015 — Spark 1.3 puts the DataFrame API on top of Catalyst. 2016 — Spark 2.0 folds DataFrame into Dataset and adds Structured Streaming. 2020 — Spark 3.0 brings Adaptive Query Execution. 2025 — Spark 4.0. 2026 — Spark 4.2, and the lakehouse becomes the ground floor of enterprise AI.
   </div>
 
-  <h3 style="font-size:26px;margin:56px 0 10px;color:var(--gold)">So where does the superpower actually come from?</h3>
+  <h3 style="font-size:26px;margin:56px 0 10px;color:var(--gold)">So where does the superpower come from?</h3>
 
   <p>Let us answer the elders' question properly, in one table. There is no magic anywhere in it.</p>
 
@@ -923,14 +925,14 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
   <p>Apache Spark did not win because it was clever in a thousand ways. It won because it was clever about <strong>three ordinary human ideas</strong>, and then absolutely refused to compromise on them.</p>
 
   <p><em>Divide the work, so no one hand carries the mountain.</em><br>
-  <em>Remember how things were made, so nothing is ever truly lost.</em><br>
+  <em>Remember how things were made, so nothing is ever lost for good.</em><br>
   <em>Listen to the whole request before you begin, so you begin correctly.</em></p>
 
   <p>A magician, in the end, is only someone who understood the problem better than everybody else in the room — and then had the patience to build for it.</p>
 
   <blockquote style="margin-top:44px">
     The mountain never became smaller.<br>
-    The magician simply stopped trying to lift it alone.
+    The magician stopped trying to lift it alone.
     <span class="who">— The Magician of Mahadata</span>
   </blockquote>
 </div>
@@ -971,7 +973,7 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
     data-reactions-enabled="1"
     data-emit-metadata="0"
     data-input-position="bottom"
-    data-theme="https://www.niluniverse.com/giscus-theme.css"
+    data-theme="https://niluniverse.com/giscus-theme.css"
     data-lang="en"
     crossorigin="anonymous"
     async>
@@ -986,7 +988,7 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
     </span>
     <span>Written between deployments &middot; Amalner, India</span>
   </div>
-  <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:14px;font-family:var(--mono)">Every diagram on this page is live and interactive &mdash; refresh and play with them again.</p>
+  <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:14px;font-family:var(--mono)">Every diagram on this page is live and interactive. Refresh and play with them again.</p>
 </footer>
 
 </div>

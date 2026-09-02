@@ -495,7 +495,7 @@
   <div class="hero-inner">
     <span class="eyebrow">Distributed Systems · Field Notes</span>
     <h1>The Outbox Pattern<br><span class="glow">The Silent Hero</span></h1>
-    <p class="dek">It never trends. It never wins the architecture review on charisma. And it is holding up more production systems than most of the technology people actually brag about.</p>
+    <p class="dek">It never trends. It never wins the architecture review on charisma. And it is holding up more production systems than most of the technology people brag about.</p>
     <p class="byline">.NET · Azure · Kubernetes · Event-Driven Architecture</p>
   </div>
   <div class="scrollcue"><span>scroll</span><span class="line"></span></div>
@@ -505,7 +505,7 @@
 <article>
 
   <div class="section reveal">
-    <p class="lead">Every distributed system has its famous parts. Service meshes get discussed in conference keynotes. Kafka gets detailed architecture diagrams. Kubernetes even has its own job titles. But one component quietly keeps your events from getting lost. It helps an order survive a broker outage and a pod eviction, even on the same difficult day. This component rarely gets any credit. It simply works in the background, without asking for attention.</p>
+    <p class="lead">Every distributed system has its famous parts. Service meshes get discussed in conference keynotes. Kafka gets detailed architecture diagrams. Kubernetes even has its own job titles. But one component keeps your events from getting lost. It helps an order survive a broker outage and a pod eviction, even on the same difficult day. This component rarely gets any credit. It works in the background, and nobody thanks it.</p>
     <p>This component is called the Outbox pattern. It never becomes a trending topic, and it never wins a design review because of its charm. Yet it supports more production systems than most of the technologies that people like to talk about.</p>
   </div>
 
@@ -525,14 +525,14 @@
 }</code></pre>
     </div>
 
-    <p>This code depends on two independent systems, so there are two independent ways it can fail, and there is no shared transaction between them. Suppose step (1) succeeds but step (2) fails — perhaps due to a temporary Service Bus timeout, a network issue, or a pod that gets killed mid-request. In this case, the database says the order exists, but the rest of the system never finds out. There is no invoice, no fulfillment, and no confirmation email. If you reverse the order and publish the message first, you get the opposite problem: an event that announces an order which was never actually saved.</p>
-    <p>You cannot combine a database transaction and a broker publish into one atomic operation. Distributed transactions can technically do this, but they are slow, fragile, and poorly supported across cloud brokers. Almost nobody wants to use them today. This is exactly the problem the Outbox pattern solves — not with any fanfare, but with a simple database table.</p>
+    <p>This code depends on two independent systems, so there are two independent ways it can fail, and there is no shared transaction between them. Suppose step (1) succeeds but step (2) fails — perhaps due to a temporary Service Bus timeout, a network issue, or a pod that gets killed mid-request. In this case, the database says the order exists, but the rest of the system never finds out. There is no invoice, no fulfilment, and no confirmation email. If you reverse the order and publish the message first, you get the opposite problem: an event announcing an order that was never saved.</p>
+    <p>You cannot combine a database transaction and a broker publish into one atomic operation. Distributed transactions can technically do this, but they are slow, fragile, and poorly supported across cloud brokers. Almost nobody wants to use them today. This is exactly the problem the Outbox pattern solves, and it solves it with one database table.</p>
   </div>
 
-  <p class="pull">There are two systems and two failure modes — and a moment where your database quietly begins to <em>lie</em>.</p>
+  <p class="pull">There are two systems and two failure modes — and a moment where your database begins to <em>lie</em>.</p>
 
   <div class="section reveal">
-    <h2><span class="num">02 — THE SOLUTION</span>What the pattern actually does</h2>
+    <h2><span class="num">02 — THE SOLUTION</span>What the pattern does instead</h2>
     <p>Instead of writing to two systems, the Outbox pattern writes to only <strong>one</strong>. The outgoing message is stored in the <em>same database</em> as the business data, inside the <em>same transaction</em>.</p>
 
     <div class="code-wrap">
@@ -640,9 +640,9 @@
 
   <div class="section reveal">
     <h2><span class="num">03 — THE BENEFITS</span>Benefits you only notice when they are missing</h2>
-    <p>The best way to measure this pattern's value is to notice what <em>does not</em> happen once it is in place. The Outbox pattern does not just fix correctness. It also quietly reduces the load on every service it touches, and you notice its absence far more than you notice its presence.</p>
-    <p><strong>First, the request thread stops waiting on the broker.</strong> In the naive version, the request that handles <code>PlaceOrder</code> is blocked until the broker confirms the publish. When the broker has a bad day, your API latency also has a bad day. With the Outbox pattern, the request commits locally and returns immediately; the publish happens separately, in the background. Your P99 latency is no longer dependent on the broker's health, and nobody notices any problem, because nothing actually breaks.</p>
-    <p><strong>Second, broker outages no longer become service outages.</strong> If the broker is unreachable for ninety seconds, a naive service either fails the requests or silently drops the events. A service using the Outbox pattern keeps accepting writes the whole time. Messages simply pile up in the table and get sent once the broker is back online. The outage is absorbed into the same database you were already writing to.</p>
+    <p>The best way to measure this pattern's value is to notice what <em>does not</em> happen once it is in place. The Outbox pattern does not just fix correctness. It also reduces the load on every service it touches, and you notice its absence far more than its presence.</p>
+    <p><strong>First, the request thread stops waiting on the broker.</strong> In the naive version, the request that handles <code>PlaceOrder</code> is blocked until the broker confirms the publish. When the broker has a bad day, your API latency also has a bad day. With the Outbox pattern, the request commits locally and returns immediately; the publish happens separately, in the background. Your P99 latency no longer depends on the broker's health, and nobody notices a problem, because nothing breaks.</p>
+    <p><strong>Second, broker outages no longer become service outages.</strong> If the broker is unreachable for ninety seconds, a naive service either fails the requests or drops the events and reports success. A service using the Outbox pattern keeps accepting writes the whole time. Messages pile up in the table and get sent once the broker is back online. The outage is absorbed into the same database you were already writing to.</p>
 
     <!-- OUTAGE TIMELINE FIGURE -->
     <div class="figure reveal">
@@ -672,7 +672,7 @@
     </div>
 
     <p><strong>Third, retries no longer sit in the main request path.</strong> Temporary publish failures become the relay's problem, and it retries them in the background. The customer has already received their <code>201 Created</code> response. Redelivery is no longer something a user has to wait for.</p>
-    <p><strong>Fourth, you get back-pressure handling for free.</strong> During a traffic spike, the table simply grows larger, and the relay drains it at a steady, sustainable rate. The service absorbs the burst into durable storage, instead of struggling to publish every message synchronously at peak load.</p>
+    <p><strong>Fourth, you get back-pressure handling for free.</strong> During a traffic spike, the table grows, and the relay drains it at a steady, sustainable rate. The service absorbs the burst into durable storage, instead of struggling to publish every message synchronously at peak load.</p>
     <p>Put all of this together, and the service does less work per request. It holds threads for less time, and it depends on fewer systems being healthy <em>at the exact moment a user is waiting</em>. The Outbox pattern carries this weight so the rest of the service does not have to.</p>
   </div>
 
@@ -680,13 +680,13 @@
 
   <div class="section reveal">
     <h2><span class="num">04 — THE ONE RULE</span>The one condition it asks of you</h2>
-    <p>Every reliable pattern comes with some conditions. The Outbox pattern gives you <strong>at-least-once</strong> delivery, not exactly-once delivery. If the relay publishes a message and then crashes before writing <code>ProcessedOn</code>, it will publish that message again after it restarts. This is actually a feature — it is <em>why</em> you never lose events. But it also means <strong>your consumers must be idempotent</strong>. You should deduplicate using a message ID, use upserts where possible, and make the downstream operation naturally repeatable. If you follow this one rule, the pattern will never let you down. If you ignore it, you will end up sending duplicate invoices the first time a relay pod restarts in the middle of a batch.</p>
+    <p>Every reliable pattern comes with some conditions. The Outbox pattern gives you <strong>at-least-once</strong> delivery, not exactly-once delivery. If the relay publishes a message and then crashes before writing <code>ProcessedOn</code>, it will publish that message again after it restarts. That is a feature — it is <em>why</em> you never lose events. But it also means <strong>your consumers must be idempotent</strong>. You should deduplicate using a message ID, use upserts where possible, and make the downstream operation naturally repeatable. If you follow this one rule, the pattern will never let you down. If you ignore it, you will end up sending duplicate invoices the first time a relay pod restarts in the middle of a batch.</p>
   </div>
 
   <div class="section reveal">
     <h2><span class="num">05 — THE PATROL</span>How the relay keeps watch</h2>
     <p><strong>Polling</strong> is very simple, and it works anywhere: you query for unprocessed rows at a regular interval. It adds a small amount of latency and a small amount of steady querying. Add an index on <code>ProcessedOn</code>, and it will scale further than you might expect.</p>
-    <p><strong>Change Data Capture (CDC)</strong> reads the database transaction log directly, instead of polling. On Azure, a common setup uses <a href="https://debezium.io/" target="_blank" rel="noopener">Debezium</a> to read a SQL Server or PostgreSQL CDC feed into Event Hubs or Kafka. This approach gives lower latency and removes the polling load, but it also means more infrastructure to run. Use this approach only when your event volume is high enough that polling latency actually shows up in your metrics — not before.</p>
+    <p><strong>Change Data Capture (CDC)</strong> reads the database transaction log directly, instead of polling. On Azure, a common setup uses <a href="https://debezium.io/" target="_blank" rel="noopener">Debezium</a> to read a SQL Server or PostgreSQL CDC feed into Event Hubs or Kafka. This approach gives lower latency and removes the polling load, but it also means more infrastructure to run. Use this approach only when your event volume is high enough that polling latency shows up in your metrics — not before.</p>
   </div>
 
   <div class="section reveal">
@@ -708,7 +708,7 @@
 
   <div class="section reveal">
     <h2>The key takeaway</h2>
-    <p>The Outbox pattern will never be the reason someone praises your architecture in a design review. It has no dashboard worth showing off, and no logo worth framing. It simply replaces a hard, unsolved distributed-transaction problem with a simple, well-understood single-database one. Then it works quietly in the background, letting your services respond quickly, survive broker outages, and absorb traffic spikes into durable storage instead of into your users' latency.</p>
+    <p>The Outbox pattern will never be the reason someone praises your architecture in a design review. It has no dashboard worth showing off, and no logo worth framing. It replaces a hard, unsolved distributed-transaction problem with a well-understood single-database one. Then it runs in the background, letting your services respond quickly, survive broker outages, and absorb traffic spikes into durable storage instead of into your users' latency.</p>
     <p>That is the whole idea behind this pattern: doing the difficult, load-bearing work so reliably that everyone eventually forgets it is even there.</p>
   </div>
 
@@ -817,7 +817,7 @@
     data-reactions-enabled="1"
     data-emit-metadata="0"
     data-input-position="bottom"
-    data-theme="https://www.niluniverse.com/giscus-theme.css"
+    data-theme="https://niluniverse.com/giscus-theme.css"
     data-lang="en"
     crossorigin="anonymous"
     async>

@@ -33,7 +33,7 @@
     --serif: 'Fraunces', Georgia, serif;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behaviour: smooth; }
   body {
     background: var(--bg); color: var(--text);
     font-family: var(--sans); font-size: 16px; line-height: 1.7;
@@ -121,7 +121,7 @@
     --maxw:750px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
+  html{scroll-behaviour:smooth}
   body{
     background:var(--stage);
     color:var(--cream);
@@ -477,22 +477,22 @@
 <article>
 
   <div class="section reveal">
-    <p class="lead">Congratulations. You have just cast the most talented performer in showbiz. This actor can perform Shakespeare, explain tax law, write Python, and do a surprisingly good pirate accent — sometimes all in the same sentence, which is exactly the problem. The role you have cast them in is <strong>"Enterprise Backend Service, a drama in JSON,"</strong> and the audience — your users, your auditors, and your on-call engineer — expects the <em>same performance every single night</em>.</p>
+    <p class="lead">Congratulations. You have just cast the most talented performer in showbiz. This actor can perform Shakespeare, explain tax law, write Python, and do a surprisingly good pirate accent — sometimes all in the same sentence. That is exactly the problem. The role you have cast them in is <strong>"Enterprise Backend Service, a drama in JSON,"</strong> and the audience (your users, your auditors, your on-call engineer) expects the <em>same performance every single night</em>.</p>
     <p>If you ask a normal function "what is 2+2" a thousand times, you get "4" a thousand times. If you ask your new star the same question, you might get "4", "Four!", "Great question — the answer is 4 🎉", and once, memorably, a haiku about arithmetic. The talent is real. The consistency is still a work in progress.</p>
-    <p>This is the basic comedy of building software on top of LLMs: <strong>we are casting improvisers in roles that were written for machines.</strong> The real answer — and the entire discipline of AI engineering — is that you do not fix this by asking the actor to behave better. You fix it by building a <em>theater</em> around them.</p>
+    <p>This is the basic comedy of building software on top of LLMs: <strong>we are casting improvisers in roles that were written for machines.</strong> The real answer — and the entire discipline of AI engineering with it — is that you do not fix this by asking the actor to behave better. You fix it by building a <em>theatre</em> around them.</p>
   </div>
 
   <div class="section reveal">
     <h2><span class="act">ACT I — MEET THE TALENT</span>Why the actor never gives the same performance twice</h2>
     <p>An LLM does not "look up" an answer. Instead, it rolls weighted dice to choose the next word, again and again, at very high speed. If you turn the <code>temperature</code> setting up, the dice become looser and more random. If you turn it down to <code>0</code>, you get what is called greedy decoding, which is mostly repeatable, but is still not a strict guarantee. Floating-point rounding, batching effects, and model updates on the provider's side mean that even your most predictable output can shift slightly between runs.</p>
-    <p>So let us set aside one idea early on: <strong>you will not make the actor deterministic.</strong> Improvisation is not a flaw in this performer — it is the source of the talent. Determinism has to come from the system that surrounds the actor, not from the actor itself. This is the core idea of this article:</p>
+    <p>So let us set aside one idea early on: <strong>you will not make the actor deterministic.</strong> Improvisation is not a flaw in this performer. It is where the talent comes from. Determinism has to come from the system that surrounds the actor, not from the actor itself. This is the core idea of this article:</p>
   </div>
 
   <p class="pull">Don't make the <span class="gold">model</span> deterministic.<br>Make the <span class="gold">show</span> deterministic.</p>
 
   <div class="section reveal">
     <h2><span class="act">ACT II — HAND THEM A SCRIPT</span>Structured outputs: freedom inside a fixed format</h2>
-    <p>The first crew member you hire is the <strong>scriptwriter</strong>. Instead of asking the actor open-ended questions, such as "tell me about this invoice, in your own words," you hand them a script with fixed blanks to fill in. In practice, this means: <em>your output is a JSON object, these are the fields, these are the types — you may improvise the content, but never the shape.</em></p>
+    <p>The first crew member you hire is the <strong>scriptwriter</strong>. Instead of asking the actor open-ended questions, such as "tell me about this invoice, in your own words," you hand them a script with fixed blanks to fill in. In practice, this means: <em>your output is a JSON object, these are the fields, these are the types. You may improvise the content, but never the shape.</em></p>
     <p>Every serious model API now supports this approach, through JSON schemas, structured outputs, and function or tool calling. It is the difference between an open-ended description of the customer's mood, and a clear, structured response like this:</p>
 
     <div class="code-wrap">
@@ -505,17 +505,17 @@
 }</code></pre>
     </div>
 
-    <p>Notice what happened here: the actor is still <em>acting</em> — using judgment and nuance to read between the lines of an angry customer email. But the output now arrives in a fixed format that your downstream code can check in a single line. Many complaints about "AI being unreliable" are really about asking for a vague, open-ended answer and then receiving one.</p>
+    <p>Notice what happened here: the actor is still <em>acting</em>, using judgment and nuance to read between the lines of an angry customer email. But the output now arrives in a fixed format that your downstream code can check in a single line. Many complaints about "AI being unreliable" come down to asking for a vague, open-ended answer and then receiving one.</p>
   </div>
 
   <div class="section reveal">
     <h2><span class="act">ACT III — THE SCRIPT SUPERVISOR</span>Validate, retry, and never fully trust a live performance</h2>
     <p>The next hire is the <strong>script supervisor</strong> — the person standing at the side of the stage with a clipboard, checking every line against the script. When the actor improvises something unplanned, the supervisor stops the take and says, "again, from the top, and this time <em>the date field must be a proper date</em>."</p>
-    <p>In code, this becomes a validation gate combined with a limited retry loop. First, parse the output against the schema. Then check the business rules that the schema alone cannot express — for example, that the refund amount is not greater than the order total, or that the date is not something like the year 1847. If the check fails, retry the request <em>with the error fed back</em> to the model, since it is genuinely good at using that feedback. After a fixed number of attempts, fall back to a safe, deterministic path: a default value, a queue, or a human reviewer.</p>
+    <p>In code, this becomes a validation gate combined with a limited retry loop. First, parse the output against the schema. Then check the business rules that the schema alone cannot express: that the refund amount is not greater than the order total, or that the date is not something like the year 1847. If the check fails, retry the request <em>with the error fed back</em> to the model, since it is genuinely good at using that feedback. After a fixed number of attempts, fall back to a safe, deterministic path: a default value, a queue, or a human reviewer.</p>
 
     <div class="code-wrap">
       <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">ScriptSupervisor.cs — bounded takes, then fallback (.NET)</span></div>
-<pre><code><span class="t-key">public async</span> <span class="t-type">Task</span>&lt;<span class="t-type">RefundDecision</span>&gt; <span class="t-fn">GetDecisionAsync</span>(<span class="t-type">string</span> email)
+<pre><code><span class="t-key">public async</span> <span class="t-type">Task</span>&lt;<span class="t-type">RefundDecision</span>&gt; <span class="t-fn">GetDecisionAsync</span>(<span class="t-type">string</span> email, <span class="t-type">Order</span> order)
 {
     <span class="t-key">for</span> (<span class="t-key">var</span> take = <span class="t-num">1</span>; take &lt;= <span class="t-num">3</span>; take++)          <span class="t-com">// max three takes</span>
     {
@@ -537,7 +537,7 @@
 }</code></pre>
     </div>
 
-    <p>There is an important shift hiding inside that simple loop: <strong>the system's overall behavior is now deterministic, even though the model's behavior is not.</strong> Every possible outcome — a valid decision, a corrected decision, or an escalation — was written by <em>you</em>, in advance, in ordinary code. The actor may surprise you, but the show itself cannot.</p>
+    <p>There is an important shift hiding inside that simple loop: <strong>the system's overall behaviour is now deterministic, even though the model's behaviour is not.</strong> Every possible outcome (a valid decision, a corrected decision, an escalation) was written by <em>you</em>, in advance, in ordinary code. The actor may surprise you, but the show itself cannot.</p>
   </div>
 
   <!-- ============ SIGNATURE INTERACTIVE DEMO ============ -->
@@ -560,8 +560,8 @@
 
   <div class="section reveal">
     <h2><span class="act">ACT IV — THE STAGE MANAGER</span>The deterministic sandwich</h2>
-    <p>Now for the most important hire of all: the <strong>stage manager</strong>, the person who actually runs the show. The curtain rises at 8. Scene 2 always follows Scene 1. Props are set in advance. No matter how talented someone is, nobody decides in the middle of a performance to jump ahead to Act III.</p>
-    <p>In architectural terms: <strong>the LLM should be a small, clearly defined box inside a much larger deterministic system.</strong> Ordinary code decides <em>when</em> the model is called, <em>what</em> it is allowed to see, <em>which tools</em> it may use, and <em>what happens</em> with every possible shape of its answer. The overall workflow is a state machine that you wrote; the model simply fills in one creative slot at each state. This is what we call the "deterministic sandwich": plain code on top, plain code on the bottom, and improvisation only in the middle.</p>
+    <p>Now for the most important hire of all: the <strong>stage manager</strong>, the person who runs the show. The curtain rises at 8. Scene 2 always follows Scene 1. Props are set in advance. No matter how talented someone is, nobody decides in the middle of a performance to jump ahead to Act III.</p>
+    <p>In architectural terms: <strong>the LLM should be a small, clearly defined box inside a much larger deterministic system.</strong> Ordinary code decides <em>when</em> the model is called, <em>what</em> it is allowed to see, <em>which tools</em> it may use, and <em>what happens</em> with every possible shape of its answer. The overall workflow is a state machine that you wrote; the model fills in one creative slot at each state. This is what we call the "deterministic sandwich": plain code on top, plain code on the bottom, and improvisation only in the middle.</p>
 
     <div class="figure reveal">
       <svg viewBox="0 0 640 250" role="img" aria-label="Deterministic sandwich: deterministic code surrounds a small non-deterministic model box, followed by a validator and typed outcomes">
@@ -598,31 +598,31 @@
     </div>
 
     <ul class="notes">
-      <li><strong>Version your prompts the same way you version code.</strong> A prompt stored in a database field and edited casually is like an actor rewriting the script backstage without telling anyone. Instead, keep prompts in your code repository, review them through pull requests, and ship them with each release — so any change in behavior can always be traced back to a specific change.</li>
-      <li><strong>Cache your results aggressively.</strong> If the input, the prompt version, and the model version are all the same, simply serve the previously recorded result. Using idempotency keys on AI operations means a retry replays the same result, instead of generating a brand-new one.</li>
+      <li><strong>Version your prompts the same way you version code.</strong> A prompt stored in a database field and edited casually is like an actor rewriting the script backstage without telling anyone. Instead, keep prompts in your code repository, review them through pull requests, and ship them with each release, so any change in behaviour can be traced back to a specific change.</li>
+      <li><strong>Cache your results aggressively.</strong> If the input, the prompt version, and the model version are all the same, serve the previously recorded result. Using idempotency keys on AI operations means a retry replays the same result, instead of generating a brand-new one.</li>
       <li><strong>Pin your model versions.</strong> Using "latest" means the provider can effectively replace your lead actor overnight, without warning. Instead, pin the exact model version, upgrade only when you decide to, and re-run your evaluations (covered in the next section) before you go live with the new version.</li>
-      <li><strong>Give the model tools, not blind trust.</strong> Function calling with an allowlist is like giving an actor a prop with a fixed, safe handle: the actor may <em>request</em> an action such as "look up order status," but your deterministic code is what actually executes it, checks permissions, and decides what information comes back.</li>
+      <li><strong>Give the model tools, not blind trust.</strong> Function calling with an allowlist is like giving an actor a prop with a fixed, safe handle: the actor may <em>request</em> an action such as "look up order status," but your deterministic code is what executes it, checks permissions, and decides what information comes back.</li>
     </ul>
   </div>
 
   <div class="section reveal">
     <h2><span class="act">ACT V — DRESS REHEARSALS, FOREVER</span>Evals: how you know the show still works</h2>
-    <p>The final hire, and the one that most teams skip until a bad review forces their hand, is the <strong>rehearsal director</strong>. Traditional software tests ask a narrow question, like "does this function return 4?" — which is not very useful for an actor who might correctly say "Four!" instead. Evaluations, or evals, ask a more realistic question: <em>across 500 representative scenarios, how often is the performance acceptable, and did this week's change make it better or worse?</em></p>
+    <p>The final hire, and the one that most teams skip until a bad review forces their hand, is the <strong>rehearsal director</strong>. Traditional software tests ask a narrow question, like "does this function return 4?", which is not very useful for an actor who might correctly say "Four!" instead. Evaluations, or evals, ask a more realistic question: <em>across 500 representative scenarios, how often is the performance acceptable, and did this week's change make it better or worse?</em></p>
     <ul class="notes">
-      <li><strong>Build a golden dataset</strong> made of real inputs with known, correct outcomes. This should be your standard set of test scenarios, including unusual ones, such as an angry email written in three languages, or a refund request for an item that was never actually ordered.</li>
+      <li><strong>Build a golden dataset</strong> made of real inputs with known, correct outcomes. This should be your standard set of test scenarios, including unusual ones, such as an angry email written in three languages, or a refund request for an item that was never ordered.</li>
       <li><strong>Score results with plain code wherever possible</strong> — for example, checking schema validity, exact field values, or business-rule compliance. Where necessary, use a separate judge model for things like tone or faithfulness, but always have that judge grade against a clearly written rubric, not a vague impression.</li>
       <li><strong>Gate every deployment on eval scores.</strong> A new prompt, a new model version, or a new temperature setting should never reach production without passing your evaluation numbers first. A prompt change that "reads better" but drops refund accuracy from 97% to 89% is a problem you want to catch during evaluation, not after it reaches your users.</li>
-      <li><strong>Keep evaluating even after you go live.</strong> Sample real, live traffic and feed it back into your evaluation pipeline. Drift is a real problem: your users change, the inputs change, and a system that performed well yesterday can quietly perform worse today without anyone noticing right away.</li>
+      <li><strong>Keep evaluating even after you go live.</strong> Sample real, live traffic and feed it back into your evaluation pipeline. Drift is a real problem: your users change, the inputs change, and a system that performed well yesterday can perform worse today for weeks before anyone notices.</li>
     </ul>
-    <p>Evaluations are the answer to the question every stakeholder eventually asks, often with some suspicion: <em>"but how do you actually KNOW it works?"</em> The honest answer should never be "we tried it a few times and it seemed fine." It should be a specific number, shown on a chart, for every release.</p>
+    <p>Evaluations are the answer to the question every stakeholder eventually asks, often with some suspicion: <em>"but how do you KNOW it works?"</em> The honest answer should never be "we tried it a few times and it seemed fine." It should be a specific number, shown on a chart, for every release.</p>
   </div>
 
   <div class="divider"><span>★ CURTAIN ★</span></div>
 
   <div class="section reveal">
     <h2>Curtain call</h2>
-    <p>So no, you never actually made the actor deterministic. Nobody ever has. What you built instead is a <strong>theater</strong> around them: a script that fixes the output shape through schemas, a supervisor that checks every take through validation and limited retries, a stage manager that runs the show through deterministic orchestration, versioned prompts, pinned models, cached results, and allowlisted tools, and a rehearsal director who proves — with real numbers — that tonight's performance is at least as good as last night's, through evaluations.</p>
-    <p>Inside that theater, the improviser is not a liability — it is the star of the show. The talent stays, while the unpredictability is kept safely behind a stage door it cannot wander out of. That is the whole craft of AI engineering, in one sentence:</p>
+    <p>So no, you never made the actor deterministic. Nobody ever has. What you built instead is a <strong>theatre</strong> around them: a script that fixes the output shape through schemas, a supervisor that checks every take through validation and limited retries, a stage manager that runs the show through deterministic orchestration, versioned prompts, pinned models, cached results, and allowlisted tools, and a rehearsal director who proves, with real numbers, that tonight's performance is at least as good as last night's, through evaluations.</p>
+    <p>Inside that theatre, the improviser is the star of the show. The talent stays, and the unpredictability stays behind a stage door it cannot wander out of. That is the whole craft of AI engineering, in one sentence:</p>
     <p><strong>Let the model improvise the lines. Never let it improvise the show.</strong> 🎭</p>
   </div>
 
@@ -745,7 +745,7 @@
     data-reactions-enabled="1"
     data-emit-metadata="0"
     data-input-position="bottom"
-    data-theme="https://www.niluniverse.com/giscus-theme.css"
+    data-theme="https://niluniverse.com/giscus-theme.css"
     data-lang="en"
     crossorigin="anonymous"
     async>

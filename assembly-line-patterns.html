@@ -9,7 +9,7 @@
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://niluniverse.com/assembly-line-patterns.html">
 <meta property="og:title" content="Design Patterns on the Assembly Line" />
-<meta property="og:description" content="Creational, structural and behavioral patterns explained through one car — with interactive diagrams and C#." />
+<meta property="og:description" content="Creational, structural and behavioural patterns explained through one car — with interactive diagrams and C#." />
 <meta property="og:url" content="https://niluniverse.com/assembly-line-patterns.html" />
 <meta property="og:type" content="article" />
 <meta property="og:image" content="https://niluniverse.com/assembly-line-patterns-banner.jpg" />
@@ -17,7 +17,7 @@
 <meta property="og:image:height" content="788" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Design Patterns on the Assembly Line" />
-<meta name="twitter:description" content="Creational, structural and behavioral patterns explained through one car — with interactive diagrams and C#." />
+<meta name="twitter:description" content="Creational, structural and behavioural patterns explained through one car — with interactive diagrams and C#." />
 <meta name="twitter:image" content="https://niluniverse.com/assembly-line-patterns-banner.jpg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -106,7 +106,7 @@
     --signal-deep:#B8811A;
     --fam-c:#E8783C;         /* creational — line orange */
     --fam-s:#4FBFD4;         /* structural — diagnostic cyan */
-    --fam-b:#9A8CF0;         /* behavioral — dash violet */
+    --fam-b:#9A8CF0;         /* behavioural — dash violet */
     --good:#5FBF8E;
     --bad:#E0604A;
     --maxw:760px;
@@ -518,7 +518,7 @@
   "@context": "https://schema.org",
   "@type": "BlogPosting",
   "headline": "Design Patterns on the Assembly Line: Nine Patterns, One Car",
-  "description": "Creational, structural and behavioral patterns explained through one car — with interactive diagrams and C#.",
+  "description": "Creational, structural and behavioural patterns explained through one car — with interactive diagrams and C#.",
   "image": "https://niluniverse.com/assembly-line-patterns-banner.jpg",
   "url": "https://niluniverse.com/assembly-line-patterns.html",
   "mainEntityOfPage": {
@@ -538,7 +538,7 @@
       "url": "https://niluniverse.com/favicon-180.png"
     }
   },
-  "keywords": "design patterns, gang of four, creational structural behavioral, C#, .NET, object-oriented design"
+  "keywords": "design patterns, gang of four, creational structural behavioural, C#, .NET, object-oriented design"
 }
 </script>
 </head>
@@ -581,7 +581,7 @@
     <span class="eyebrow">Object-Oriented Design &middot; Factory Floor</span>
     <h1>Design Patterns<br>on the Assembly Line<em>nine patterns, one production line</em></h1>
     <p class="dek">Twenty-three names in a catalogue is a memory problem. One car you can walk around is something else. Nine patterns, six interactive diagrams, and C# you can read in a sitting.</p>
-    <p class="byline"><span class="hot">13 min read</span><span>C# &middot; .NET</span><span>Creational &middot; Structural &middot; Behavioral</span></p>
+    <p class="byline"><span class="hot">13 min read</span><span>C# &middot; .NET</span><span>Creational &middot; Structural &middot; Behavioural</span></p>
   </div>
 </header>
 
@@ -593,9 +593,9 @@
 
     <p>The catalogue was never the difficult part. The difficult part is knowing which shelf to reach for, and that is a question about <strong>what changes in your system</strong> rather than what the pattern is called. So put the catalogue down and walk the line instead.</p>
 
-    <p>A car has three stories running through it. How it gets built: which plant supplies which part, what order the stations run in, which components one vehicle is only ever allowed one of. How the parts fit together: the loom adapter behind an imported head unit, the four safety modules between your foot and the calliper. And what happens once somebody drives it off the lot: the fob that wakes four systems at once, the selector that changes what every other control does.</p>
+    <p>A car has three stories running through it. How it gets built: which plant supplies which part, what order the stations run in, which components one vehicle is only ever allowed one of. How the parts fit together: the dongle that lets a wireless phone talk to a USB-only head unit, the four safety modules between your foot and the calliper. And what happens once somebody drives it out of the showroom: the fob that wakes four systems at once, the selector that changes what every other control does.</p>
 
-    <p>Those are the three families. <strong>Creational</strong> patterns build the car, <strong>structural</strong> patterns fit it together, <strong>behavioral</strong> patterns decide how it behaves on the road. Every pin below is a pattern, coloured by family. Click one.</p>
+    <p>Those are the three families. <strong>Creational</strong> patterns build the car, <strong>structural</strong> patterns fit it together, <strong>behavioural</strong> patterns decide how it behaves on the road. Every pin below is a pattern, coloured by family. Click one.</p>
   </div>
 
   <div class="figure wide reveal">
@@ -657,7 +657,7 @@
     <div class="map-legend">
       <span><i style="background:#E8783C"></i>CREATIONAL</span>
       <span><i style="background:#4FBFD4"></i>STRUCTURAL</span>
-      <span><i style="background:#9A8CF0"></i>BEHAVIORAL</span>
+      <span><i style="background:#9A8CF0"></i>BEHAVIOURAL</span>
     </div>
     <div class="map-card" id="mapCard">
       <div class="mc-fam" style="color:var(--fog)">SELECT A PIN</div>
@@ -669,7 +669,7 @@
   <h2 class="reveal"><span class="num">01 &mdash; CREATIONAL</span>How the car gets built</h2>
 
   <div class="section reveal">
-    <p>Creational patterns all manage the same moment: <code>new</code>. Every <code>new Thing()</code> freezes a decision at that spot &mdash; the caller has named a concrete class and is now bound to its constructor, its lifetime, and the fact that it is that one and not another. The binding stays invisible until the day you need a second variant. A car has that moment a few thousand times over.</p>
+    <p>Creational patterns all manage the same moment: <code>new</code>. Every <code>new Thing()</code> freezes a decision at that spot &mdash; the caller has named a concrete class and is now bound to its constructor, its lifetime, and to its identity &mdash; that class and no other. The binding stays invisible until the day you need a second variant. A car has that moment a few thousand times over.</p>
 
     <h3 class="fam-c"><span class="tag">01</span>Factory Method &mdash; the seat plant</h3>
     <p class="scene">Nobody on the trim line phones a supplier when a shell needs a seat. The station asks for "a seat for this body," and the plant decides: a cloth bench for the base car, heated leather for the top trim, a fixed-back bucket on the track edition. The line takes the seat and bolts it down.</p>
@@ -764,29 +764,35 @@
   <h2 class="reveal"><span class="num">02 &mdash; STRUCTURAL</span>How the parts fit together</h2>
 
   <div class="section reveal">
-    <p>Once the shell is on its wheels, the problems change shape. Nothing needs building any more; things need <em>connecting</em>. A head unit to a loom it was never cut for. Four safety modules between a pedal and a calliper. Six systems onto one button. You have parts that work, and you need the assembled result to present an interface somebody can live with.</p>
+    <p>Once the shell is on its wheels, the problems change shape. Nothing needs building any more; things need <em>connecting</em>. A wireless phone to a head unit that only understands a cable. Four safety modules between a pedal and a calliper. Six systems onto one button. You have parts that work, and you need the assembled result to present an interface somebody can live with.</p>
 
-    <h3 class="fam-s"><span class="tag">04</span>Adapter &mdash; the loom that does not fit</h3>
-    <p class="scene">You buy a double-DIN head unit built for the Japanese market. Its plug has twenty pins in the wrong order and it expects an ignition-sense wire your car does not run. You do not rewire the car and you do not send the unit back. You buy a loom adapter that speaks both.</p>
+    <h3 class="fam-s"><span class="tag">04</span>Adapter &mdash; the dongle in the USB port</h3>
+    <p class="scene">Your phone gave up on cables two upgrades ago: it pairs over Bluetooth and streams CarPlay across its own Wi-Fi. The car has no idea. Its head unit was built in 2019 and speaks one dialect &mdash; a phone on the end of a USB cable. You are not replacing the car and you are not replacing the phone. You buy a dongle the size of a matchbox, push it into the USB port, and it pretends to be the cable.</p>
 
-    <p>An adapter exists because you own one side of the conversation and not the other. The vendor SDK is not yours to change, nor the partner's SOAP endpoint, nor the internal service three teams depend on.</p>
+    <p>An adapter exists because you own one side of the conversation and not the other. The vendor SDK is not yours to change, nor the partner's SOAP endpoint, nor the internal service three teams depend on. So you write the piece in the middle: wireless on one face, wired on the other, and both ends carry on believing they got what they asked for.</p>
 
     <div class="code-wrap">
-      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">LoomAdapter.cs &mdash; two pinouts, one harness</span></div>
-<pre><code><span class="t-key">public interface</span> <span class="t-type">IHeadUnit</span> { <span class="t-key">void</span> <span class="t-fn">Connect</span>(<span class="t-type">Harness</span> harness); }   <span class="t-com">// what the loom offers</span>
-
-<span class="t-key">public sealed class</span> <span class="t-type">ImportedStereo</span>            <span class="t-com">// vendor firmware — not yours to edit</span>
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">WirelessDongle.cs &mdash; wired on one side, wireless on the other</span></div>
+<pre><code><span class="t-key">public interface</span> <span class="t-type">IWiredPhone</span>                 <span class="t-com">// all the head unit knows how to talk to</span>
 {
-    <span class="t-key">public void</span> <span class="t-fn">AttachJdmLoom</span>(<span class="t-type">int</span> accessoryPin, <span class="t-type">int</span> illuminationPin) { }
+    <span class="t-type">Task</span>&lt;<span class="t-type">PhoneSession</span>&gt; <span class="t-fn">ConnectAsync</span>(<span class="t-type">UsbPort</span> port);
 }
 
-<span class="t-key">public sealed class</span> <span class="t-type">LoomAdapter</span> : <span class="t-type">IHeadUnit</span>
+<span class="t-key">public sealed class</span> <span class="t-type">WirelessPhone</span>              <span class="t-com">// the phone in your pocket — not yours to change</span>
 {
-    <span class="t-key">private readonly</span> <span class="t-type">ImportedStereo</span> _stereo;
-    <span class="t-key">public</span> <span class="t-fn">LoomAdapter</span>(<span class="t-type">ImportedStereo</span> stereo) =&gt; _stereo = stereo;
+    <span class="t-key">public</span> <span class="t-type">Task</span>&lt;<span class="t-type">WifiLink</span>&gt; <span class="t-fn">PairAsync</span>(<span class="t-type">BluetoothId</span> id) =&gt; <span class="t-type">WifiLink</span>.<span class="t-fn">NegotiateAsync</span>(id);
+}
 
-    <span class="t-key">public void</span> <span class="t-fn">Connect</span>(<span class="t-type">Harness</span> harness)
-        =&gt; _stereo.<span class="t-fn">AttachJdmLoom</span>(harness.Accessory, harness.Illumination);
+<span class="t-key">public sealed class</span> <span class="t-type">WirelessDongle</span> : <span class="t-type">IWiredPhone</span>
+{
+    <span class="t-key">private readonly</span> <span class="t-type">WirelessPhone</span> _phone;
+    <span class="t-key">public</span> <span class="t-fn">WirelessDongle</span>(<span class="t-type">WirelessPhone</span> phone) =&gt; _phone = phone;
+
+    <span class="t-key">public async</span> <span class="t-type">Task</span>&lt;<span class="t-type">PhoneSession</span>&gt; <span class="t-fn">ConnectAsync</span>(<span class="t-type">UsbPort</span> port)
+    {
+        <span class="t-key">var</span> link = <span class="t-key">await</span> _phone.<span class="t-fn">PairAsync</span>(port.LastPairedDevice);  <span class="t-com">// wireless on one side</span>
+        <span class="t-key">return</span> <span class="t-type">PhoneSession</span>.<span class="t-fn">OverUsb</span>(port, link.Stream);            <span class="t-com">// wired on the other</span>
+    }
 }</code></pre>
     </div>
 
@@ -860,7 +866,7 @@
   </div>
 
   <p class="pull reveal">Adapter changes the shape. Decorator adds to the behaviour. Facade shortens the sentence. All three leave the original part <em>exactly</em> as it was.</p>
-  <h2 class="reveal"><span class="num">03 &mdash; BEHAVIORAL</span>How it acts once it leaves the gate</h2>
+  <h2 class="reveal"><span class="num">03 &mdash; BEHAVIOURAL</span>How it acts once it leaves the gate</h2>
 
   <div class="section reveal">
     <p>The last family is about what happens between objects while the program runs: who tells whom, who decides, and what changes when the situation changes. A car on a transporter has no behaviour. Hand somebody the key and a button twenty metres away needs to reach four systems, and one lever needs to change what every other control means.</p>
@@ -890,6 +896,7 @@
 
 fob.Unlocked += (_, e) =&gt; _doors.<span class="t-fn">Unlatch</span>();
 fob.Unlocked += (_, e) =&gt; _mirrors.<span class="t-fn">Unfold</span>();
+fob.Unlocked += (_, e) =&gt; _lights.<span class="t-fn">Welcome</span>(seconds: <span class="t-num">30</span>);
 fob.Unlocked += <span class="t-key">async</span> (_, e) =&gt; <span class="t-key">await</span> _seats.<span class="t-fn">RecallAsync</span>(e.Profile);</code></pre>
     </div>
 
@@ -984,7 +991,7 @@ accelerator.<span class="t-fn">SwitchTo</span>(surface.IsSlippery ? _snow
         <button class="btn on" data-f="all" type="button">All nine</button>
         <button class="btn c" data-f="c" type="button">Creational</button>
         <button class="btn s" data-f="s" type="button">Structural</button>
-        <button class="btn b" data-f="b" type="button">Behavioral</button>
+        <button class="btn b" data-f="b" type="button">Behavioural</button>
       </div>
       <table class="chooser">
         <thead><tr><th>What you catch yourself saying</th><th>Shelf</th></tr></thead>
@@ -1045,12 +1052,12 @@ accelerator.<span class="t-fn">SwitchTo</span>(surface.IsSlippery ? _snow
   }
 
   /* ---------- figure 01 : the build sheet ---------- */
-  var FAM = { c: ['CREATIONAL', '#E8783C'], s: ['STRUCTURAL', '#4FBFD4'], b: ['BEHAVIORAL', '#9A8CF0'] };
+  var FAM = { c: ['CREATIONAL', '#E8783C'], s: ['STRUCTURAL', '#4FBFD4'], b: ['BEHAVIOURAL', '#9A8CF0'] };
   var PINS = {
     factory:   ['c', 'Factory Method', 'The seat plant decides cloth, leather or a six-point bucket. The trim line asks for a seat and bolts it down without naming any of them.'],
     builder:   ['c', 'Builder', 'One line, five stations, in the same order every time — and a hatchback comes off it on Monday, a panel van on Tuesday.'],
     singleton: ['c', 'Singleton', 'One engine control unit. A second board would mean two things disagreeing about how much fuel reaches the injectors.'],
-    adapter:   ['s', 'Adapter', 'Twenty pins in the wrong order. A loom adapter speaks both pinouts, so neither the car nor the head unit has to change.'],
+    adapter:   ['s', 'Adapter', 'A phone that only talks wireless, a head unit that only talks USB. A dongle in the port speaks both, so neither side has to change.'],
     decorator: ['s', 'Decorator', 'EBD, ABS, traction control and emergency braking stacked between your foot and the calliper. Each wraps the last and still stops the car.'],
     facade:    ['s', 'Facade', 'One button that wakes six systems in the order that keeps the starter from cranking against a locked immobiliser.'],
     observer:  ['b', 'Observer', 'One press of the fob, four systems reacting, and the button never learns who is listening.'],
@@ -1325,7 +1332,7 @@ accelerator.<span class="t-fn">SwitchTo</span>(surface.IsSlippery ? _snow
     data-reactions-enabled="1"
     data-emit-metadata="0"
     data-input-position="bottom"
-    data-theme="https://www.niluniverse.com/giscus-theme.css"
+    data-theme="https://niluniverse.com/giscus-theme.css"
     data-lang="en"
     crossorigin="anonymous"
     async>
