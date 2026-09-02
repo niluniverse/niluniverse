@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cinema">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Patterns on the Assembly Line: Nine Patterns, One Car | Nilesh Mohite</title>
+<meta name="description" content="Nine design patterns explained through one car — how it gets built, how the parts fit together, and how it behaves on the road. Six interactive diagrams and C# you can read in a sitting.">
+<meta name="author" content="Nilesh Mohite">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://niluniverse.com/assembly-line-patterns.html">
+<meta property="og:title" content="Design Patterns on the Assembly Line" />
+<meta property="og:description" content="Creational, structural and behavioral patterns explained through one car — with interactive diagrams and C#." />
+<meta property="og:url" content="https://niluniverse.com/assembly-line-patterns.html" />
+<meta property="og:type" content="article" />
+<meta property="og:image" content="https://niluniverse.com/assembly-line-patterns-banner.jpg" />
+<meta property="og:image:width" content="1400" />
+<meta property="og:image:height" content="788" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Design Patterns on the Assembly Line" />
+<meta name="twitter:description" content="Creational, structural and behavioral patterns explained through one car — with interactive diagrams and C#." />
+<meta name="twitter:image" content="https://niluniverse.com/assembly-line-patterns-banner.jpg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon-180.png" />
+<style>
+  /* ============ BASE (restored — assets/site.css is not present on this deployment) ============ */
+  :root {
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+    --serif: 'Fraunces', Georgia, serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 16px; line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1, "liga" 1;
+    transition: background .25s, color .25s;
+  }
+  ::selection { background: var(--accent); color: var(--on-accent); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-hi); }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-hi); outline-offset: 3px; border-radius: 2px;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---- header / nav ---- */
+  header.site {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav { display: flex; align-items: center; justify-content: space-between; height: 62px; gap: 16px; }
+  .brand {
+    font-family: var(--mono); font-size: 14.5px; font-weight: 500; color: var(--head);
+    letter-spacing: 0.02em; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 9px; text-decoration: none;
+  }
+  .brand:hover { color: var(--head); }
+  .brand-mark { width: 26px; height: 26px; flex: none; }
+  .brand .b-nil { color: var(--accent); }
+
+  /* ---- comments (giscus) ---- */
+  .comments-section { padding: 44px 0 8px; border-top: 1px solid var(--line); margin-top: 8px; }
+  .comments-heading {
+    font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 1.35rem;
+    color: var(--head); margin: 0 0 22px; text-align: center;
+  }
+
+  /* ---- footer ---- */
+  footer { border-top: 1px solid var(--line); padding: 26px 0 34px; }
+  .foot-inner {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+    font-family: var(--mono); font-size: 12px; color: var(--dim);
+  }
+  .foot-social { display: inline-flex; align-items: center; gap: 8px; }
+  .foot-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 50%; flex: none;
+    border: 1px solid var(--line); color: var(--dim); text-decoration: none;
+    transition: color .18s, border-color .18s, background .18s, transform .18s;
+  }
+  .foot-icon:hover { color: var(--accent); border-color: var(--accent); background: var(--panel-2); transform: translateY(-1px); }
+  .foot-icon svg { width: 14px; height: 14px; }
+</style>
+<style>
+  /* ==== palette: factory floor — graphite, safety amber, three line colours ==== */
+  :root{
+    --ink:#0D0F13;
+    --ink-2:#14181F;
+    --steel:#1B212B;
+    --steel-2:#232A36;
+    --edge:#2F3745;
+    --fog:#8B95A6;
+    --paper:#E9EEF6;
+    --paper-dim:#B4BDCC;
+    --signal:#F0B429;        /* the amber of a warning lamp */
+    --signal-deep:#B8811A;
+    --fam-c:#E8783C;         /* creational — line orange */
+    --fam-s:#4FBFD4;         /* structural — diagnostic cyan */
+    --fam-b:#9A8CF0;         /* behavioral — dash violet */
+    --good:#5FBF8E;
+    --bad:#E0604A;
+    --maxw:760px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    background:var(--ink); color:var(--paper);
+    font-family:var(--sans); font-size:16px; line-height:1.75;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    text-rendering:optimizeLegibility; font-feature-settings:"kern" 1,"liga" 1;
+    overflow-x:hidden;
+  }
+  ::selection { background:var(--signal); color:var(--ink); }
+  article a { color:var(--signal); text-decoration:none; border-bottom:1px solid rgba(240,180,41,.32); }
+  article a:hover { border-color:var(--signal); }
+  [tabindex]:focus-visible { outline:2px solid var(--signal); outline-offset:3px; border-radius:3px; }
+
+  /* ---------- hero ---------- */
+  .hero {
+    min-height:88vh; display:flex; flex-direction:column; justify-content:center;
+    padding:5rem 1.5rem 4rem; position:relative; overflow:hidden;
+    border-bottom:1px solid var(--edge);
+  }
+  .hero::before {
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+    background-image:linear-gradient(var(--edge) 1px, transparent 1px),
+                     linear-gradient(90deg, var(--edge) 1px, transparent 1px);
+    background-size:64px 64px;
+    mask-image:radial-gradient(circle at 50% 60%, #000 0%, transparent 72%);
+    -webkit-mask-image:radial-gradient(circle at 50% 60%, #000 0%, transparent 72%);
+  }
+  .hero::after {
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:
+      radial-gradient(900px 420px at 50% 108%, rgba(240,180,41,.15), transparent 70%),
+      radial-gradient(600px 300px at 10% -5%, rgba(79,191,212,.07), transparent 70%);
+  }
+  .hero-inner { max-width:var(--maxw); margin:0 auto; width:100%; position:relative; z-index:2; }
+  .eyebrow {
+    display:block; font-family:var(--mono); font-size:.7rem; letter-spacing:.42em;
+    text-transform:uppercase; color:var(--signal); margin-bottom:1.5rem;
+  }
+  h1 {
+    font-family:var(--serif); font-weight:600; letter-spacing:-.02em;
+    font-size:clamp(2.5rem,7vw,4.4rem); line-height:1.03; color:var(--paper);
+    margin-bottom:1.4rem;
+  }
+  h1 em { display:block; font-style:italic; font-weight:400; color:var(--signal); font-size:.6em; margin-top:.4rem; }
+  .dek { font-size:1.14rem; color:var(--paper-dim); max-width:34rem; margin-bottom:2rem; }
+  .byline {
+    display:flex; flex-wrap:wrap; gap:.5rem; font-family:var(--mono);
+    font-size:.68rem; letter-spacing:.08em; color:var(--fog); margin:0;
+  }
+  .byline span { border:1px solid var(--edge); border-radius:3px; padding:.34rem .68rem; }
+  .byline span.hot { color:var(--signal); border-color:rgba(240,180,41,.42); }
+
+  /* ---------- article ---------- */
+  article { max-width:var(--maxw); margin:0 auto; padding:4rem 1.5rem 5rem; }
+  .section { margin-bottom:2.4rem; }
+  .reveal { opacity:0; transform:translateY(22px); transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in { opacity:1; transform:none; }
+
+  article h2 {
+    font-family:var(--serif); font-weight:600; font-size:clamp(1.7rem,4.2vw,2.45rem);
+    line-height:1.14; letter-spacing:-.015em; margin:3.4rem 0 1.25rem; color:var(--paper);
+    scroll-margin-top:80px;
+  }
+  article h2 .num {
+    display:block; font-family:var(--mono); font-size:.68rem; font-weight:500;
+    letter-spacing:.4em; color:var(--signal-deep); margin-bottom:.75rem;
+  }
+  article h3 {
+    font-family:var(--serif); font-weight:600; font-size:1.46rem; line-height:1.25;
+    color:var(--paper); margin:2.6rem 0 .3rem; display:flex; align-items:baseline; gap:.6rem;
+  }
+  article h3 .tag {
+    font-family:var(--mono); font-size:.6rem; letter-spacing:.16em; text-transform:uppercase;
+    padding:.2rem .5rem; border-radius:3px; border:1px solid currentColor; flex:none;
+  }
+  .fam-c .tag, .tag.c { color:var(--fam-c); }
+  .fam-s .tag, .tag.s { color:var(--fam-s); }
+  .fam-b .tag, .tag.b { color:var(--fam-b); }
+  .scene {
+    font-family:var(--serif); font-style:italic; font-size:1.05rem; color:var(--paper-dim);
+    border-left:2px solid var(--signal-deep); padding:.15rem 0 .15rem 1.1rem; margin:.9rem 0 1.25rem;
+  }
+  article p { margin-bottom:1.28rem; color:#DCE3ED; }
+  article code { font-family:var(--mono); font-size:.9em; color:var(--paper); }
+  .lead { font-size:1.15rem; }
+  .lead:first-letter {
+    font-family:var(--serif); font-weight:700; float:left; font-size:4.3rem; line-height:.72;
+    padding:.36rem .5rem 0 0; color:var(--signal);
+  }
+  article strong { color:var(--paper); font-weight:600; }
+  article em { color:var(--paper); }
+
+  .pull {
+    font-family:var(--serif); font-weight:600; font-size:clamp(1.4rem,3.3vw,2rem);
+    line-height:1.3; color:var(--paper); text-align:center; margin:3.2rem 0; padding:2.1rem 1rem;
+    position:relative;
+  }
+  .pull::before {
+    content:"\201C"; position:absolute; top:-.6rem; left:50%; transform:translateX(-50%);
+    font-family:var(--serif); font-size:5rem; color:var(--signal); opacity:.3;
+  }
+  .pull em { color:var(--signal); font-style:italic; }
+
+  /* ---------- code ---------- */
+  .code-wrap {
+    margin:1.5rem 0; border:1px solid var(--edge); border-radius:10px;
+    background:var(--ink-2); overflow:hidden; box-shadow:0 24px 60px -34px rgba(0,0,0,.95);
+  }
+  .code-bar { display:flex; align-items:center; gap:.5rem; padding:.62rem 1rem; background:var(--steel); border-bottom:1px solid var(--edge); }
+  .dot { width:10px; height:10px; border-radius:50%; }
+  .dot.r{background:#E0604A}.dot.y{background:#F0B429}.dot.g{background:#5FBF8E}
+  .code-name { margin-left:.6rem; font-family:var(--mono); font-size:.7rem; color:var(--fog); }
+  pre { padding:1.15rem 1.3rem; overflow-x:auto; font-family:var(--mono); font-size:.81rem; line-height:1.72; }
+  .t-key{color:#E39BC4}.t-type{color:#5FD3AC}.t-str{color:var(--signal)}
+  .t-com{color:#606B7B;font-style:italic}.t-fn{color:#7FB6F0}.t-num{color:#E8783C}
+
+  /* ---------- figures ---------- */
+  .figure {
+    margin:2.3rem 0; border:1px solid var(--edge); border-radius:12px;
+    background:linear-gradient(180deg,var(--steel) 0%,var(--ink-2) 100%);
+    padding:1.45rem 1.25rem 1.1rem;
+  }
+  .figure.wide { max-width:980px; margin-left:calc((var(--maxw) - 980px)/2); }
+  @media (max-width:1030px){ .figure.wide{ max-width:100%; margin-left:0; } }
+  .fig-head {
+    display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+    font-family:var(--mono); font-size:.65rem; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--fog); margin-bottom:1rem;
+  }
+  .fig-head b { color:var(--signal); font-weight:500; letter-spacing:.16em; }
+  .figcap { font-family:var(--mono); font-size:.7rem; line-height:1.6; color:var(--fog); margin-top:1rem; text-align:center; }
+  .figcap b { color:var(--signal); font-weight:500; }
+
+  .btn {
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.06em;
+    background:var(--steel-2); color:var(--paper-dim); border:1px solid var(--edge);
+    border-radius:4px; padding:.5rem .85rem; cursor:pointer; transition:all .16s;
+  }
+  .btn:hover { color:var(--paper); border-color:var(--signal-deep); }
+  .btn.on { background:rgba(240,180,41,.13); color:var(--signal); border-color:var(--signal); }
+  .btn.c.on { background:rgba(232,120,60,.15); color:var(--fam-c); border-color:var(--fam-c); }
+  .btn.s.on { background:rgba(79,191,212,.14); color:var(--fam-s); border-color:var(--fam-s); }
+  .btn.b.on { background:rgba(154,140,240,.15); color:var(--fam-b); border-color:var(--fam-b); }
+  .btn-row { display:flex; flex-wrap:wrap; gap:.5rem; }
+
+  .console {
+    font-family:var(--mono); font-size:.72rem; line-height:1.85; color:var(--paper-dim);
+    background:var(--ink); border:1px solid var(--edge); border-radius:7px;
+    padding:.72rem .9rem; margin-top:1rem; min-height:5.6rem; max-height:9.5rem; overflow-y:auto;
+  }
+  .console .ok{color:var(--good)} .console .no{color:var(--bad)} .console .hl{color:var(--signal)}
+  .console div{ animation:fadeup .28s ease both; }
+  @keyframes fadeup { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
+
+  /* ---------- figure 01 : the car ---------- */
+  .car-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  #carMap { width:100%; height:auto; display:block; }
+  @media (max-width:720px){ #carMap { min-width:660px; } }
+  #carMap .pin { cursor:pointer; }
+  #carMap .pin circle { transition:r .18s, fill-opacity .18s; }
+  #carMap .pin:hover circle, #carMap .pin.sel circle { fill-opacity:1; }
+  #carMap .pin text { font-family:var(--mono); font-size:11px; font-weight:500; pointer-events:none; }
+  #carMap .shell { fill:var(--ink-2); stroke:#45505F; stroke-width:1.8; }
+  #carMap .glass { fill:#171C24; stroke:#3A4552; stroke-width:1.2; }
+  #carMap .part { fill:#1E242E; stroke:#414C5B; stroke-width:1.2; }
+  #carMap .tyre { fill:#12151A; stroke:#414C5B; stroke-width:1.8; }
+  #carMap .rim { fill:#1E242E; stroke:#4A5566; stroke-width:1.4; }
+  #carMap .gnd { stroke:#333C49; stroke-width:1.4; }
+  #carMap .lbl { fill:var(--fog); font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; }
+  .map-card {
+    margin-top:1.05rem; border:1px solid var(--edge); border-radius:9px;
+    background:var(--ink); padding:.95rem 1.05rem; min-height:6.2rem;
+  }
+  .map-card .mc-fam { font-family:var(--mono); font-size:.62rem; letter-spacing:.18em; text-transform:uppercase; }
+  .map-card h4 { font-family:var(--serif); font-size:1.2rem; font-weight:600; color:var(--paper); margin:.25rem 0 .4rem; }
+  .map-card p { font-size:.92rem; color:var(--paper-dim); margin:0; }
+  .map-legend { display:flex; gap:1rem; flex-wrap:wrap; font-family:var(--mono); font-size:.63rem; letter-spacing:.1em; color:var(--fog); margin-top:.85rem; }
+  .map-legend i { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:.4rem; vertical-align:middle; }
+
+  /* ---------- figure 02 : the line ---------- */
+  .steps { display:grid; grid-template-columns:repeat(5,1fr); gap:.5rem; margin-top:1.05rem; }
+  @media (max-width:640px){ .steps{ grid-template-columns:repeat(2,1fr); } }
+  .step {
+    border:1px solid var(--edge); border-radius:7px; background:var(--ink);
+    padding:.62rem .58rem; opacity:.3; transition:opacity .3s, border-color .3s, transform .3s;
+    transform:translateY(6px);
+  }
+  .step.on { opacity:1; border-color:var(--fam-c); transform:none; }
+  .step .sn { font-family:var(--mono); font-size:.57rem; letter-spacing:.14em; color:var(--fam-c); }
+  .step .sv { font-size:.81rem; color:var(--paper); margin-top:.2rem; line-height:1.35; min-height:2.7em; }
+  .built {
+    margin-top:1rem; border:1px dashed var(--edge); border-radius:8px; padding:.78rem 1rem;
+    font-family:var(--mono); font-size:.74rem; color:var(--fog); min-height:3.6rem; line-height:1.7;
+  }
+  .built b { color:var(--fam-c); font-weight:500; }
+
+  /* ---------- figure 03 : the brake stack ---------- */
+  .layerbox { border:1px solid var(--edge); border-radius:10px; padding:.82rem; transition:all .25s; }
+  .layerbox > .lname {
+    font-family:var(--mono); font-size:.62rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--fam-s); margin-bottom:.55rem; display:block;
+  }
+  .layerbox.core {
+    border-color:var(--signal-deep); border-style:dashed; text-align:center;
+    font-family:var(--serif); font-size:1.02rem; color:var(--signal); padding:1.05rem .82rem;
+  }
+  .compose {
+    font-family:var(--mono); font-size:.75rem; color:var(--paper-dim); background:var(--ink);
+    border:1px solid var(--edge); border-radius:7px; padding:.68rem .85rem; margin-top:1rem;
+    overflow-x:auto; white-space:nowrap;
+  }
+  .compose .cn { color:var(--fam-s); }
+
+  /* ---------- figure 04 : the key fob ---------- */
+  .subs { display:grid; grid-template-columns:repeat(4,1fr); gap:.55rem; margin-top:1rem; }
+  @media (max-width:640px){ .subs{ grid-template-columns:repeat(2,1fr); } }
+  .sub {
+    border:1px solid var(--edge); border-radius:8px; background:var(--ink); opacity:.5;
+    padding:.68rem .55rem; text-align:center; cursor:pointer; transition:all .2s; user-select:none;
+  }
+  .sub .si { font-size:1.2rem; line-height:1.5; filter:grayscale(1); transition:filter .2s; }
+  .sub .sl { font-family:var(--mono); font-size:.62rem; letter-spacing:.06em; color:var(--fog); }
+  .sub .st { font-family:var(--mono); font-size:.55rem; letter-spacing:.14em; color:var(--fog); margin-top:.15rem; }
+  .sub.on { border-color:var(--fam-b); opacity:1; }
+  .sub.on .si { filter:none; }
+  .sub.on .sl { color:var(--paper-dim); }
+  .sub.on .st { color:var(--fam-b); }
+  .sub.fire { border-color:var(--fam-b); box-shadow:0 0 0 3px rgba(154,140,240,.2); transform:translateY(-3px); }
+  .fobbtn {
+    display:block; margin:0 auto; font-family:var(--mono); font-size:.76rem; letter-spacing:.14em;
+    text-transform:uppercase; background:rgba(154,140,240,.1); color:var(--fam-b);
+    border:1px solid var(--fam-b); border-radius:40px; padding:.68rem 1.7rem; cursor:pointer;
+    transition:transform .12s;
+  }
+  .fobbtn:active { transform:scale(.95); }
+  .fobbtn.ring { animation:ringpulse .55s ease-out; }
+  @keyframes ringpulse { from{box-shadow:0 0 0 0 rgba(154,140,240,.5)} to{box-shadow:0 0 0 22px rgba(154,140,240,0)} }
+
+  /* ---------- figure 05 : the gear selector ---------- */
+  .sm-wrap { display:grid; grid-template-columns:174px 1fr; gap:1.15rem; align-items:start; }
+  @media (max-width:620px){ .sm-wrap{ grid-template-columns:1fr; } }
+  .gateviz { border:1px solid var(--edge); border-radius:9px; background:var(--ink); padding:.85rem; text-align:center; }
+  .gateviz svg { width:100%; max-width:120px; height:auto; }
+  .statebadge {
+    font-family:var(--mono); font-size:.66rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--fam-b); margin-top:.55rem; display:block;
+  }
+  .statebadge .roll { color:var(--signal); }
+  .acts { display:flex; flex-wrap:wrap; gap:.45rem; }
+
+  /* ---------- figure 06 : the index ---------- */
+  .chooser { width:100%; border-collapse:collapse; margin-top:1.05rem; font-size:.92rem; }
+  .chooser th {
+    text-align:left; font-family:var(--mono); font-size:.61rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--fog); padding:.55rem .6rem; border-bottom:1px solid var(--edge);
+  }
+  .chooser td { padding:.68rem .6rem; border-bottom:1px solid var(--edge); color:var(--paper-dim); vertical-align:top; }
+  .chooser td.pn { font-family:var(--mono); font-size:.77rem; white-space:nowrap; }
+  .chooser tr.hide { display:none; }
+  .chooser td.pn.c { color:var(--fam-c); } .chooser td.pn.s { color:var(--fam-s); } .chooser td.pn.b { color:var(--fam-b); }
+
+  /* ---------- rest of the catalogue ---------- */
+  .rest { display:grid; grid-template-columns:repeat(2,1fr); gap:.7rem; margin:1.35rem 0 0; }
+  @media (max-width:600px){ .rest{ grid-template-columns:1fr; } }
+  .rest div { border:1px solid var(--edge); border-radius:8px; padding:.68rem .85rem; background:var(--ink-2); }
+  .rest b { display:block; font-family:var(--mono); font-size:.67rem; letter-spacing:.12em; text-transform:uppercase; color:var(--signal); margin-bottom:.15rem; }
+  .rest span { font-size:.87rem; color:var(--paper-dim); }
+
+  .endmark { text-align:center; font-family:var(--mono); font-size:.7rem; letter-spacing:.4em; color:var(--signal-deep); margin:3.2rem 0 0; }
+
+  @media (max-width:600px){
+    body{font-size:16.5px}
+    .lead:first-letter{font-size:3.6rem}
+    pre{font-size:.75rem}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .reveal{opacity:1;transform:none}
+  }
+
+/* ==== Cinema theme (new default) + toggle button — shared with www.nileshmohite.com ==== */
+  [data-theme="cinema"] {
+    --bg: #14171D; --panel: #1B1F27; --panel-2: #212630; --line: #2E3440;
+    --accent: #C9A24B; --accent-hi: #E6C06E; --on-accent: #14171D;
+    --text: #CBD1DA; --dim: #8891A0; --head: #F3F5F8; --ok: #7FBF8E;
+    --shadow: rgba(0,0,0,0.5);
+    --display-font: var(--serif); --display-weight: 500;
+    --radius-btn: 4px; --radius-chip: 4px; --ls-label: 0.14em;
+  }
+  .theme-toggle {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; flex: none;
+    border: 1px solid var(--line); border-radius: 50%;
+    background: var(--panel); color: var(--accent); cursor: pointer;
+    transition: background .18s, border-color .18s, transform .18s;
+  }
+  .theme-toggle:hover { background: var(--panel-2); border-color: var(--accent); transform: rotate(-8deg); }
+  .theme-toggle svg { width: 18px; height: 18px; }
+  .theme-toggle .icon-sun, .theme-toggle .icon-moon { display: none; }
+  html[data-theme="cinema"] .theme-toggle .icon-moon { display: block; }
+  html[data-theme="linkedin"] .theme-toggle .icon-sun { display: block; }
+  .back-bar { padding: 18px 24px 0; }
+  .back-link {
+    font-family: var(--mono); font-size: .76rem; letter-spacing: .03em;
+    color: var(--dim); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: color .2s, gap .2s;
+  }
+  .back-link:hover { color: var(--accent); gap: 10px; }
+  .end-back { padding: 6px 24px 60px; text-align: center; }
+  .end-back .back-link { justify-content: center; font-size: .82rem; }
+  .share-row { display: flex; align-items: center; gap: 8px; }
+  .share-label {
+    font-family: var(--mono); font-size: .68rem; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--dim); margin-right: 2px;
+  }
+  .share-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 50%; flex: none;
+    border: 1px solid var(--line); background: var(--panel);
+    color: var(--dim); cursor: pointer; text-decoration: none;
+    transition: color .18s, border-color .18s, background .18s, transform .18s;
+  }
+  .share-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--panel-2); transform: translateY(-1px); }
+  .share-btn svg { width: 14px; height: 14px; }
+  .share-btn.copied { color: var(--ok); border-color: var(--ok); }
+  .back-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .end-back { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+
+  /* ==== Reading progress rail — shared with www.nileshmohite.com ==== */
+  .rp-bar { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: transparent; z-index: 9999; pointer-events: none; }
+  .rp-fill { height: 100%; width: 0%; background: var(--accent); transition: width .1s linear; }
+  .rp-toc { position: fixed; right: 20px; bottom: 20px; z-index: 9998; font-family: var(--mono); }
+  .rp-toggle {
+    width: 52px; height: 52px; border-radius: 50%; flex: none;
+    background: var(--panel); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center; position: relative;
+    cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.35); padding: 0;
+  }
+  .rp-ring { position: absolute; inset: 0; width: 52px; height: 52px; transform: rotate(-90deg); }
+  .rp-ring-bg { fill: none; stroke: var(--line); stroke-width: 2.5; }
+  .rp-ring-fg { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 97.4; stroke-dashoffset: 97.4; transition: stroke-dashoffset .15s linear; }
+  .rp-pct { font-size: 10.5px; color: var(--head); font-weight: 600; position: relative; z-index: 1; }
+  .rp-panel {
+    position: absolute; right: 0; bottom: 64px; width: 260px; max-height: 60vh; overflow-y: auto;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px; box-shadow: 0 20px 50px rgba(0,0,0,.4);
+    opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .18s, transform .18s;
+  }
+  .rp-toc.open .rp-panel { opacity: 1; transform: none; pointer-events: auto; }
+  .rp-panel-head { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed var(--line); }
+  .rp-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+  .rp-list li a {
+    display: block; padding: 7px 8px; border-radius: 6px; font-size: 12.5px; line-height: 1.4;
+    color: var(--dim); text-decoration: none; transition: background .15s, color .15s;
+  }
+  .rp-list li a:hover { background: var(--bg); color: var(--head); }
+  .rp-list li.active a { color: var(--accent); background: var(--bg); font-weight: 600; }
+  @media (max-width: 640px) {
+    .rp-toc { right: 14px; bottom: 14px; }
+    .rp-toggle { width: 46px; height: 46px; }
+    .rp-ring { width: 46px; height: 46px; }
+    .rp-panel { width: min(78vw, 280px); }
+  }
+  .credit-line {
+    flex: 1 1 auto; min-width: 0; text-align: center; font-family: var(--serif); font-style: italic; font-weight: 500;
+    font-size: clamp(.72rem, .4rem + 1.1vw, 1rem); letter-spacing: .02em;
+    color: var(--dim); margin: 0; padding: 0 10px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .credit-line a {
+    font-style: normal; font-weight: 600; color: var(--accent);
+    text-decoration: none; letter-spacing: .01em;
+  }
+  .credit-line a:hover { color: var(--accent-hi); text-decoration: underline; }
+  @media (max-width: 760px) {
+    nav { flex-wrap: wrap; row-gap: 6px; height: auto; padding: 10px 0; }
+    .credit-line {
+      flex-basis: 100%; order: 3; white-space: normal; overflow: visible; text-overflow: clip;
+      font-size: .82rem; padding: 0;
+    }
+  }
+  .engage-row {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    font-family: var(--mono); font-size: .74rem; color: var(--dim);
+  }
+  .like-btn {
+    display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: .74rem;
+    border: 1px solid var(--line); background: var(--panel); color: var(--dim);
+    padding: 6px 12px; border-radius: 999px; cursor: pointer;
+    transition: color .18s, border-color .18s, background .18s, transform .18s;
+  }
+  .like-btn:hover { border-color: #D9695A; color: #D9695A; transform: translateY(-1px); }
+  .like-btn .like-icon { width: 15px; height: 15px; }
+  .like-btn.liked { color: #D9695A; border-color: #D9695A; background: color-mix(in srgb, #D9695A 12%, var(--panel)); }
+  .like-btn.liked .like-icon { fill: #D9695A; }
+  .engage-stat { display: inline-flex; align-items: center; gap: 6px; }
+  .engage-stat svg { width: 14px; height: 14px; opacity: .75; flex: none; }
+  .engage-row[hidden] { display: none; }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Design Patterns on the Assembly Line: Nine Patterns, One Car",
+  "description": "Creational, structural and behavioral patterns explained through one car — with interactive diagrams and C#.",
+  "image": "https://niluniverse.com/assembly-line-patterns-banner.jpg",
+  "url": "https://niluniverse.com/assembly-line-patterns.html",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://niluniverse.com/assembly-line-patterns.html"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "Nilesh Mohite",
+    "url": "https://www.nileshmohite.com"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Niluniverse",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://niluniverse.com/favicon-180.png"
+    }
+  },
+  "keywords": "design patterns, gang of four, creational structural behavioral, C#, .NET, object-oriented design"
+}
+</script>
+</head>
+<body>
+<div class="rp-bar" id="rpBar"><div class="rp-fill" id="rpFill"></div></div>
+<div class="rp-toc" id="rpToc">
+  <button class="rp-toggle" id="rpToggle" type="button" aria-expanded="false" aria-label="Reading progress and section list">
+    <svg class="rp-ring" viewBox="0 0 36 36"><circle class="rp-ring-bg" cx="18" cy="18" r="15.5"/><circle class="rp-ring-fg" id="rpRing" cx="18" cy="18" r="15.5"/></svg>
+    <span class="rp-pct" id="rpPct">0%</span>
+  </button>
+  <div class="rp-panel" id="rpPanel">
+    <div class="rp-panel-head" id="rpStatus">0% read</div>
+    <ol class="rp-list" id="rpList"></ol>
+  </div>
+</div>
+<header class="site">
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="https://www.nileshmohite.com">
+        <svg class="brand-mark" viewBox="0 0 120 120" fill="none" aria-hidden="true"><rect x="4" y="4" width="112" height="112" rx="26" fill="var(--accent)"/><polyline points="30,42 54,62 30,82" stroke="var(--on-accent)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><rect x="62" y="74" width="30" height="14" rx="4" fill="var(--on-accent)"/></svg>
+        <span><span class="b-nil">nil</span>universe</span>
+      </a>
+      <p class="credit-line">Directed by <a href="https://www.nileshmohite.com">Nilesh Mohite</a> and Presented by AI</p>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" title="Switch to light theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap back-bar">
+  <a class="back-link" href="index.html">&larr; All stories</a>
+  <div class="share-row"><a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fniluniverse.com%2Fassembly-line-patterns.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a><a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fniluniverse.com%2Fassembly-line-patterns.html&text=Design%20Patterns%20on%20the%20Assembly%20Line" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a><a class="share-btn" href="mailto:?subject=Design%20Patterns%20on%20the%20Assembly%20Line&body=https%3A%2F%2Fniluniverse.com%2Fassembly-line-patterns.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a><button class="share-btn" type="button" data-copy-url="https://niluniverse.com/assembly-line-patterns.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button></div><div class="engage-row" data-engage="assembly-line-patterns"><button class="like-btn" type="button" aria-pressed="false" aria-label="Like this article"><svg class="like-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.6a5 5 0 0 0 0-7.1z"/></svg><span class="like-count">&ndash;</span></button><span class="engage-stat views-stat" aria-label="Views"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span class="views-count">&ndash;</span></span><span class="engage-stat shares-stat" aria-label="Shares"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg><span class="shares-count">&ndash;</span></span></div>
+</div>
+
+<!-- ===================== HERO ===================== -->
+<header class="hero">
+  <div class="hero-inner">
+    <span class="eyebrow">Object-Oriented Design &middot; Factory Floor</span>
+    <h1>Design Patterns<br>on the Assembly Line<em>nine patterns, one production line</em></h1>
+    <p class="dek">Twenty-three names in a catalogue is a memory problem. One car you can walk around is something else. Nine patterns, six interactive diagrams, and C# you can read in a sitting.</p>
+    <p class="byline"><span class="hot">13 min read</span><span>C# &middot; .NET</span><span>Creational &middot; Structural &middot; Behavioral</span></p>
+  </div>
+</header>
+
+<!-- ===================== ARTICLE ===================== -->
+<article>
+
+  <div class="section">
+    <p class="lead">Most developers meet design patterns the same way: someone hands over a catalogue of twenty-three names sorted into three groups, and you memorise enough to survive an interview. Then you go back to work, write a <code>Dictionary&lt;string, Func&lt;IExporter&gt;&gt;</code> because it solved the problem in front of you, and six months later a reviewer says "oh, that's a factory."</p>
+
+    <p>The catalogue was never the difficult part. The difficult part is knowing which shelf to reach for, and that is a question about <strong>what changes in your system</strong> rather than what the pattern is called. So put the catalogue down and walk the line instead.</p>
+
+    <p>A car has three stories running through it. How it gets built: which plant supplies which part, what order the stations run in, which components one vehicle is only ever allowed one of. How the parts fit together: the loom adapter behind an imported head unit, the four safety modules between your foot and the calliper. And what happens once somebody drives it off the lot: the fob that wakes four systems at once, the selector that changes what every other control does.</p>
+
+    <p>Those are the three families. <strong>Creational</strong> patterns build the car, <strong>structural</strong> patterns fit it together, <strong>behavioral</strong> patterns decide how it behaves on the road. Every pin below is a pattern, coloured by family. Click one.</p>
+  </div>
+
+  <div class="figure wide reveal">
+    <div class="fig-head"><span>Figure 01 &mdash; <b>the build sheet</b></span><span>click any pin &middot; drag to pan</span></div>
+    <div class="car-scroll">
+    <svg id="carMap" viewBox="0 174 900 274" role="img" aria-label="Cutaway side view of a car with nine numbered pins, one per design pattern">
+      <line x1="20" y1="424" x2="880" y2="424" class="gnd"/>
+
+      <!-- body shell -->
+      <path class="shell" d="M118 376 L118 332 C118 314 130 302 150 298 L302 290 L356 200 L560 194 L624 288 L802 294 C824 296 836 308 836 332 L836 376 Z"/>
+      <!-- greenhouse glass -->
+      <path class="glass" d="M366 210 L470 207 L470 284 L410 284 Z"/>
+      <path class="glass" d="M486 206 L556 203 L604 282 L486 284 Z"/>
+      <!-- wheels -->
+      <circle class="tyre" cx="250" cy="376" r="48"/>
+      <circle class="rim" cx="250" cy="376" r="24"/>
+      <circle class="tyre" cx="700" cy="376" r="48"/>
+      <circle class="rim" cx="700" cy="376" r="24"/>
+      <!-- brake disc, front hub -->
+      <circle cx="250" cy="376" r="15" fill="none" stroke="#5B6879" stroke-width="2"/>
+      <!-- engine bay block -->
+      <text x="150" y="292" class="lbl">ENGINE BAY</text>
+      <!-- ECU -->
+      <rect class="part" x="156" y="310" width="44" height="30" rx="3"/>
+      <line x1="164" y1="319" x2="192" y2="319" stroke="#5B6879" stroke-width="1.2"/>
+      <line x1="164" y1="328" x2="192" y2="328" stroke="#5B6879" stroke-width="1.2"/>
+      <!-- dash + console -->
+      <path class="part" d="M352 288 L410 276 L410 300 L352 300 Z"/>
+      <rect class="part" x="356" y="292" width="30" height="16" rx="2"/>
+      <circle cx="416" cy="288" r="7" fill="none" stroke="#5B6879" stroke-width="1.6"/>
+      <rect class="part" x="436" y="308" width="96" height="30" rx="4"/>
+      <circle cx="462" cy="322" r="8" fill="none" stroke="#5B6879" stroke-width="1.4"/>
+      <rect x="500" y="314" width="16" height="18" rx="3" fill="none" stroke="#5B6879" stroke-width="1.4"/>
+      <!-- seat -->
+      <path class="part" d="M492 296 L492 236 C492 228 498 222 506 222 L520 222 C528 222 534 228 534 236 L534 296 Z"/>
+      <text x="486" y="212" class="lbl">CABIN</text>
+      <!-- load bay -->
+      <text x="654" y="316" class="lbl">LOAD BAY</text>
+      <!-- platform -->
+      <rect class="part" x="300" y="368" width="340" height="14" rx="3"/>
+      <text x="308" y="400" class="lbl">PLATFORM</text>
+      <!-- key fob, off to the left -->
+      <rect class="part" x="46" y="286" width="30" height="44" rx="6"/>
+      <circle cx="61" cy="300" r="4" fill="none" stroke="#5B6879" stroke-width="1.4"/>
+      <text x="34" y="348" class="lbl">KEY FOB</text>
+
+      <!-- pins -->
+      <g class="pin" data-p="factory" tabindex="0" role="button" aria-label="Factory Method"><circle cx="513" cy="248" r="15" fill="#E8783C" fill-opacity=".82"/><text x="513" y="252" text-anchor="middle" fill="#0D0F13">1</text></g>
+      <g class="pin" data-p="builder" tabindex="0" role="button" aria-label="Builder"><circle cx="470" cy="375" r="15" fill="#E8783C" fill-opacity=".82"/><text x="470" y="379" text-anchor="middle" fill="#0D0F13">2</text></g>
+      <g class="pin" data-p="singleton" tabindex="0" role="button" aria-label="Singleton"><circle cx="178" cy="325" r="15" fill="#E8783C" fill-opacity=".82"/><text x="178" y="329" text-anchor="middle" fill="#0D0F13">3</text></g>
+      <g class="pin" data-p="adapter" tabindex="0" role="button" aria-label="Adapter"><circle cx="371" cy="300" r="15" fill="#4FBFD4" fill-opacity=".82"/><text x="371" y="304" text-anchor="middle" fill="#0D0F13">4</text></g>
+      <g class="pin" data-p="decorator" tabindex="0" role="button" aria-label="Decorator"><circle cx="250" cy="376" r="15" fill="#4FBFD4" fill-opacity=".82"/><text x="250" y="380" text-anchor="middle" fill="#0D0F13">5</text></g>
+      <g class="pin" data-p="facade" tabindex="0" role="button" aria-label="Facade"><circle cx="416" cy="288" r="15" fill="#4FBFD4" fill-opacity=".82"/><text x="416" y="292" text-anchor="middle" fill="#0D0F13">6</text></g>
+      <g class="pin" data-p="observer" tabindex="0" role="button" aria-label="Observer"><circle cx="61" cy="300" r="15" fill="#9A8CF0" fill-opacity=".82"/><text x="61" y="304" text-anchor="middle" fill="#0D0F13">7</text></g>
+      <g class="pin" data-p="strategy" tabindex="0" role="button" aria-label="Strategy"><circle cx="462" cy="322" r="15" fill="#9A8CF0" fill-opacity=".82"/><text x="462" y="326" text-anchor="middle" fill="#0D0F13">8</text></g>
+      <g class="pin" data-p="state" tabindex="0" role="button" aria-label="State"><circle cx="508" cy="323" r="15" fill="#9A8CF0" fill-opacity=".82"/><text x="508" y="327" text-anchor="middle" fill="#0D0F13">9</text></g>
+    </svg>
+    </div>
+    <div class="map-legend">
+      <span><i style="background:#E8783C"></i>CREATIONAL</span>
+      <span><i style="background:#4FBFD4"></i>STRUCTURAL</span>
+      <span><i style="background:#9A8CF0"></i>BEHAVIORAL</span>
+    </div>
+    <div class="map-card" id="mapCard">
+      <div class="mc-fam" style="color:var(--fog)">SELECT A PIN</div>
+      <h4>Nine patterns, one vehicle</h4>
+      <p>Pins 1&ndash;3 are about how the car gets built. Pins 4&ndash;6 are about how its parts connect. Pins 7&ndash;9 are about how it behaves once somebody drives it.</p>
+    </div>
+  </div>
+
+  <h2 class="reveal"><span class="num">01 &mdash; CREATIONAL</span>How the car gets built</h2>
+
+  <div class="section reveal">
+    <p>Creational patterns all manage the same moment: <code>new</code>. Every <code>new Thing()</code> freezes a decision at that spot &mdash; the caller has named a concrete class and is now bound to its constructor, its lifetime, and the fact that it is that one and not another. The binding stays invisible until the day you need a second variant. A car has that moment a few thousand times over.</p>
+
+    <h3 class="fam-c"><span class="tag">01</span>Factory Method &mdash; the seat plant</h3>
+    <p class="scene">Nobody on the trim line phones a supplier when a shell needs a seat. The station asks for "a seat for this body," and the plant decides: a cloth bench for the base car, heated leather for the top trim, a fixed-back bucket on the track edition. The line takes the seat and bolts it down.</p>
+
+    <p>The base class owns <em>when</em> a seat is made and what happens to it. A subclass decides <em>which</em> seat arrives.</p>
+
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">TrimLine.cs &mdash; the plant decides</span></div>
+<pre><code><span class="t-key">public abstract class</span> <span class="t-type">TrimLine</span>
+{
+    <span class="t-key">protected abstract</span> <span class="t-type">ISeat</span> <span class="t-fn">MakeSeat</span>();            <span class="t-com">// the factory method</span>
+
+    <span class="t-key">public</span> <span class="t-type">Cabin</span> <span class="t-fn">Fit</span>()                                 <span class="t-com">// the part that never changes</span>
+    {
+        <span class="t-key">var</span> seat = <span class="t-fn">MakeSeat</span>();
+        <span class="t-key">return new</span> <span class="t-type">Cabin</span>(seat, <span class="t-type">Harness</span>.Standard);
+    }
+}
+
+<span class="t-key">public sealed class</span> <span class="t-type">BaseTrim</span> : <span class="t-type">TrimLine</span>
+{
+    <span class="t-key">protected override</span> <span class="t-type">ISeat</span> <span class="t-fn">MakeSeat</span>() =&gt; <span class="t-key">new</span> <span class="t-type">ClothBench</span>(rows: <span class="t-num">2</span>);
+}
+
+<span class="t-key">public sealed class</span> <span class="t-type">TrackTrim</span> : <span class="t-type">TrimLine</span>
+{
+    <span class="t-key">protected override</span> <span class="t-type">ISeat</span> <span class="t-fn">MakeSeat</span>() =&gt; <span class="t-key">new</span> <span class="t-type">BucketSeat</span>(harnessPoints: <span class="t-num">6</span>);
+}</code></pre>
+    </div>
+
+    <p>You meet this shape constantly in .NET without the ceremony: <code>IHttpClientFactory</code> is one, and so is any DI registration where the caller asks for <code>IPaymentGateway</code> and gets <code>StripeGateway</code>. It earns its place when there is a family of things, more than one variant, and a selection rule the caller has no business knowing.</p>
+
+    <h3 class="fam-c"><span class="tag">02</span>Builder &mdash; same stations, different vehicle</h3>
+    <p class="scene">The line runs the same five stations on every shell: platform, powertrain, body, interior, electronics. The order never changes; what goes into each station does. A 1.2-litre petrol and cloth seats on this shell, a diesel and an empty load bay on the next.</p>
+
+    <div class="figure reveal">
+      <div class="fig-head"><span>Figure 02 &mdash; <b>one line, three vehicles</b></span><span>pick a build</span></div>
+      <div class="btn-row" id="bldBtns">
+        <button class="btn c on" data-h="hatch" type="button">Hatchback</button>
+        <button class="btn c" data-h="suv" type="button">SUV</button>
+        <button class="btn c" data-h="van" type="button">Panel van</button>
+      </div>
+      <div class="steps" id="bldSteps"></div>
+      <div class="built" id="bldOut"></div>
+      <div class="figcap">The five stations and their order belong to the builder. The <b>values</b> at each station belong to the caller.</div>
+    </div>
+
+    <p>The case for a builder is made against a constructor that has grown too many parameters, half of them booleans. <code>new Vehicle(true, false, 5, null, "steel", true)</code> is a puzzle at every call site, and a seventh option means touching every caller. A builder names each argument and gives you one place &mdash; <code>Build()</code> &mdash; to validate before an invalid object exists.</p>
+
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">VehicleBuilder.cs &mdash; named stations, one validation point</span></div>
+<pre><code><span class="t-key">var</span> hatchback = <span class="t-key">new</span> <span class="t-type">VehicleBuilder</span>()
+    .<span class="t-fn">Platform</span>(<span class="t-str">"B-segment"</span>)
+    .<span class="t-fn">Powertrain</span>(<span class="t-type">Engine</span>.Petrol12, <span class="t-type">Gearbox</span>.Manual6)   <span class="t-com">// each station returns this</span>
+    .<span class="t-fn">Body</span>(doors: <span class="t-num">5</span>, shell: <span class="t-str">"steel"</span>)
+    .<span class="t-fn">Interior</span>(<span class="t-type">Trim</span>.Cloth, seats: <span class="t-num">5</span>)
+    .<span class="t-fn">Electronics</span>(<span class="t-type">Cluster</span>.Base)
+    .<span class="t-fn">Build</span>();                                  <span class="t-com">// throws if the powertrain is missing</span></code></pre>
+    </div>
+
+    <p>If you have written an ASP.NET Core <code>Program.cs</code> you have used one: <code>WebApplication.CreateBuilder(args)</code> holds a half-configured application until <code>Build()</code> turns it into something you can run.</p>
+
+    <h3 class="fam-c"><span class="tag">03</span>Singleton &mdash; one ECU</h3>
+    <p class="scene">A car has exactly one engine control unit deciding fuelling and ignition timing. A second board is a hazard rather than a redundancy, because now two things disagree about how much fuel reaches the injectors.</p>
+
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">EngineControlUnit.cs &mdash; one board, created once</span></div>
+<pre><code><span class="t-key">public sealed class</span> <span class="t-type">EngineControlUnit</span>
+{
+    <span class="t-key">private static readonly</span> <span class="t-type">Lazy</span>&lt;<span class="t-type">EngineControlUnit</span>&gt; _ecu
+        = <span class="t-key">new</span>(() =&gt; <span class="t-key">new</span> <span class="t-type">EngineControlUnit</span>());
+
+    <span class="t-key">public static</span> <span class="t-type">EngineControlUnit</span> Instance =&gt; _ecu.Value;  <span class="t-com">// thread-safe by construction</span>
+    <span class="t-key">private</span> <span class="t-fn">EngineControlUnit</span>() { }
+}</code></pre>
+    </div>
+
+    <p>The trouble is not the single instance. It is <code>EngineControlUnit.Instance</code> appearing mid-method, because that call is a dependency nobody declared: a test cannot substitute it, and the class signature does not admit it exists. Modern .NET gives the guarantee without the hard wiring.</p>
+
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">Program.cs &mdash; one instance, still injectable</span></div>
+<pre><code>builder.Services.<span class="t-fn">AddSingleton</span>&lt;<span class="t-type">IEngineControlUnit</span>, <span class="t-type">EngineControlUnit</span>&gt;();
+
+<span class="t-com">// the consumer declares what it needs — and a test can hand it a bench rig</span>
+<span class="t-key">public sealed class</span> <span class="t-type">FuelTrim</span>(<span class="t-type">IEngineControlUnit</span> ecu) { }</code></pre>
+    </div>
+
+    <p>Same guarantee, visible in the constructor, replaceable in a test. Reach for the static form only when there is no container to reach for.</p>
+  </div>
+
+  <p class="pull reveal">Creational patterns are about the <em>moment of new</em> &mdash; and who is allowed on the floor when it happens.</p>
+  <h2 class="reveal"><span class="num">02 &mdash; STRUCTURAL</span>How the parts fit together</h2>
+
+  <div class="section reveal">
+    <p>Once the shell is on its wheels, the problems change shape. Nothing needs building any more; things need <em>connecting</em>. A head unit to a loom it was never cut for. Four safety modules between a pedal and a calliper. Six systems onto one button. You have parts that work, and you need the assembled result to present an interface somebody can live with.</p>
+
+    <h3 class="fam-s"><span class="tag">04</span>Adapter &mdash; the loom that does not fit</h3>
+    <p class="scene">You buy a double-DIN head unit built for the Japanese market. Its plug has twenty pins in the wrong order and it expects an ignition-sense wire your car does not run. You do not rewire the car and you do not send the unit back. You buy a loom adapter that speaks both.</p>
+
+    <p>An adapter exists because you own one side of the conversation and not the other. The vendor SDK is not yours to change, nor the partner's SOAP endpoint, nor the internal service three teams depend on.</p>
+
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">LoomAdapter.cs &mdash; two pinouts, one harness</span></div>
+<pre><code><span class="t-key">public interface</span> <span class="t-type">IHeadUnit</span> { <span class="t-key">void</span> <span class="t-fn">Connect</span>(<span class="t-type">Harness</span> harness); }   <span class="t-com">// what the loom offers</span>
+
+<span class="t-key">public sealed class</span> <span class="t-type">ImportedStereo</span>            <span class="t-com">// vendor firmware — not yours to edit</span>
+{
+    <span class="t-key">public void</span> <span class="t-fn">AttachJdmLoom</span>(<span class="t-type">int</span> accessoryPin, <span class="t-type">int</span> illuminationPin) { }
+}
+
+<span class="t-key">public sealed class</span> <span class="t-type">LoomAdapter</span> : <span class="t-type">IHeadUnit</span>
+{
+    <span class="t-key">private readonly</span> <span class="t-type">ImportedStereo</span> _stereo;
+    <span class="t-key">public</span> <span class="t-fn">LoomAdapter</span>(<span class="t-type">ImportedStereo</span> stereo) =&gt; _stereo = stereo;
+
+    <span class="t-key">public void</span> <span class="t-fn">Connect</span>(<span class="t-type">Harness</span> harness)
+        =&gt; _stereo.<span class="t-fn">AttachJdmLoom</span>(harness.Accessory, harness.Illumination);
+}</code></pre>
+    </div>
+
+    <p>This is the pattern you will write most often in enterprise work, so be deliberate about where adapters live: at the edge of the solution, in one project, named for what they wrap. The moment an adapter starts making business decisions rather than translating shapes, it has become a service you forgot to name.</p>
+
+    <h3 class="fam-s"><span class="tag">05</span>Decorator &mdash; the brake stack</h3>
+    <p class="scene">A brake is a brake: your foot moves fluid, fluid squeezes a calliper. Then ABS goes in between and starts releasing pressure fifteen times a second. Then EBD rebalances front to rear. Then traction control brakes a wheel you never asked it to. Then emergency braking presses the pedal for you. Every module takes the same command, adds its own behaviour, and passes it inward. The calliper never learns any of them exist.</p>
+
+    <div class="figure reveal">
+      <div class="fig-head"><span>Figure 03 &mdash; <b>the brake stack</b></span><span>toggle modules</span></div>
+      <div class="btn-row" id="decBtns">
+        <button class="btn s" data-l="Ebd" type="button">EBD</button>
+        <button class="btn s" data-l="Abs" type="button">ABS</button>
+        <button class="btn s" data-l="TractionControl" type="button">Traction control</button>
+        <button class="btn s" data-l="Aeb" type="button">Emergency braking</button>
+      </div>
+      <div id="decStack" style="margin-top:1.05rem"></div>
+      <div class="compose" id="decCompose"></div>
+      <div class="console" id="decLog"></div>
+      <div class="figcap">Every module implements <b>IBrake</b> and holds an <b>IBrake</b>. The calliper at the centre is unchanged in all sixteen combinations.</div>
+    </div>
+
+    <p>One rule makes it work: the wrapper implements the same interface as the thing it wraps, and holds a reference to it. That constraint lets you stack modules in any order, at runtime, without a combinatorial explosion &mdash; four options would otherwise be sixteen classes.</p>
+
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">BrakeModule.cs &mdash; wrap, delegate, add</span></div>
+<pre><code><span class="t-key">public interface</span> <span class="t-type">IBrake</span> { <span class="t-type">BrakeResult</span> <span class="t-fn">Apply</span>(<span class="t-type">PedalInput</span> input); }
+
+<span class="t-key">public abstract class</span> <span class="t-type">BrakeModule</span> : <span class="t-type">IBrake</span>
+{
+    <span class="t-key">protected readonly</span> <span class="t-type">IBrake</span> Inner;
+    <span class="t-key">protected</span> <span class="t-fn">BrakeModule</span>(<span class="t-type">IBrake</span> inner) =&gt; Inner = inner;
+    <span class="t-key">public virtual</span> <span class="t-type">BrakeResult</span> <span class="t-fn">Apply</span>(<span class="t-type">PedalInput</span> input) =&gt; Inner.<span class="t-fn">Apply</span>(input);
+}
+
+<span class="t-key">public sealed class</span> <span class="t-type">Abs</span> : <span class="t-type">BrakeModule</span>
+{
+    <span class="t-key">public</span> <span class="t-fn">Abs</span>(<span class="t-type">IBrake</span> inner) : <span class="t-key">base</span>(inner) { }
+
+    <span class="t-key">public override</span> <span class="t-type">BrakeResult</span> <span class="t-fn">Apply</span>(<span class="t-type">PedalInput</span> input)
+        =&gt; input.WheelsLocking ? Inner.<span class="t-fn">Apply</span>(input.<span class="t-fn">Pulsed</span>()) : Inner.<span class="t-fn">Apply</span>(input);
+}
+
+<span class="t-type">IBrake</span> pedal = <span class="t-key">new</span> <span class="t-type">Aeb</span>(<span class="t-key">new</span> <span class="t-type">TractionControl</span>(<span class="t-key">new</span> <span class="t-type">Abs</span>(<span class="t-key">new</span> <span class="t-type">Calliper</span>())));</code></pre>
+    </div>
+
+    <p>You already use decorators daily in .NET under other names: ASP.NET Core middleware around a request delegate, a <code>DelegatingHandler</code> around a message handler, a Polly retry policy wrapping a timeout. Each adds behaviour on the way in, on the way out, or both, and the innermost call has no idea.</p>
+
+    <h3 class="fam-s"><span class="tag">06</span>Facade &mdash; the start button</h3>
+    <p class="scene">Pressing START is not one action. The car wakes the body bus, checks the immobiliser against the key, primes the fuel pump, cranks the starter, waits for the alternator field, then runs the cluster self-test. Six systems in an order that matters &mdash; crank before the immobiliser clears and you get a very expensive click.</p>
+
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">StartButton.cs &mdash; six systems, one press</span></div>
+<pre><code><span class="t-key">public sealed class</span> <span class="t-type">StartButton</span>
+{
+    <span class="t-com">// the six subsystems, injected — each still usable on its own</span>
+    <span class="t-key">public async</span> <span class="t-type">Task</span>&lt;<span class="t-type">StartResult</span>&gt; <span class="t-fn">PressAsync</span>(<span class="t-type">KeyFob</span> fob)
+    {
+        _body.<span class="t-fn">WakeBus</span>();
+        <span class="t-key">if</span> (!_immobiliser.<span class="t-fn">Accepts</span>(fob)) <span class="t-key">return</span> <span class="t-type">StartResult</span>.Rejected;
+
+        <span class="t-key">await</span> _fuel.<span class="t-fn">PrimeAsync</span>();
+        _starter.<span class="t-fn">Crank</span>();
+        <span class="t-key">await</span> _alternator.<span class="t-fn">WaitForFieldAsync</span>();     <span class="t-com">// up before the load returns</span>
+        <span class="t-key">return</span> _cluster.<span class="t-fn">SelfTest</span>();
+    }
+}</code></pre>
+    </div>
+
+    <p>A facade hides nothing and forbids nothing; a technician still drives each module from a diagnostic laptop. It gives the common path a name so the ordering stops being copied into every caller. The signal that you need one is duplication with a sequence in it: the same four calls, same order, in three controllers, and the third is missing a step. That missing step is the bug the facade would have prevented.</p>
+  </div>
+
+  <p class="pull reveal">Adapter changes the shape. Decorator adds to the behaviour. Facade shortens the sentence. All three leave the original part <em>exactly</em> as it was.</p>
+  <h2 class="reveal"><span class="num">03 &mdash; BEHAVIORAL</span>How it acts once it leaves the gate</h2>
+
+  <div class="section reveal">
+    <p>The last family is about what happens between objects while the program runs: who tells whom, who decides, and what changes when the situation changes. A car on a transporter has no behaviour. Hand somebody the key and a button twenty metres away needs to reach four systems, and one lever needs to change what every other control means.</p>
+
+    <h3 class="fam-b"><span class="tag">07</span>Observer &mdash; the key fob</h3>
+    <p class="scene">Somebody presses unlock from across a car park. Four things happen without the fob knowing about any of them: the doors unlatch, the mirrors fold out, the puddle lights come on, and the driver's seat slides to a saved position. Add a fifth next model year and the button does not change.</p>
+
+    <div class="figure reveal">
+      <div class="fig-head"><span>Figure 04 &mdash; <b>one press, many listeners</b></span><span>click a card to unsubscribe</span></div>
+      <button class="fobbtn" id="fobBtn" type="button">Press unlock</button>
+      <div class="subs" id="subGrid"></div>
+      <div class="console" id="fobLog"></div>
+      <div class="figcap">The publisher holds a list, not a set of instructions. <b>KeyFob.PressUnlock()</b> is the same two lines whether one system is listening or five.</div>
+    </div>
+
+    <p>C# has this one in the language, which is why most .NET developers use it for years before learning its name.</p>
+
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">KeyFob.cs &mdash; the publisher stays ignorant</span></div>
+<pre><code><span class="t-key">public sealed class</span> <span class="t-type">KeyFob</span>
+{
+    <span class="t-key">public event</span> <span class="t-type">EventHandler</span>&lt;<span class="t-type">UnlockEventArgs</span>&gt;? Unlocked;
+
+    <span class="t-key">public void</span> <span class="t-fn">PressUnlock</span>(<span class="t-type">DriverProfile</span> profile)
+        =&gt; Unlocked?.<span class="t-fn">Invoke</span>(<span class="t-key">this</span>, <span class="t-key">new</span> <span class="t-type">UnlockEventArgs</span>(profile, <span class="t-type">DateTime</span>.UtcNow));
+}
+
+fob.Unlocked += (_, e) =&gt; _doors.<span class="t-fn">Unlatch</span>();
+fob.Unlocked += (_, e) =&gt; _mirrors.<span class="t-fn">Unfold</span>();
+fob.Unlocked += <span class="t-key">async</span> (_, e) =&gt; <span class="t-key">await</span> _seats.<span class="t-fn">RecallAsync</span>(e.Profile);</code></pre>
+    </div>
+
+    <p>Two things will bite you. A subscription that is never removed keeps the subscriber alive as long as the publisher lives &mdash; in a long-running service that is a leak you first meet in a production memory graph, so unsubscribe or use <code>IObservable&lt;T&gt;</code> and dispose. And that <code>async</code> handler is fire-and-forget: an exception inside it goes nowhere. Once listeners do real work, move them onto a queue.</p>
+
+    <h3 class="fam-b"><span class="tag">08</span>Strategy &mdash; the drive modes</h3>
+    <p class="scene">The accelerator has one job: ask for torque. What arrives depends on the mode. Eco stretches the first half of the travel and shifts early. Sport sharpens it and holds gears to the limiter. Snow softens the opening third so you do not spin a wheel leaving a driveway. The pedal has no opinion; every map takes the same request.</p>
+
+    <p>Strategy is what removes long <code>switch</code> blocks over an enum. The branches become classes, the enum becomes a lookup, and a ninth option no longer means editing a method eight others depend on.</p>
+
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">Accelerator.cs &mdash; one request, several pedal maps</span></div>
+<pre><code><span class="t-key">public interface</span> <span class="t-type">IPedalMap</span> { <span class="t-type">Torque</span> <span class="t-fn">Translate</span>(<span class="t-type">double</span> pedalPercent); }
+
+<span class="t-key">public sealed class</span> <span class="t-type">Accelerator</span>
+{
+    <span class="t-key">private</span> <span class="t-type">IPedalMap</span> _map;
+    <span class="t-key">public</span> <span class="t-fn">Accelerator</span>(<span class="t-type">IPedalMap</span> map) =&gt; _map = map;
+
+    <span class="t-key">public void</span> <span class="t-fn">SwitchTo</span>(<span class="t-type">IPedalMap</span> map) =&gt; _map = map;   <span class="t-com">// swap at runtime</span>
+
+    <span class="t-key">public</span> <span class="t-type">Torque</span> <span class="t-fn">Press</span>(<span class="t-type">double</span> pedalPercent) =&gt; _map.<span class="t-fn">Translate</span>(pedalPercent);
+}
+
+<span class="t-com">// selection lives in one place, not scattered through the control loop</span>
+accelerator.<span class="t-fn">SwitchTo</span>(surface.IsSlippery ? _snow
+                   : driver.WantsSport ? _sport
+                   : _eco);</code></pre>
+    </div>
+
+    <p>In .NET the practical version is keyed DI: register each strategy against a key and resolve the one you need. The container becomes the lookup table, and every strategy stays testable on its own.</p>
+
+    <h3 class="fam-b"><span class="tag">09</span>State &mdash; the gear selector</h3>
+    <p class="scene">One accelerator, four meanings. Park: the pedal does nothing and the transmission is locked. Reverse: it backs up and the camera comes on. Neutral: the engine revs and the car goes nowhere. Drive: it goes. And the selector refuses to hand you Reverse at fifty kilometres an hour, whatever you do with the lever.</p>
+
+    <p>Work the selector. The same action produces different outcomes, and the interlock refuses anything that would cost you a gearbox:</p>
+
+    <div class="figure reveal">
+      <div class="fig-head"><span>Figure 05 &mdash; <b>the selector as a state machine</b></span><span>try any action</span></div>
+      <div class="sm-wrap">
+        <div class="gateviz">
+          <svg viewBox="0 0 120 170" aria-hidden="true">
+            <rect x="34" y="8" width="52" height="154" rx="26" fill="none" stroke="#2F3745" stroke-width="2"/>
+            <text x="60" y="36" text-anchor="middle" font-family="ui-monospace,monospace" font-size="15" fill="#6B7686" id="gP">P</text>
+            <text x="60" y="72" text-anchor="middle" font-family="ui-monospace,monospace" font-size="15" fill="#6B7686" id="gR">R</text>
+            <text x="60" y="108" text-anchor="middle" font-family="ui-monospace,monospace" font-size="15" fill="#6B7686" id="gN">N</text>
+            <text x="60" y="144" text-anchor="middle" font-family="ui-monospace,monospace" font-size="15" fill="#6B7686" id="gD">D</text>
+            <g id="gKnobG" style="transition:transform .28s ease"><circle cx="60" cy="31" r="13" fill="none" stroke="#9A8CF0" stroke-width="2"/></g>
+          </svg>
+          <span class="statebadge" id="smState">PARK</span>
+        </div>
+        <div>
+          <div class="acts" id="smActs"></div>
+          <div class="console" id="smLog"></div>
+        </div>
+      </div>
+      <div class="figcap">Each gear answers the <b>same</b> set of actions differently &mdash; and some answers depend on whether the car is still rolling.</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">Gear.cs &mdash; the state returns its successor</span></div>
+<pre><code><span class="t-key">public interface</span> <span class="t-type">IGear</span>
+{
+    <span class="t-type">IGear</span> <span class="t-fn">Select</span>(<span class="t-type">Selector</span> to, <span class="t-type">Vehicle</span> car);
+}
+
+<span class="t-key">public sealed class</span> <span class="t-type">Drive</span> : <span class="t-type">IGear</span>
+{
+    <span class="t-key">public</span> <span class="t-type">IGear</span> <span class="t-fn">Select</span>(<span class="t-type">Selector</span> to, <span class="t-type">Vehicle</span> car) =&gt; to <span class="t-key">switch</span>
+    {
+        <span class="t-type">Selector</span>.Neutral                     =&gt; <span class="t-key">new</span> <span class="t-type">Neutral</span>(),
+        <span class="t-type">Selector</span>.Park    <span class="t-key">when</span> !car.IsRolling =&gt; <span class="t-key">new</span> <span class="t-type">Park</span>(),
+        <span class="t-type">Selector</span>.Reverse <span class="t-key">when</span> !car.IsRolling =&gt; <span class="t-key">new</span> <span class="t-type">Reverse</span>(),
+        _                                     =&gt; <span class="t-key">this</span>      <span class="t-com">// the interlock holds</span>
+    };
+}</code></pre>
+    </div>
+
+    <p>Strategy and State share almost the same class diagram, which is why they get confused. The difference is who holds the wheel: a strategy is chosen from outside and stays until someone outside changes it; a state replaces itself from inside as events arrive.</p>
+
+    <p>Reach for State when you have an order status, a claim workflow, a device lifecycle &mdash; anything where <code>switch (status)</code> has appeared in four methods and each is missing a different case. Once each status is a class, the compiler helps: a new state that forgets an action will not build.</p>
+  </div>
+
+  <h2 class="reveal"><span class="num">04 &mdash; CHOOSING</span>Which shelf to reach for</h2>
+
+  <div class="section reveal">
+    <p>Patterns are names for shapes that solutions converge on, not shapes you start from. Writing the straightforward version first is the right move almost every time. The pressure that turns straightforward code into a pattern arrives later, as a specific complaint. Match the complaint, not the diagram.</p>
+
+    <div class="figure reveal">
+      <div class="fig-head"><span>Figure 06 &mdash; <b>the complaint index</b></span><span>filter by family</span></div>
+      <div class="btn-row" id="chBtns">
+        <button class="btn on" data-f="all" type="button">All nine</button>
+        <button class="btn c" data-f="c" type="button">Creational</button>
+        <button class="btn s" data-f="s" type="button">Structural</button>
+        <button class="btn b" data-f="b" type="button">Behavioral</button>
+      </div>
+      <table class="chooser">
+        <thead><tr><th>What you catch yourself saying</th><th>Shelf</th></tr></thead>
+        <tbody id="chBody">
+          <tr data-f="c"><td>"This class names a concrete type it has no business knowing about."</td><td class="pn c">Factory Method</td></tr>
+          <tr data-f="c"><td>"The constructor has eleven parameters and six of them are optional."</td><td class="pn c">Builder</td></tr>
+          <tr data-f="c"><td>"Two of these existing at once would be a bug."</td><td class="pn c">Singleton <span style="color:var(--fog)">(via DI)</span></td></tr>
+          <tr data-f="s"><td>"The interface is wrong and the code behind it is not mine to change."</td><td class="pn s">Adapter</td></tr>
+          <tr data-f="s"><td>"I need to add logging, retries and caching without editing this class."</td><td class="pn s">Decorator</td></tr>
+          <tr data-f="s"><td>"These five calls always happen together, in this order, in four places."</td><td class="pn s">Facade</td></tr>
+          <tr data-f="b"><td>"One event, several unrelated reactions, and the list keeps growing."</td><td class="pn b">Observer</td></tr>
+          <tr data-f="b"><td>"A switch that picks between interchangeable algorithms."</td><td class="pn b">Strategy</td></tr>
+          <tr data-f="b"><td>"A switch on a status field that changes what every other method does."</td><td class="pn b">State</td></tr>
+        </tbody>
+      </table>
+      <div class="figcap">Nine shelves cover the complaints that come up weekly. The other fourteen come up when they come up.</div>
+    </div>
+
+    <p>The rest of the catalogue lives in the same workshop, and most of it maps just as cleanly:</p>
+
+    <div class="rest">
+      <div><b>Prototype</b><span>Cloning an approved build sheet for the next unit instead of speccing it again.</span></div>
+      <div><b>Composite</b><span>A subassembly holds parts, a part holds fasteners, and "torque check" means the same at every level.</span></div>
+      <div><b>Proxy</b><span>The immobiliser: the same conversation with the engine, held earlier and cheaper.</span></div>
+      <div><b>Command</b><span>A service work order the technician can queue, hand over, or reverse tomorrow.</span></div>
+      <div><b>Template Method</b><span>Pre-delivery inspection: fixed steps, blanks each model fills differently.</span></div>
+      <div><b>Mediator</b><span>The CAN bus, so forty control units stop wiring to each other directly.</span></div>
+    </div>
+  </div>
+
+  <p class="pull reveal">The value of a pattern name is that when you say "make that a decorator" in a review, four people see the <em>same brake pedal</em> with four modules behind it.</p>
+
+  <div class="section reveal">
+    <p>You will not need all twenty-three; very little software does. What the catalogue buys you is shared vocabulary and a set of shapes your eye learns to recognise before the code gets bad &mdash; the constructor that keeps growing, the switch that has appeared in a fourth method, the class naming a concrete type it should never have heard of. Learn the nine on this line, and the other fourteen are a twenty-minute read on the day you need one.</p>
+  </div>
+
+  <div class="endmark">&mdash; &mdash; &mdash;</div>
+</article>
+
+<div class="wrap end-back">
+  <a class="back-link" href="index.html">&larr; Back to all stories</a>
+  <div class="share-row"><span class="share-label">Share</span><a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fniluniverse.com%2Fassembly-line-patterns.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a><a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fniluniverse.com%2Fassembly-line-patterns.html&text=Design%20Patterns%20on%20the%20Assembly%20Line" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a><a class="share-btn" href="mailto:?subject=Design%20Patterns%20on%20the%20Assembly%20Line&body=https%3A%2F%2Fniluniverse.com%2Fassembly-line-patterns.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a><button class="share-btn" type="button" data-copy-url="https://niluniverse.com/assembly-line-patterns.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button></div><div class="engage-row" data-engage="assembly-line-patterns"><button class="like-btn" type="button" aria-pressed="false" aria-label="Like this article"><svg class="like-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.6a5 5 0 0 0 0-7.1z"/></svg><span class="like-count">&ndash;</span></button><span class="engage-stat views-stat" aria-label="Views"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span class="views-count">&ndash;</span></span><span class="engage-stat shares-stat" aria-label="Shares"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg><span class="shares-count">&ndash;</span></span></div>
+</div>
+<script>
+(function () {
+  'use strict';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+  /* ---------- reveal on scroll ---------- */
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
+    $$('.reveal').forEach(function (el) { io.observe(el); });
+  } else {
+    $$('.reveal').forEach(function (el) { el.classList.add('in'); });
+  }
+
+  /* ---------- figure 01 : the build sheet ---------- */
+  var FAM = { c: ['CREATIONAL', '#E8783C'], s: ['STRUCTURAL', '#4FBFD4'], b: ['BEHAVIORAL', '#9A8CF0'] };
+  var PINS = {
+    factory:   ['c', 'Factory Method', 'The seat plant decides cloth, leather or a six-point bucket. The trim line asks for a seat and bolts it down without naming any of them.'],
+    builder:   ['c', 'Builder', 'One line, five stations, in the same order every time — and a hatchback comes off it on Monday, a panel van on Tuesday.'],
+    singleton: ['c', 'Singleton', 'One engine control unit. A second board would mean two things disagreeing about how much fuel reaches the injectors.'],
+    adapter:   ['s', 'Adapter', 'Twenty pins in the wrong order. A loom adapter speaks both pinouts, so neither the car nor the head unit has to change.'],
+    decorator: ['s', 'Decorator', 'EBD, ABS, traction control and emergency braking stacked between your foot and the calliper. Each wraps the last and still stops the car.'],
+    facade:    ['s', 'Facade', 'One button that wakes six systems in the order that keeps the starter from cranking against a locked immobiliser.'],
+    observer:  ['b', 'Observer', 'One press of the fob, four systems reacting, and the button never learns who is listening.'],
+    strategy:  ['b', 'Strategy', 'Eco, Sport or Snow. The accelerator asks for torque the same way; only the map behind it changes.'],
+    state:     ['b', 'State', 'The same pedal means four different things depending on whether the selector sits in P, R, N or D.']
+  };
+  var card = $('#mapCard');
+  function showPin(key, node) {
+    var p = PINS[key]; if (!p || !card) return;
+    var fam = FAM[p[0]];
+    $$('#carMap .pin').forEach(function (g) { g.classList.remove('sel'); });
+    if (node) node.classList.add('sel');
+    card.innerHTML = '<div class="mc-fam" style="color:' + fam[1] + '">' + fam[0] + '</div>' +
+                     '<h4>' + p[1] + '</h4><p>' + p[2] + '</p>';
+  }
+  $$('#carMap .pin').forEach(function (g) {
+    g.addEventListener('click', function () { showPin(g.getAttribute('data-p'), g); });
+    g.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showPin(g.getAttribute('data-p'), g); }
+    });
+  });
+
+  /* ---------- figure 02 : the line ---------- */
+  var STATIONS = ['01 PLATFORM', '02 POWERTRAIN', '03 BODY', '04 INTERIOR', '05 ELECTRONICS'];
+  var BUILDS = {
+    hatch: {
+      label: 'Hatchback',
+      v: ['B-segment, front-wheel drive', '1.2 L petrol, 6-speed manual', '5-door steel shell', 'Cloth, 5 seats', 'Single ECU, base cluster'],
+      out: 'new VehicleBuilder().Platform("B-segment").Powertrain(Engine.Petrol12, Gearbox.Manual6).Body(doors: 5, shell: "steel").Interior(Trim.Cloth, seats: 5).Electronics(Cluster.Base).Build()'
+    },
+    suv: {
+      label: 'SUV',
+      v: ['C-segment, raised ride height', '1.5 L hybrid, e-CVT', '5-door, roof rails', 'Leather, 7 seats', 'Twin ECU, 12-inch cluster'],
+      out: 'new VehicleBuilder().Platform("C-segment raised").Powertrain(Engine.Hybrid15, Gearbox.Ecvt).Body(doors: 5, shell: "steel+alloy").Interior(Trim.Leather, seats: 7).Electronics(Cluster.Wide).Build()'
+    },
+    van: {
+      label: 'Panel van',
+      v: ['Long-wheelbase ladder frame', '2.0 L diesel, 6-speed', '3-door, no rear glass', 'Vinyl, 2 seats', 'Single ECU, fleet telematics'],
+      out: 'new VehicleBuilder().Platform("LWB ladder").Powertrain(Engine.Diesel20, Gearbox.Manual6).Body(doors: 3, shell: "steel").Interior(Trim.Vinyl, seats: 2).Electronics(Cluster.Fleet).Build()'
+    }
+  };
+  var stepsEl = $('#bldSteps'), outEl = $('#bldOut'), bldTimers = [];
+  if (stepsEl) {
+    stepsEl.innerHTML = STATIONS.map(function (n) {
+      return '<div class="step"><div class="sn">' + n + '</div><div class="sv"></div></div>';
+    }).join('');
+  }
+  function runLine(key) {
+    if (!stepsEl) return;
+    bldTimers.forEach(clearTimeout); bldTimers = [];
+    var b = BUILDS[key], steps = $$('#bldSteps .step');
+    steps.forEach(function (s) { s.classList.remove('on'); $('.sv', s).textContent = ''; });
+    outEl.innerHTML = '<span style="opacity:.6">line running&hellip;</span>';
+    b.v.forEach(function (val, i) {
+      bldTimers.push(setTimeout(function () {
+        steps[i].classList.add('on');
+        $('.sv', steps[i]).textContent = val;
+      }, 90 + i * 240));
+    });
+    bldTimers.push(setTimeout(function () {
+      outEl.innerHTML = '<b>&#10003; ' + b.label + ' off the line</b><br>' + b.out;
+    }, 90 + b.v.length * 240));
+  }
+  $$('#bldBtns .btn').forEach(function (b) {
+    b.addEventListener('click', function () {
+      $$('#bldBtns .btn').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      runLine(b.getAttribute('data-h'));
+    });
+  });
+  runLine('hatch');
+
+  /* ---------- figure 03 : the brake stack ---------- */
+  var MODULES = {
+    Ebd:             { label: 'EBD',                act: 'rebalances pressure front to rear' },
+    Abs:             { label: 'ABS',                act: 'releases and reapplies when a wheel locks' },
+    TractionControl: { label: 'Traction control',   act: 'brakes the one wheel that is spinning' },
+    Aeb:             { label: 'Emergency braking',  act: 'presses the pedal before you do' }
+  };
+  var ORDER = ['Ebd', 'Abs', 'TractionControl', 'Aeb'];
+  var active = [];
+  var stackEl = $('#decStack'), compEl = $('#decCompose'), decLog = $('#decLog');
+  function renderStack() {
+    if (!stackEl) return;
+    var html = '<div class="layerbox core">Calliper<div style="font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;color:var(--fog);margin-top:.3rem">squeezes the disc</div></div>';
+    active.forEach(function (k) {
+      html = '<div class="layerbox"><span class="lname">' + MODULES[k].label + '</span>' + html + '</div>';
+    });
+    stackEl.innerHTML = html;
+    var expr = 'new Calliper()';
+    active.forEach(function (k) { expr = 'new <span class="cn">' + k + '</span>(' + expr + ')'; });
+    compEl.innerHTML = 'IBrake pedal = ' + expr + ';';
+    var lines = ['<div class="hl">pedal.Apply(input)</div>'];
+    active.slice().reverse().forEach(function (k) {
+      lines.push('<div>&nbsp;&nbsp;' + k + ' &rarr; ' + MODULES[k].act + '</div>');
+    });
+    lines.push('<div class="ok">&nbsp;&nbsp;Calliper &rarr; squeezes the disc</div>');
+    decLog.innerHTML = lines.join('');
+  }
+  $$('#decBtns .btn').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var k = b.getAttribute('data-l');
+      var i = active.indexOf(k);
+      if (i >= 0) { active.splice(i, 1); b.classList.remove('on'); }
+      else { active.push(k); active.sort(function (a, c) { return ORDER.indexOf(a) - ORDER.indexOf(c); }); b.classList.add('on'); }
+      renderStack();
+    });
+  });
+  renderStack();
+
+  /* ---------- figure 04 : the key fob ---------- */
+  var SUBS = [
+    { id: 'doors',   icon: '&#128682;', name: 'Door latches', says: 'Doors.Unlatch()' },
+    { id: 'mirrors', icon: '&#129694;', name: 'Mirrors',       says: 'Mirrors.Unfold()' },
+    { id: 'lights',  icon: '&#128161;', name: 'Puddle lights', says: 'Lights.Welcome(seconds: 30)' },
+    { id: 'seat',    icon: '&#128186;', name: 'Seat memory',   says: 'await Seats.RecallAsync(e.Profile)' }
+  ];
+  var subOn = { doors: true, mirrors: true, lights: true, seat: true };
+  var subGrid = $('#subGrid'), fobLog = $('#fobLog');
+  if (subGrid) {
+    subGrid.innerHTML = SUBS.map(function (s) {
+      return '<div class="sub on" data-id="' + s.id + '" role="button" tabindex="0" aria-pressed="true">' +
+             '<div class="si">' + s.icon + '</div><div class="sl">' + s.name + '</div>' +
+             '<div class="st">SUBSCRIBED</div></div>';
+    }).join('');
+  }
+  function toggleSub(el) {
+    var id = el.getAttribute('data-id');
+    subOn[id] = !subOn[id];
+    el.classList.toggle('on', subOn[id]);
+    el.querySelector('.st').textContent = subOn[id] ? 'SUBSCRIBED' : 'REMOVED';
+    el.setAttribute('aria-pressed', subOn[id] ? 'true' : 'false');
+    var n = SUBS.filter(function (s) { return subOn[s.id]; }).length;
+    var who = SUBS.filter(function (s) { return s.id === id; })[0].name;
+    fobLog.innerHTML = '<div class="hl">' + (subOn[id] ? '+=' : '-=') + ' ' + who + '</div>' +
+      '<div>Unlocked now has ' + n + ' subscriber' + (n === 1 ? '' : 's') + '. KeyFob.PressUnlock() is unchanged.</div>';
+  }
+  $$('#subGrid .sub').forEach(function (el) {
+    el.addEventListener('click', function () { toggleSub(el); });
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSub(el); }
+    });
+  });
+  var fobTimers = [];
+  var fobBtn = $('#fobBtn');
+  if (fobBtn) fobBtn.addEventListener('click', function () {
+    fobTimers.forEach(clearTimeout); fobTimers = [];
+    var btn = this;
+    btn.classList.remove('ring'); void btn.offsetWidth; btn.classList.add('ring');
+    var live = SUBS.filter(function (s) { return subOn[s.id]; });
+    fobLog.innerHTML = '<div class="hl">fob.PressUnlock(driverProfile)</div>';
+    if (!live.length) {
+      fobLog.innerHTML += '<div class="no">Unlocked is null &mdash; nothing listening, nothing thrown.</div>';
+      return;
+    }
+    live.forEach(function (s, i) {
+      fobTimers.push(setTimeout(function () {
+        var el = $('#subGrid .sub[data-id="' + s.id + '"]');
+        el.classList.add('fire');
+        setTimeout(function () { el.classList.remove('fire'); }, 480);
+        fobLog.innerHTML += '<div class="ok">&nbsp;&nbsp;&rarr; ' + s.says + '</div>';
+        fobLog.scrollTop = fobLog.scrollHeight;
+      }, 140 + i * 220));
+    });
+  });
+
+  /* ---------- figure 05 : the gear selector ---------- */
+  var ACTIONS = ['Select P', 'Select R', 'Select N', 'Select D', 'Accelerator', 'Brake'];
+  var GEARS = { P: 'PARK', R: 'REVERSE', N: 'NEUTRAL', D: 'DRIVE' };
+  var KNOB_Y = { P: 31, R: 67, N: 103, D: 139 };
+  var gear = 'P', rolling = false;
+  var smLog = $('#smLog'), smBadge = $('#smState'), smActs = $('#smActs');
+  if (smActs) {
+    smActs.innerHTML = ACTIONS.map(function (a) {
+      return '<button class="btn b" data-a="' + a + '" type="button">' + a + '</button>';
+    }).join('');
+  }
+  function paint() {
+    var knob = $('#gKnobG');
+    if (knob) { knob.style.transform = 'translateY(' + (KNOB_Y[gear] - KNOB_Y.P) + 'px)'; }
+    ['P', 'R', 'N', 'D'].forEach(function (g) {
+      var t = $('#g' + g);
+      if (t) t.setAttribute('fill', g === gear ? '#9A8CF0' : '#6B7686');
+    });
+    if (smBadge) {
+      smBadge.innerHTML = GEARS[gear] + (rolling ? ' <span class="roll">&middot; ROLLING</span>' : '');
+    }
+  }
+  function resolve(action) {
+    /* returns [ok, message] and mutates gear/rolling */
+    var want = action.indexOf('Select ') === 0 ? action.slice(7) : null;
+    if (want) {
+      if (want === gear) return [false, 'already in ' + GEARS[gear]];
+      if (want === 'N') { gear = 'N'; return [true, 'neutral engaged — the wheels are free']; }
+      if (rolling && (want === 'P' || want === 'R')) {
+        return [false, 'the interlock refuses ' + GEARS[want] + ' while you are rolling'];
+      }
+      if (rolling && want === 'D' && gear === 'R') {
+        return [false, 'not while you are still rolling backwards'];
+      }
+      gear = want;
+      return [true, GEARS[want] + ' engaged'];
+    }
+    if (action === 'Accelerator') {
+      if (gear === 'P') return [false, 'the pedal does nothing in Park'];
+      if (gear === 'N') return [false, 'the engine revs — nothing reaches the wheels'];
+      rolling = true;
+      return [true, gear === 'D' ? 'pulling away' : 'backing up — the camera comes on'];
+    }
+    if (action === 'Brake') {
+      if (!rolling) return [false, 'already stopped'];
+      rolling = false;
+      return [true, 'stopped — the interlock releases'];
+    }
+    return [false, 'nothing happens'];
+  }
+  function act(action) {
+    var from = GEARS[gear] + (rolling ? ' (rolling)' : '');
+    var r = resolve(action);
+    paint();
+    var enumName = action.replace('Select ', 'Selector.').replace('Accelerator', 'Pedal.Down').replace('Brake', 'Pedal.Brake');
+    smLog.innerHTML = '<div class="hl">' + from + ' &rarr; ' + enumName + '</div>' +
+                      '<div class="' + (r[0] ? 'ok' : 'no') + '">&nbsp;&nbsp;' + r[1] + '</div>' +
+                      '<div style="color:var(--fog)">&nbsp;&nbsp;now ' + GEARS[gear] + (rolling ? ', rolling' : ', stopped') + '</div>';
+  }
+  $$('#smActs .btn').forEach(function (b) {
+    b.addEventListener('click', function () { act(b.getAttribute('data-a')); });
+  });
+  paint();
+  if (smLog) smLog.innerHTML = '<div style="color:var(--fog)">The car starts in Park, stopped. Try any action.</div>';
+
+  /* ---------- figure 06 : the complaint index ---------- */
+  $$('#chBtns .btn').forEach(function (b) {
+    b.addEventListener('click', function () {
+      $$('#chBtns .btn').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      var f = b.getAttribute('data-f');
+      $$('#chBody tr').forEach(function (tr) {
+        tr.classList.toggle('hide', f !== 'all' && tr.getAttribute('data-f') !== f);
+      });
+    });
+  });
+})();
+</script>
+
+<div class="wrap related-section" style="padding:44px 0 8px;border-top:1px solid var(--line);margin-top:8px">
+  <h2 style="margin-bottom:22px">Continue exploring</h2>
+  <div style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+    <a href="observability-detective.html" style="display:block;text-decoration:none">
+      <div style="font-family:var(--serif);font-size:1.05rem;font-weight:600;margin-bottom:6px">The Case of the Vanishing Request &rarr;</div>
+      <div style="font-size:.92rem;opacity:.8;line-height:1.5">Cracking a cross-service failure with distributed tracing.</div>
+    </a>
+    <a href="keystone-mission-control.html" style="display:block;text-decoration:none">
+      <div style="font-family:var(--serif);font-size:1.05rem;font-weight:600;margin-bottom:6px">Project Keystone &rarr;</div>
+      <div style="font-size:.92rem;opacity:.8;line-height:1.5">Azure DevOps pipelines for a microservice ecosystem.</div>
+    </a>
+    <a href="deterministic-ai-systems.html" style="display:block;text-decoration:none">
+      <div style="font-family:var(--serif);font-size:1.05rem;font-weight:600;margin-bottom:6px">Same Show Every Night &rarr;</div>
+      <div style="font-size:.92rem;opacity:.8;line-height:1.5">Making LLMs behave the same way, every single time.</div>
+    </a>
+  </div>
+</div>
+<div class="wrap comments-section">
+  <h2 class="comments-heading">Discussion</h2>
+  <script src="https://giscus.app/client.js"
+    data-repo="niluniverse/niluniverse"
+    data-repo-id="R_kgDOTx5tWg"
+    data-category="Comments"
+    data-category-id="DIC_kwDOTx5tWs4DD7gV"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="bottom"
+    data-theme="https://www.niluniverse.com/giscus-theme.css"
+    data-lang="en"
+    crossorigin="anonymous"
+    async>
+  </script>
+</div>
+<footer>
+  <div class="wrap foot-inner">
+    <span>&copy; 2026 Nilesh Mohite &mdash; <a href="https://www.nileshmohite.com" style="color:var(--accent)">www.nileshmohite.com</a></span>
+    <span class="foot-social">
+      <a class="foot-icon" href="https://www.linkedin.com/in/nileshmohite/" target="_blank" rel="noopener" aria-label="LinkedIn profile"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a>
+      <a class="foot-icon" href="https://github.com/niluniverse?tab=repositories" target="_blank" rel="noopener" aria-label="GitHub profile"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.05 11.05 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.8 1.19 1.83 1.19 3.09 0 4.43-2.7 5.41-5.26 5.7.41.36.78 1.07.78 2.15 0 1.56-.01 2.81-.01 3.19 0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12c0-6.27-5.23-11.5-11.5-11.5z"/></svg></a>
+    </span>
+    <span>Written between deployments &middot; Amalner, India</span>
+  </div>
+</footer>
+<script>
+(function(){
+  var KEY='nu-theme';
+  var toggle=document.getElementById('themeToggle');
+  if(!toggle) return;
+  function apply(t){
+    document.documentElement.setAttribute('data-theme',t);
+    toggle.setAttribute('aria-pressed', t==='linkedin' ? 'true':'false');
+    toggle.setAttribute('title', t==='linkedin' ? 'Switch to dark theme' : 'Switch to light theme');
+  }
+  var saved=null; try{saved=localStorage.getItem(KEY);}catch(e){}
+  if(saved==='linkedin' || saved==='cinema') apply(saved);
+  toggle.addEventListener('click',function(){
+    var isLight=document.documentElement.getAttribute('data-theme')==='linkedin';
+    var next=isLight?'cinema':'linkedin';
+    apply(next);
+    try{localStorage.setItem(KEY,next);}catch(e){}
+  });
+})();
+</script>
+<script>
+(function(){
+  document.querySelectorAll('[data-copy-url]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var url = btn.getAttribute('data-copy-url');
+      var done = function(){
+        var original = btn.getAttribute('aria-label');
+        btn.classList.add('copied');
+        btn.setAttribute('aria-label','Copied!');
+        setTimeout(function(){ btn.classList.remove('copied'); btn.setAttribute('aria-label', original); }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function(){});
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = url; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch(e){}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+})();
+</script>
+<script>
+(function(){
+  var HEADING_SELECTOR = 'article h2';
+  var headings = Array.prototype.slice.call(document.querySelectorAll(HEADING_SELECTOR));
+  if (!headings.length) return;
+
+  var fill = document.getElementById('rpFill');
+  var ring = document.getElementById('rpRing');
+  var pct = document.getElementById('rpPct');
+  var status = document.getElementById('rpStatus');
+  var list = document.getElementById('rpList');
+  var toc = document.getElementById('rpToc');
+  var toggle = document.getElementById('rpToggle');
+  if (!fill || !toc) return;
+
+  var RING_CIRC = 97.4;
+  var seen = {};
+
+  var items = headings.map(function(h, i){
+    var base = 'rp-section-' + (i + 1);
+    if (!h.id) h.id = base;
+    while (seen[h.id]) { h.id = base + '-' + Math.random().toString(36).slice(2,6); }
+    seen[h.id] = true;
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.textContent = h.textContent.replace(/\s+/g,' ').trim();
+    li.appendChild(a);
+    list.appendChild(li);
+    return { heading: h, li: li };
+  });
+
+  function updateProgress(){
+    var doc = document.documentElement;
+    var scrollTop = window.scrollY || doc.scrollTop;
+    var height = doc.scrollHeight - doc.clientHeight;
+    var ratio = height > 0 ? Math.min(1, Math.max(0, scrollTop / height)) : 0;
+    var percent = Math.round(ratio * 100);
+    fill.style.width = percent + '%';
+    if (ring) ring.style.strokeDashoffset = String(RING_CIRC * (1 - ratio));
+    if (pct) pct.textContent = percent + '%';
+    if (status) status.textContent = percent >= 99 ? 'Finished reading' : percent + '% read';
+
+    var activeIdx = 0;
+    var probe = scrollTop + window.innerHeight * 0.3;
+    for (var i = 0; i < items.length; i++) {
+      var top = items[i].heading.getBoundingClientRect().top + scrollTop;
+      if (top <= probe) activeIdx = i;
+    }
+    items.forEach(function(it, i){ it.li.classList.toggle('active', i === activeIdx); });
+  }
+
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  window.addEventListener('resize', updateProgress);
+  updateProgress();
+
+  toggle.addEventListener('click', function(){
+    var open = toc.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', function(e){
+    if (!toc.contains(e.target)) toc.classList.remove('open');
+  });
+})();
+</script>
+<script>
+(function(){
+  var rows = document.querySelectorAll('[data-engage]');
+  if (!rows.length) return;
+  var slug = rows[0].getAttribute('data-engage');
+
+  function req(method, url, body){
+    var opts = { method: method, headers: {} };
+    if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    return fetch(url, opts).then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('http ' + r.status)); });
+  }
+  function setAllText(cls, value){
+    document.querySelectorAll(cls).forEach(function(el){ el.textContent = value; });
+  }
+  function setLikedState(state){
+    document.querySelectorAll('.like-btn').forEach(function(btn){
+      btn.classList.toggle('liked', state);
+      btn.setAttribute('aria-pressed', state ? 'true' : 'false');
+    });
+  }
+
+  var likedKey = 'nu-liked-' + slug;
+  var liked = false;
+  try { liked = localStorage.getItem(likedKey) === '1'; } catch(e){}
+  setLikedState(liked);
+
+  Promise.all([
+    req('GET','/api/likes?slug=' + encodeURIComponent(slug)).catch(function(){ return null; }),
+    req('GET','/api/views?slug=' + encodeURIComponent(slug)).catch(function(){ return null; }),
+    req('GET','/api/shares?slug=' + encodeURIComponent(slug)).catch(function(){ return null; })
+  ]).then(function(res){
+    var likes = res[0], views = res[1], shares = res[2];
+    if (!likes && !views && !shares) { rows.forEach(function(r){ r.hidden = true; }); return; }
+    if (likes) setAllText('.like-count', likes.count);
+    if (views) setAllText('.views-count', views.count);
+    if (shares) setAllText('.shares-count', shares.count);
+  });
+
+  document.querySelectorAll('.like-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var next = !liked;
+      liked = next;
+      setLikedState(next);
+      var firstCount = document.querySelector('.like-count');
+      var current = parseInt(firstCount ? firstCount.textContent : '0', 10);
+      if (isNaN(current)) current = 0;
+      var optimistic = Math.max(0, current + (next ? 1 : -1));
+      setAllText('.like-count', optimistic);
+      try { localStorage.setItem(likedKey, next ? '1' : '0'); } catch(e){}
+      req('POST','/api/likes', { slug: slug, liked: next }).then(function(d){
+        setAllText('.like-count', d.count);
+      }).catch(function(){
+        liked = !next;
+        setLikedState(liked);
+        setAllText('.like-count', current);
+        try { localStorage.setItem(likedKey, liked ? '1' : '0'); } catch(e){}
+      });
+    });
+  });
+
+  var viewedKey = 'nu-viewed-' + slug;
+  var alreadyViewed = false;
+  try { alreadyViewed = sessionStorage.getItem(viewedKey) === '1'; } catch(e){}
+  if (!alreadyViewed) {
+    try { sessionStorage.setItem(viewedKey, '1'); } catch(e){}
+    req('POST','/api/views', { slug: slug }).then(function(d){
+      setAllText('.views-count', d.count);
+    }).catch(function(){});
+  }
+
+  document.querySelectorAll('.share-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var label = (btn.getAttribute('aria-label') || '').toLowerCase();
+      var channel = 'other';
+      if (label.indexOf('linkedin') > -1) channel = 'linkedin';
+      else if (label.indexOf('x') > -1) channel = 'x';
+      else if (label.indexOf('email') > -1) channel = 'email';
+      else if (label.indexOf('copy') > -1) channel = 'copy';
+      req('POST','/api/shares', { slug: slug, channel: channel }).then(function(d){
+        setAllText('.shares-count', d.count);
+      }).catch(function(){});
+    });
+  });
+})();
+</script>
+</body>
+</html>
