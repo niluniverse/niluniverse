@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cinema">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10,000 Requests a Second: The Midnight Sale War Room | Nilesh Mohite</title>
+<meta name="description" content="How a .NET and Azure team keeps APIs standing when a festive sale opens at midnight: capacity maths, CDN, rate limiting, caching, CQRS, queues, code fixes and AKS scaling.">
+<meta name="author" content="Nilesh Mohite">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://niluniverse.com/midnight-sale-war-room.html">
+<meta property="og:title" content="10,000 Requests a Second: The Midnight Sale War Room" />
+<meta property="og:description" content="How a .NET and Azure team keeps APIs standing when a festive sale opens at midnight: capacity maths, CDN, rate limiting, caching, CQRS, queues, code fixes and AKS scaling." />
+<meta property="og:url" content="https://niluniverse.com/midnight-sale-war-room.html" />
+<meta property="og:type" content="article" />
+<meta property="og:image" content="https://niluniverse.com/midnight-sale-war-room-banner.jpg" />
+<meta property="og:image:width" content="1400" />
+<meta property="og:image:height" content="788" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="10,000 Requests a Second: The Midnight Sale War Room" />
+<meta name="twitter:description" content="How a .NET and Azure team keeps APIs standing when a festive sale opens at midnight: capacity maths, CDN, rate limiting, caching, CQRS, queues, code fixes and AKS scaling." />
+<meta name="twitter:image" content="https://niluniverse.com/midnight-sale-war-room-banner.jpg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="favicon-180.png" />
+<style>
+  /* ============ BASE (restored — assets/site.css is not present on this deployment) ============ */
+  :root {
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+    --serif: 'Fraunces', Georgia, serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 16px; line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1, "liga" 1;
+    transition: background .25s, color .25s;
+  }
+  ::selection { background: var(--accent); color: var(--on-accent); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-hi); }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-hi); outline-offset: 3px; border-radius: 2px;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---- header / nav ---- */
+  header.site {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav { display: flex; align-items: center; justify-content: space-between; height: 62px; gap: 16px; }
+  .brand {
+    font-family: var(--mono); font-size: 14.5px; font-weight: 500; color: var(--head);
+    letter-spacing: 0.02em; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 9px; text-decoration: none;
+  }
+  .brand:hover { color: var(--head); }
+  .brand-mark { width: 26px; height: 26px; flex: none; }
+  .brand .b-nil { color: var(--accent); }
+
+  /* ---- comments (giscus) ---- */
+  .comments-section { padding: 44px 0 8px; border-top: 1px solid var(--line); margin-top: 8px; }
+  .comments-heading {
+    font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 1.35rem;
+    color: var(--head); margin: 0 0 22px; text-align: center;
+  }
+
+  /* ---- footer ---- */
+  footer { border-top: 1px solid var(--line); padding: 26px 0 34px; }
+  .foot-inner {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+    font-family: var(--mono); font-size: 12px; color: var(--dim);
+  }
+  .foot-social { display: inline-flex; align-items: center; gap: 8px; }
+  .foot-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 50%; flex: none;
+    border: 1px solid var(--line); color: var(--dim); text-decoration: none;
+    transition: color .18s, border-color .18s, background .18s, transform .18s;
+  }
+  .foot-icon:hover { color: var(--accent); border-color: var(--accent); background: var(--panel-2); transform: translateY(-1px); }
+  .foot-icon svg { width: 14px; height: 14px; }
+</style>
+<style>
+  /* ==== War-room palette (article-only tokens; shared cinema tokens left untouched) ==== */
+  :root{
+    --ink:#0a0c11;
+    --ink-2:#10131b;
+    --steel:#161a24;
+    --edge:#262c3b;
+    --paper:#e9ecf2;
+    --paper-dim:#b4bbcc;
+    --fog:#838ba1;
+    --signal:#ff8a3d;       /* sale saffron */
+    --signal-deep:#e0701f;
+    --alarm:#ff4d5e;
+    --calm:#3ed6a0;
+    --volt:#6fb3ff;
+    --maxw:780px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:var(--sans);
+    line-height:1.72;
+    font-size:18px;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--signal);color:var(--ink)}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;min-height:100vh;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;
+    text-align:center;padding:6rem 1.5rem 4rem;overflow:hidden;
+    background:radial-gradient(120% 90% at 50% 100%, #1d130c 0%, var(--ink) 62%);
+  }
+  #trafficfield{position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.9}
+  .hero-veil{
+    position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(62% 52% at 50% 46%, rgba(10,12,17,.78) 0%, rgba(10,12,17,.5) 60%, transparent 100%);
+  }
+  .hero-inner{position:relative;z-index:2;max-width:900px;animation:rise 1.1s cubic-bezier(.2,.7,.2,1) both}
+  .eyebrow{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.38em;text-transform:uppercase;
+    color:var(--signal);margin-bottom:1.6rem;display:inline-block;
+    padding:.5rem 1rem;border:1px solid rgba(255,138,61,.32);border-radius:2px;
+  }
+  .hero h1{
+    font-family:var(--serif);font-weight:600;
+    font-size:clamp(2.5rem,7.4vw,5.2rem);line-height:1.02;letter-spacing:-.02em;margin-bottom:1.3rem;
+  }
+  .hero h1 .hot{color:var(--signal);text-shadow:0 0 42px rgba(255,138,61,.45)}
+  .dek{font-size:clamp(1.05rem,2.4vw,1.3rem);color:var(--paper-dim);max-width:640px;margin:0 auto 2rem}
+  .warboard{
+    display:inline-flex;gap:0;margin:0 auto 2rem;border:1px solid var(--edge);border-radius:8px;
+    background:rgba(16,19,27,.85);overflow:hidden;font-family:var(--mono);
+  }
+  .warboard div{padding:.7rem 1.1rem;border-right:1px solid var(--edge);text-align:left}
+  .warboard div:last-child{border-right:0}
+  .warboard small{display:block;font-size:.6rem;letter-spacing:.2em;color:var(--fog);text-transform:uppercase}
+  .warboard b{display:block;font-size:1.2rem;font-weight:500;color:var(--paper);font-variant-numeric:tabular-nums}
+  .warboard b{white-space:nowrap}
+  .warboard b.hot{color:var(--signal)}
+  .warboard b.ok{color:var(--calm)}
+  .byline{font-family:var(--mono);font-size:.74rem;letter-spacing:.14em;color:var(--fog);text-transform:uppercase}
+  .scrollcue{
+    position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);z-index:2;color:var(--fog);
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.3em;text-transform:uppercase;
+    display:flex;flex-direction:column;align-items:center;gap:.6rem;animation:bob 2.4s ease-in-out infinite;
+  }
+  .scrollcue .line{width:1px;height:34px;background:linear-gradient(var(--signal),transparent)}
+  @keyframes rise{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+  @keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+
+  /* ---------- ARTICLE ---------- */
+  article{max-width:var(--maxw);margin:0 auto;padding:4.5rem 1.5rem 6rem}
+  .section{margin-bottom:3rem}
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  article h2{
+    font-family:var(--serif);font-weight:600;font-size:clamp(1.65rem,4vw,2.4rem);
+    line-height:1.14;letter-spacing:-.015em;margin:3.4rem 0 1.2rem;color:var(--paper);
+  }
+  article h2 .num{
+    display:block;font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.32em;
+    color:var(--signal);margin-bottom:.7rem;
+  }
+  article h3{font-family:var(--serif);font-weight:600;font-size:1.28rem;margin:2.2rem 0 .8rem;color:var(--paper)}
+  article p{margin-bottom:1.3rem;color:#d4d9e4}
+  .lead{font-size:1.16rem}
+  .lead:first-letter{
+    font-family:var(--serif);font-weight:600;float:left;font-size:4.4rem;line-height:.74;
+    padding:.34rem .5rem 0 0;color:var(--signal);
+  }
+  article strong{color:var(--paper);font-weight:600}
+  article a{color:var(--signal);text-decoration:none;border-bottom:1px solid rgba(255,138,61,.35)}
+  article a:hover{border-color:var(--signal)}
+  :not(pre)>code{font-family:var(--mono);font-size:.84em;background:var(--steel);border:1px solid var(--edge);
+    border-radius:4px;padding:.05em .35em;color:#ffd2b3;overflow-wrap:anywhere}
+
+  /* radio chatter from the war room */
+  .radio{
+    margin:1.8rem 0;padding:1rem 1.2rem;border-left:3px solid var(--signal);
+    background:linear-gradient(90deg,rgba(255,138,61,.08),transparent 80%);
+    font-family:var(--mono);font-size:.86rem;line-height:1.65;color:var(--paper-dim);border-radius:0 8px 8px 0;
+  }
+  .radio .who{color:var(--signal);font-weight:500}
+  .radio .ts{color:var(--fog);margin-right:.6rem}
+  .radio.alarm{border-left-color:var(--alarm);background:linear-gradient(90deg,rgba(255,77,94,.09),transparent 80%)}
+  .radio.alarm .who{color:var(--alarm)}
+  .radio.calm{border-left-color:var(--calm);background:linear-gradient(90deg,rgba(62,214,160,.08),transparent 80%)}
+  .radio.calm .who{color:var(--calm)}
+
+  .pull{
+    font-family:var(--serif);font-weight:600;font-size:clamp(1.45rem,3.5vw,2.05rem);line-height:1.3;
+    color:var(--paper);text-align:center;margin:3.2rem 0;padding:2rem 1rem;position:relative;
+  }
+  .pull::before{content:"\201C";position:absolute;top:-.6rem;left:50%;transform:translateX(-50%);
+    font-family:var(--serif);font-size:5rem;color:var(--signal);opacity:.3}
+  .pull em{color:var(--signal)}
+
+  /* code */
+  .code-wrap{margin:1.7rem 0;border:1px solid var(--edge);border-radius:10px;background:var(--ink-2);
+    overflow:hidden;box-shadow:0 24px 60px -30px rgba(0,0,0,.9)}
+  .code-bar{display:flex;align-items:center;gap:.5rem;padding:.65rem 1rem;background:var(--steel);border-bottom:1px solid var(--edge)}
+  .dot{width:11px;height:11px;border-radius:50%;flex:none}
+  .dot.r{background:#ff4d5e}.dot.y{background:#ffb02e}.dot.g{background:#3ed6a0}
+  .code-name{margin-left:.6rem;font-family:var(--mono);font-size:.72rem;color:var(--fog);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  pre{padding:1.2rem 1.3rem;overflow-x:auto;font-family:var(--mono);font-size:.8rem;line-height:1.7;color:#dfe4ee}
+  pre code{font-family:var(--mono)}
+  .t-key{color:#ff9f6b}.t-type{color:#7fd6c2}.t-fn{color:#6fb3ff}.t-str{color:#e6c07b}
+  .t-com{color:#6b7389;font-style:italic}.t-num{color:#ff7a8a}.t-attr{color:#c792ea}
+
+  /* before / after tabs */
+  .tabs{margin:1.7rem 0}
+  .tab-row{display:flex;gap:.4rem;margin-bottom:-1px;position:relative;z-index:1;flex-wrap:wrap}
+  .tab-btn{font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;padding:.55rem 1rem;cursor:pointer;
+    background:var(--ink-2);color:var(--fog);border:1px solid var(--edge);border-bottom:0;border-radius:8px 8px 0 0}
+  .tab-btn[aria-selected="true"]{background:var(--steel);color:var(--paper)}
+  .tab-btn.bad[aria-selected="true"]{color:var(--alarm)}
+  .tab-btn.good[aria-selected="true"]{color:var(--calm)}
+  .tabs .code-wrap{margin-top:0;border-top-left-radius:0}
+  .tab-panel[hidden]{display:none}
+
+  /* figures */
+  .figure{margin:2.4rem 0;border:1px solid var(--edge);border-radius:12px;
+    background:linear-gradient(180deg,var(--steel) 0%,var(--ink-2) 100%);padding:1.5rem 1.3rem 1.1rem;overflow:hidden}
+  .figure svg{width:100%;height:auto;display:block}
+  .figcap{font-family:var(--mono);font-size:.7rem;letter-spacing:.05em;color:var(--fog);margin-top:1rem;text-align:center;line-height:1.6}
+  .figcap b{color:var(--signal);font-weight:500}
+  .fn{fill:var(--steel);stroke:var(--edge);stroke-width:1.5}
+  .fn.hot{stroke:var(--signal)}
+  .fn.ok{stroke:var(--calm)}
+  .fn.cool{stroke:var(--volt)}
+  .fl{fill:var(--paper);font-family:var(--sans);font-size:12px;font-weight:600}
+  .fs{fill:var(--fog);font-family:var(--mono);font-size:9px}
+  .fa{stroke:var(--fog);stroke-width:1.5;fill:none}
+  .fa.hot{stroke:var(--signal)}
+  .fa.ok{stroke:var(--calm)}
+  .fa.cool{stroke:var(--volt)}
+
+  /* ---------- the request funnel lab ---------- */
+  .lab{margin:2.4rem 0;border:1px solid var(--edge);border-radius:14px;background:var(--ink-2);overflow:hidden}
+  .lab-head{padding:1rem 1.2rem;background:var(--steel);border-bottom:1px solid var(--edge);
+    display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+  .lab-title{font-family:var(--mono);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--signal)}
+  .presets{display:flex;gap:.4rem;flex-wrap:wrap}
+  .preset{font-family:var(--mono);font-size:.68rem;padding:.4rem .7rem;border-radius:999px;cursor:pointer;
+    border:1px solid var(--edge);background:var(--ink-2);color:var(--paper-dim)}
+  .preset:hover{border-color:var(--signal);color:var(--signal)}
+  .preset.alarm:hover{border-color:var(--alarm);color:var(--alarm)}
+  .lab-body{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .knobs{padding:1.1rem 1.2rem;border-right:1px solid var(--edge)}
+  .knob{margin-bottom:.9rem}
+  .knob label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.7rem;color:var(--fog);margin-bottom:.25rem;gap:.5rem}
+  .knob label output{color:var(--paper);font-variant-numeric:tabular-nums}
+  .knob input[type=range]{width:100%;accent-color:var(--signal)}
+  .readout{padding:1.1rem 1.2rem}
+  .bar{margin-bottom:.8rem}
+  .bar-top{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.7rem;color:var(--fog);margin-bottom:.25rem;gap:.5rem}
+  .bar-top b{color:var(--paper);font-weight:500;font-variant-numeric:tabular-nums}
+  .bar-track{height:12px;background:var(--steel);border-radius:6px;overflow:hidden;border:1px solid var(--edge)}
+  .bar-fill{height:100%;width:0;border-radius:6px;transition:width .35s cubic-bezier(.2,.7,.2,1),background .3s}
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:1rem}
+  .tile{border:1px solid var(--edge);border-radius:8px;padding:.6rem .7rem;background:var(--steel)}
+  .tile small{display:block;font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fog)}
+  .tile b{display:block;font-family:var(--mono);font-size:1.15rem;font-weight:500;color:var(--paper);font-variant-numeric:tabular-nums}
+  .tile.warn b{color:var(--alarm)}
+  .verdict{grid-column:1/-1;padding:.9rem 1.2rem;border-top:1px solid var(--edge);font-size:.92rem;color:var(--paper-dim);min-height:3.2rem}
+  .verdict b{color:var(--paper)}
+
+  /* stampede demo */
+  .stampede{margin:2rem 0;border:1px solid var(--edge);border-radius:12px;background:var(--ink-2);padding:1.1rem 1.2rem}
+  .stampede-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.9rem}
+  .st-btn{font-family:var(--mono);font-size:.72rem;padding:.5rem .9rem;border-radius:6px;cursor:pointer;
+    border:1px solid var(--edge);background:var(--steel);color:var(--paper-dim)}
+  .st-btn:hover{border-color:var(--signal);color:var(--signal)}
+  .st-grid{display:grid;grid-template-columns:repeat(50,1fr);gap:2px;margin-bottom:.8rem}
+  .st-grid i{display:block;aspect-ratio:1;border-radius:1px;background:var(--edge);transition:background .2s}
+  .st-grid i.db{background:var(--alarm)}
+  .st-grid i.wait{background:var(--volt)}
+  .st-grid i.hit{background:var(--calm)}
+  .st-out{font-family:var(--mono);font-size:.76rem;color:var(--fog);min-height:1.3rem}
+  .st-out b{color:var(--paper)}
+
+  /* matrix */
+  .matrix-wrap{margin:1.8rem 0;overflow-x:auto;border:1px solid var(--edge);border-radius:10px}
+  table.matrix{width:100%;border-collapse:collapse;font-size:.88rem;min-width:620px}
+  .matrix th,.matrix td{padding:.75rem .85rem;text-align:left;vertical-align:top;border-bottom:1px solid var(--edge)}
+  .matrix th{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--signal);background:var(--steel);font-weight:500}
+  .matrix td{color:#d4d9e4}
+  .matrix td:first-child{color:var(--paper);font-weight:600;white-space:nowrap}
+  .matrix tr:last-child td{border-bottom:0}
+  .matrix .ex{display:block;font-weight:400;font-size:.76rem;color:var(--fog);white-space:normal}
+
+  /* layer list */
+  ul.notes{list-style:none;margin:1.3rem 0}
+  ul.notes li{position:relative;padding-left:1.6rem;margin-bottom:.9rem;color:#d4d9e4}
+  ul.notes li::before{content:"";position:absolute;left:0;top:.62em;width:8px;height:8px;background:var(--signal);border-radius:1px;transform:rotate(45deg)}
+
+  /* checklist */
+  .checklist{margin:1.8rem 0;border:1px solid var(--edge);border-radius:12px;background:var(--ink-2);overflow:hidden}
+  .cl-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.9rem 1.2rem;background:var(--steel);border-bottom:1px solid var(--edge)}
+  .cl-head span{font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--signal)}
+  .cl-head b{font-family:var(--mono);font-size:.8rem;color:var(--paper);font-weight:500}
+  .cl-meter{height:4px;background:var(--steel)}
+  .cl-meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--signal),var(--calm));transition:width .3s}
+  .checklist ol{list-style:none;padding:.5rem 0;margin:0}
+  .checklist li{border-bottom:1px solid rgba(38,44,59,.6)}
+  .checklist li:last-child{border-bottom:0}
+  .checklist label{display:flex;gap:.8rem;align-items:flex-start;padding:.7rem 1.2rem;cursor:pointer;font-size:.93rem;color:#d4d9e4}
+  .checklist input{margin-top:.35rem;accent-color:var(--calm);flex:none;width:16px;height:16px}
+  .checklist input:checked + span{color:var(--fog);text-decoration:line-through;text-decoration-color:rgba(131,139,161,.5)}
+  .checklist .layer{font-family:var(--mono);font-size:.64rem;letter-spacing:.12em;color:var(--signal);text-transform:uppercase;margin-right:.4rem}
+
+  .divider{display:flex;align-items:center;gap:1rem;margin:3rem 0;color:var(--edge)}
+  .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--edge)}
+  .divider span{font-family:var(--mono);font-size:.78rem;color:var(--signal);letter-spacing:.3em}
+
+  .note{margin:2.6rem 0 0;padding:1.3rem 1.4rem;border:1px dashed var(--edge);border-radius:10px;
+    font-size:.9rem;color:var(--paper-dim);background:rgba(22,26,36,.5)}
+  .note b{color:var(--paper)}
+
+  @media (max-width:720px){
+    .lab-body{grid-template-columns:1fr}
+    .knobs{border-right:0;border-bottom:1px solid var(--edge)}
+    .warboard div{padding:.6rem .7rem}
+    .warboard b{font-size:1rem}
+  }
+  @media (max-width:420px){
+    .warboard div{padding:.5rem .5rem}
+    .warboard b{font-size:.86rem}
+    .warboard small{font-size:.54rem}
+  }
+  @media (max-width:600px){
+    body{font-size:16.5px}
+    .lead:first-letter{font-size:3.5rem}
+    pre{font-size:.72rem}
+    .st-grid{grid-template-columns:repeat(25,1fr)}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .reveal{opacity:1;transform:none}
+  }
+  /* ==== Cinema theme (new default) + toggle button — shared with www.nileshmohite.com ==== */
+  [data-theme="cinema"] {
+    --bg: #14171D; --panel: #1B1F27; --panel-2: #212630; --line: #2E3440;
+    --accent: #C9A24B; --accent-hi: #E6C06E; --on-accent: #14171D;
+    --text: #CBD1DA; --dim: #8891A0; --head: #F3F5F8; --ok: #7FBF8E;
+    --shadow: rgba(0,0,0,0.5);
+    --display-font: var(--serif); --display-weight: 500;
+    --radius-btn: 4px; --radius-chip: 4px; --ls-label: 0.14em;
+  }
+  .theme-toggle {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; flex: none;
+    border: 1px solid var(--line); border-radius: 50%;
+    background: var(--panel); color: var(--accent); cursor: pointer;
+    transition: background .18s, border-color .18s, transform .18s;
+  }
+  .theme-toggle:hover { background: var(--panel-2); border-color: var(--accent); transform: rotate(-8deg); }
+  .theme-toggle svg { width: 18px; height: 18px; }
+  .theme-toggle .icon-sun, .theme-toggle .icon-moon { display: none; }
+  html[data-theme="cinema"] .theme-toggle .icon-moon { display: block; }
+  html[data-theme="linkedin"] .theme-toggle .icon-sun { display: block; }
+  .back-bar { padding: 18px 24px 0; }
+  .back-link {
+    font-family: var(--mono); font-size: .76rem; letter-spacing: .03em;
+    color: var(--dim); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: color .2s, gap .2s;
+  }
+  .back-link:hover { color: var(--accent); gap: 10px; }
+  .end-back { padding: 6px 24px 60px; text-align: center; }
+  .end-back .back-link { justify-content: center; font-size: .82rem; }
+  .share-row { display: flex; align-items: center; gap: 8px; }
+  .share-label {
+    font-family: var(--mono); font-size: .68rem; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--dim); margin-right: 2px;
+  }
+  .share-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 50%; flex: none;
+    border: 1px solid var(--line); background: var(--panel);
+    color: var(--dim); cursor: pointer; text-decoration: none;
+    transition: color .18s, border-color .18s, background .18s, transform .18s;
+  }
+  .share-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--panel-2); transform: translateY(-1px); }
+  .share-btn svg { width: 14px; height: 14px; }
+  .share-btn.copied { color: var(--ok); border-color: var(--ok); }
+  .back-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .end-back { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+
+  /* ==== Reading progress rail — shared with www.nileshmohite.com ==== */
+  .rp-bar { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: transparent; z-index: 9999; pointer-events: none; }
+  .rp-fill { height: 100%; width: 0%; background: var(--accent); transition: width .1s linear; }
+  .rp-toc { position: fixed; right: 20px; bottom: 20px; z-index: 9998; font-family: var(--mono); }
+  .rp-toggle {
+    width: 52px; height: 52px; border-radius: 50%; flex: none;
+    background: var(--panel); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center; position: relative;
+    cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.35); padding: 0;
+  }
+  .rp-ring { position: absolute; inset: 0; width: 52px; height: 52px; transform: rotate(-90deg); }
+  .rp-ring-bg { fill: none; stroke: var(--line); stroke-width: 2.5; }
+  .rp-ring-fg { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 97.4; stroke-dashoffset: 97.4; transition: stroke-dashoffset .15s linear; }
+  .rp-pct { font-size: 10.5px; color: var(--head); font-weight: 600; position: relative; z-index: 1; }
+  .rp-panel {
+    position: absolute; right: 0; bottom: 64px; width: 260px; max-height: 60vh; overflow-y: auto;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px; box-shadow: 0 20px 50px rgba(0,0,0,.4);
+    opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .18s, transform .18s;
+  }
+  .rp-toc.open .rp-panel { opacity: 1; transform: none; pointer-events: auto; }
+  .rp-panel-head { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed var(--line); }
+  .rp-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+  .rp-list li a {
+    display: block; padding: 7px 8px; border-radius: 6px; font-size: 12.5px; line-height: 1.4;
+    color: var(--dim); text-decoration: none; transition: background .15s, color .15s;
+  }
+  .rp-list li a:hover { background: var(--bg); color: var(--head); }
+  .rp-list li.active a { color: var(--accent); background: var(--bg); font-weight: 600; }
+  @media (max-width: 640px) {
+    .rp-toc { right: 14px; bottom: 14px; }
+    .rp-toggle { width: 46px; height: 46px; }
+    .rp-ring { width: 46px; height: 46px; }
+    .rp-panel { width: min(78vw, 280px); }
+  }
+  .credit-line {
+    flex: 1 1 auto; min-width: 0; text-align: center; font-family: var(--serif); font-style: italic; font-weight: 500;
+    font-size: clamp(.72rem, .4rem + 1.1vw, 1rem); letter-spacing: .02em;
+    color: var(--dim); margin: 0; padding: 0 10px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .credit-line a {
+    font-style: normal; font-weight: 600; color: var(--accent);
+    text-decoration: none; letter-spacing: .01em;
+  }
+  .credit-line a:hover { color: var(--accent-hi); text-decoration: underline; }
+  @media (max-width: 760px) {
+    nav { flex-wrap: wrap; row-gap: 6px; height: auto; padding: 10px 0; }
+    .credit-line {
+      flex-basis: 100%; order: 3; white-space: normal; overflow: visible; text-overflow: clip;
+      font-size: .82rem; padding: 0;
+    }
+  }
+  .engage-row {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    font-family: var(--mono); font-size: .74rem; color: var(--dim);
+  }
+  .like-btn {
+    display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: .74rem;
+    border: 1px solid var(--line); background: var(--panel); color: var(--dim);
+    padding: 6px 12px; border-radius: 999px; cursor: pointer;
+    transition: color .18s, border-color .18s, background .18s, transform .18s;
+  }
+  .like-btn:hover { border-color: #D9695A; color: #D9695A; transform: translateY(-1px); }
+  .like-btn .like-icon { width: 15px; height: 15px; }
+  .like-btn.liked { color: #D9695A; border-color: #D9695A; background: color-mix(in srgb, #D9695A 12%, var(--panel)); }
+  .like-btn.liked .like-icon { fill: #D9695A; }
+  .engage-stat { display: inline-flex; align-items: center; gap: 6px; }
+  .engage-stat svg { width: 14px; height: 14px; opacity: .75; flex: none; }
+  .engage-row[hidden] { display: none; }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "10,000 Requests a Second: The Midnight Sale War Room",
+  "description": "How a .NET and Azure team keeps APIs standing when a festive sale opens at midnight: capacity maths, CDN, rate limiting, caching, CQRS, queues, code fixes and AKS scaling.",
+  "image": "https://niluniverse.com/midnight-sale-war-room-banner.jpg",
+  "url": "https://niluniverse.com/midnight-sale-war-room.html",
+  "datePublished": "2026-09-23",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://niluniverse.com/midnight-sale-war-room.html"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "Nilesh Mohite",
+    "url": "https://www.nileshmohite.com"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Niluniverse",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://niluniverse.com/favicon-180.png"
+    }
+  },
+  "keywords": "API performance, microservices scalability, system design, caching, CQRS, CDN, rate limiting, .NET, Azure, AKS, KEDA"
+}
+</script>
+</head>
+<body>
+<div class="rp-bar" id="rpBar"><div class="rp-fill" id="rpFill"></div></div>
+<div class="rp-toc" id="rpToc">
+  <button class="rp-toggle" id="rpToggle" type="button" aria-expanded="false" aria-label="Reading progress and section list">
+    <svg class="rp-ring" viewBox="0 0 36 36"><circle class="rp-ring-bg" cx="18" cy="18" r="15.5"/><circle class="rp-ring-fg" id="rpRing" cx="18" cy="18" r="15.5"/></svg>
+    <span class="rp-pct" id="rpPct">0%</span>
+  </button>
+  <div class="rp-panel" id="rpPanel">
+    <div class="rp-panel-head" id="rpStatus">0% read</div>
+    <ol class="rp-list" id="rpList"></ol>
+  </div>
+</div>
+<header class="site">
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="https://www.nileshmohite.com">
+        <svg class="brand-mark" viewBox="0 0 120 120" fill="none" aria-hidden="true"><rect x="4" y="4" width="112" height="112" rx="26" fill="var(--accent)"/><polyline points="30,42 54,62 30,82" stroke="var(--on-accent)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><rect x="62" y="74" width="30" height="14" rx="4" fill="var(--on-accent)"/></svg>
+        <span><span class="b-nil">nil</span>universe</span>
+      </a>
+      <p class="credit-line">Directed by <a href="https://www.nileshmohite.com">Nilesh Mohite</a> and Presented by AI</p>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" title="Switch to light theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap back-bar">
+  <a class="back-link" href="index.html">&larr; All stories</a>
+  <div class="share-row"><a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fniluniverse.com%2Fmidnight-sale-war-room.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a><a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fniluniverse.com%2Fmidnight-sale-war-room.html&text=10%2C000%20Requests%20a%20Second%3A%20The%20Midnight%20Sale%20War%20Room" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a><a class="share-btn" href="mailto:?subject=10%2C000%20Requests%20a%20Second%3A%20The%20Midnight%20Sale%20War%20Room&body=https%3A%2F%2Fniluniverse.com%2Fmidnight-sale-war-room.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a><button class="share-btn" type="button" data-copy-url="https://niluniverse.com/midnight-sale-war-room.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button></div><div class="engage-row" data-engage="midnight-sale-war-room"><button class="like-btn" type="button" aria-pressed="false" aria-label="Like this article"><svg class="like-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.6a5 5 0 0 0 0-7.1z"/></svg><span class="like-count">&ndash;</span></button><span class="engage-stat views-stat" aria-label="Views"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span class="views-count">&ndash;</span></span><span class="engage-stat shares-stat" aria-label="Shares"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg><span class="shares-count">&ndash;</span></span></div>
+</div>
+
+<!-- ===================== HERO ===================== -->
+<header class="hero">
+  <canvas id="trafficfield" aria-hidden="true"></canvas>
+  <div class="hero-veil"></div>
+  <div class="hero-inner">
+    <span class="eyebrow">System Design · Midnight Sale War Room</span>
+    <h1>10,000 Requests<br><span class="hot">a Second</span></h1>
+    <p class="dek">A festive sale opens at midnight and every phone in the country taps "Buy" at once. This is how a .NET and Azure team keeps its APIs standing, layer by layer, from the CDN to the last database index.</p>
+    <div class="warboard" aria-label="Simulated war-room dashboard">
+      <div><small>IST</small><b id="wbClock">23:59:40</b></div>
+      <div><small>req/s</small><b class="hot" id="wbRps">1,200</b></div>
+      <div><small>p99</small><b id="wbP99">84 ms</b></div>
+      <div><small>errors</small><b class="ok" id="wbErr">0.01%</b></div>
+    </div>
+    <p class="byline">.NET · Azure · AKS · Redis · CQRS · Front Door</p>
+  </div>
+  <div class="scrollcue"><span>scroll</span><span class="line"></span></div>
+</header>
+
+<!-- ===================== ARTICLE ===================== -->
+<article>
+
+  <div class="section reveal">
+    <p class="lead">At 11:40 PM on sale night the war room at Utsav Mart (a fictional retailer; the numbers are realistic for a mid-sized Indian e-commerce platform, so treat them as illustrative rather than a benchmark) is quieter than you would expect. Twelve engineers, two big screens, a steel tumbler of filter coffee going cold on every desk. The home page shows a countdown. The load balancer shows 1,200 requests a second. At 12:00:00 the countdown hits zero, a phone that costs ₹79,999 goes on sale for ₹49,999, and that number goes to 10,000 in under four seconds.</p>
+    <p>Nobody in the room is going to write code tonight. Everything that decides whether the site survives midnight was decided in the weeks before: what gets cached where, which requests are allowed through, which work happens now and which happens later, how many pods are already running when the wave arrives. This article walks through those decisions in the order a request meets them, from the edge of the internet down to the database, and then maps them back to the kinds of workload you will meet outside a festive sale.</p>
+    <p>Ten thousand requests a second sounds large. It is about 86 crore requests a day if sustained — which it never is. The real difficulty is the shape: flat for hours, then a vertical wall. A system that handles 10,000 requests a second on a gentle ramp can still fall over when all of them arrive in the same four seconds.</p>
+  </div>
+
+  <div class="radio"><span class="ts">23:41</span><span class="who">SRE lead:</span> Catalogue pods at 24 (twice the forecast needs), Redis at 18% CPU, Front Door hit ratio 71%. Nobody touch anything.</div>
+
+  <!-- 01 -->
+  <div class="section reveal">
+    <h2><span class="num">01 · THREE WEEKS OUT</span>Do the arithmetic before the architecture</h2>
+    <p>The first meeting about sale night had no diagrams in it. It had a spreadsheet. Every scaling decision later in this article depends on three numbers, and teams that skip them end up buying capacity in the wrong layer.</p>
+    <h3>The traffic mix</h3>
+    <p>"10K requests a second" is never 10K of the same request. On Utsav Mart's previous sale, the split looked like this: about 90% reads (home page, category listings, product pages, price and stock checks), about 8% cart operations, and around 2% checkout and payment. Those 2% are the requests that earn money — and the hardest to scale, because they write. The 90% are easy to scale because they can be copied, cached and served from somewhere closer than your database.</p>
+    <p>So the first design rule falls out of the arithmetic: <strong>treat reads and writes as two different systems</strong>, because at this volume they are. Section 05 turns that into CQRS.</p>
+    <h3>Little's Law</h3>
+    <p>The second number is concurrency. Little's Law says the average number of requests in flight equals arrival rate multiplied by time in the system: <code>L = λ × W</code>. At 10,000 requests a second and 200 ms average latency, you have 2,000 requests in flight at any moment. Each one holds a thread-pool work item, a socket, maybe a database connection. Cut latency to 50 ms and the same traffic needs only 500 in flight.</p>
+    <p>This is why latency work and throughput work are the same work. Every millisecond you remove from the hot path reduces the number of things you need to hold open at once. A slow downstream call makes one user wait, and it also multiplies the concurrency your whole fleet has to carry.</p>
+    <h3>Per-pod capacity, measured, not guessed</h3>
+    <p>The third number comes from a load test against one pod. For Utsav Mart's catalogue API on a 2 vCPU pod, a cached product read sustained about 800 requests a second before p99 crossed 150 ms. A read that missed the cache and hit Azure SQL managed about 140. That gap of almost six times is the single most useful number in capacity planning: it tells you that the cache hit ratio, not the pod count, decides your bill.</p>
+    <p>Play with the funnel below. It follows 10,000 requests a second through the layers this article covers and shows what reaches your pods and your database.</p>
+  </div>
+
+  <div class="lab reveal" id="funnelLab">
+    <div class="lab-head">
+      <span class="lab-title">Request funnel · sale night</span>
+      <div class="presets">
+        <button class="preset" type="button" data-preset="naive">No CDN, no cache</button>
+        <button class="preset" type="button" data-preset="tuned">Well tuned</button>
+        <button class="preset alarm" type="button" data-preset="redis">Redis goes down</button>
+      </div>
+    </div>
+    <div class="lab-body">
+      <div class="knobs">
+        <div class="knob"><label for="kRps">Incoming req/s <output id="oRps"></output></label><input type="range" id="kRps" min="1000" max="50000" step="500" value="10000"></div>
+        <div class="knob"><label for="kRead">Share that are reads <output id="oRead"></output></label><input type="range" id="kRead" min="50" max="99" step="1" value="90"></div>
+        <div class="knob"><label for="kShed">Blocked at gate (bots, over-limit) <output id="oShed"></output></label><input type="range" id="kShed" min="0" max="40" step="1" value="6"></div>
+        <div class="knob"><label for="kCdn">CDN hit ratio on reads <output id="oCdn"></output></label><input type="range" id="kCdn" min="0" max="95" step="1" value="65"></div>
+        <div class="knob"><label for="kCache">App cache hit ratio <output id="oCache"></output></label><input type="range" id="kCache" min="0" max="99" step="1" value="88"></div>
+        <div class="knob"><label for="kPod">Req/s one pod sustains <output id="oPod"></output></label><input type="range" id="kPod" min="100" max="1500" step="50" value="600"></div>
+        <div class="knob"><label for="kLat">Avg origin latency <output id="oLat"></output></label><input type="range" id="kLat" min="10" max="800" step="10" value="60"></div>
+      </div>
+      <div class="readout">
+        <div class="bar"><div class="bar-top"><span>Arriving at the edge</span><b id="bIn"></b></div><div class="bar-track"><div class="bar-fill" id="fIn"></div></div></div>
+        <div class="bar"><div class="bar-top"><span>Past the gate</span><b id="bGate"></b></div><div class="bar-track"><div class="bar-fill" id="fGate"></div></div></div>
+        <div class="bar"><div class="bar-top"><span>Reaching your pods</span><b id="bOrigin"></b></div><div class="bar-track"><div class="bar-fill" id="fOrigin"></div></div></div>
+        <div class="bar"><div class="bar-top"><span>Reaching the database</span><b id="bDb"></b></div><div class="bar-track"><div class="bar-fill" id="fDb"></div></div></div>
+        <div class="tiles">
+          <div class="tile" id="tPods"><small>Pods (+40% headroom)</small><b id="vPods"></b></div>
+          <div class="tile" id="tFlight"><small>In flight at origin</small><b id="vFlight"></b></div>
+          <div class="tile" id="tDbr"><small>DB reads/s</small><b id="vDbr"></b></div>
+          <div class="tile"><small>Writes/s (to queue)</small><b id="vW"></b></div>
+        </div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+    </div>
+  </div>
+
+  <div class="section reveal">
+    <p>Press "Redis goes down" and watch the database line. With the cache gone, a database sized for a few hundred reads a second is suddenly asked for several thousand. That scenario took down Utsav Mart two years ago — and shaped half of what follows.</p>
+    <h3>Rehearse it</h3>
+    <p>Three weeks before the sale the team ran the whole thing on <strong>Azure Load Testing</strong> with a JMeter script replaying a recorded traffic mix, ramping from 1,000 to 20,000 requests a second in five seconds. Twice the expected peak, because forecasts for festive sales are always low. The first run failed at 6,200. The failure had nothing to do with CPU; it was outbound connection exhaustion to the payment gateway, which you will meet in section 09. You find these things in a rehearsal — or you find them at midnight.</p>
+    <p>Measure p95 and p99 latency, error rate and saturation per layer. Averages hide the problem: a 90 ms average can sit on top of a p99 of four seconds, and the p99 users are the ones hammering refresh and doubling your traffic.</p>
+  </div>
+
+  <!-- 02 -->
+  <div class="section reveal">
+    <h2><span class="num">02 · 22:00 · THE EDGE</span>Answer before the request reaches you</h2>
+    <p>The cheapest request is the one your servers never see. Utsav Mart fronts everything with <strong>Azure Front Door</strong> (the same idea applies to Cloudflare, Akamai or CloudFront). Front Door terminates TLS at a point of presence close to the user — in Mumbai, Chennai or Delhi — and can serve cached responses from there.</p>
+    <p>Static assets are the obvious part: images, JavaScript bundles, fonts, CSS. Give them content-hashed file names and a year-long cache lifetime and they stop being your problem. On sale night the product images alone were about 70% of bytes transferred — and none of them touched a pod.</p>
+    <p>The less obvious part is caching <strong>API responses</strong> at the edge. A category listing, a product description, the sale banner configuration: these are identical for every user for at least a few seconds. If the origin marks them cacheable, the edge absorbs the repeat traffic:</p>
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">GET /api/categories/phones?page=1 · response headers</span></div>
+<pre><code><span class="t-attr">Cache-Control</span>: public, max-age=10, s-maxage=30, stale-while-revalidate=30
+<span class="t-attr">Vary</span>: Accept-Encoding
+<span class="t-attr">ETag</span>: <span class="t-str">"cat-phones-p1-v8812"</span></code></pre>
+    </div>
+    <p><code>s-maxage=30</code> lets the shared cache hold the response for 30 seconds while browsers keep it for 10. If 3,000 users a second request the phones category, a 30-second edge lifetime means the origin sees roughly one request per point of presence every 30 seconds instead of 90,000. Even a <em>five-second</em> TTL on a hot listing cuts origin load by orders of magnitude, and five seconds of staleness on a product list is invisible to shoppers. <code>stale-while-revalidate</code> lets a cache that supports it keep serving the old copy while it fetches a fresh one in the background, so the expiry moment does not become a spike.</p>
+    <h3>Cache key discipline</h3>
+    <p>Edge caching stops working, with no error anywhere, when the cache key is too specific. A tracking parameter like <code>?utm_source=whatsapp</code>, a session cookie forwarded to the origin, or a <code>Vary: Cookie</code> header turns one cacheable object into a million uncacheable ones. Configure the CDN to strip marketing parameters and ignore cookies on public routes, and never emit <code>Vary: Cookie</code> on something that is the same for everyone.</p>
+    <p>The rule that follows: <strong>anything personalised stays off the shared cache</strong>. The price is public; the "you have 2 items in your cart" badge is not. Split the page so the public shell is cached at the edge and the personal fragment comes from a separate, small API call. That one split moved Utsav Mart's product page from 0% edge-cacheable to about 85%.</p>
+    <h3>The edge also defends</h3>
+    <p>Sale nights attract bots: scalpers scripting the checkout, scrapers watching prices, the occasional flood that looks a lot like an attack. Front Door's WAF with bot protection and rate-limit rules at the edge drops that traffic before it costs you a pod. On sale night about 6% of requests were blocked there, which is the "blocked at gate" slider in the funnel above.</p>
+  </div>
+
+  <!-- 03 -->
+  <div class="section reveal">
+    <h2><span class="num">03 · 22:30 · THE FRONT GATE</span>Admit, throttle, or queue</h2>
+    <p>Behind the edge sits the gateway. Utsav Mart uses <strong>Azure API Management</strong> for external partners and YARP inside the cluster for the storefront, but the job is the same: decide which requests get in, at what rate, and what happens to the rest.</p>
+    <h3>Rate limiting at two levels</h3>
+    <p>A <strong>global</strong> limit protects the system as a whole and belongs somewhere that sees all traffic: the edge or the gateway. In API Management that is one policy:</p>
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">APIM inbound policy · per-caller limit</span></div>
+<pre><code>&lt;<span class="t-key">rate-limit-by-key</span> <span class="t-attr">calls</span>=<span class="t-str">"600"</span> <span class="t-attr">renewal-period</span>=<span class="t-str">"60"</span>
+    <span class="t-attr">counter-key</span>=<span class="t-str">"@(context.Subscription?.Key ?? context.Request.IpAddress)"</span> /&gt;</code></pre>
+    </div>
+    <p>A <strong>per-endpoint</strong> limit protects expensive operations from any single user. ASP.NET Core ships a rate limiter middleware (since .NET 7) with fixed-window, sliding-window, token-bucket and concurrency limiters. A token bucket suits shoppers well because it allows a short burst (a user opening five tabs) and then settles to a steady rate:</p>
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">Program.cs · token bucket per user</span></div>
+<pre><code>builder.Services.<span class="t-fn">AddRateLimiter</span>(o =&gt;
+{
+    o.RejectionStatusCode = <span class="t-type">StatusCodes</span>.Status429TooManyRequests;
+
+    o.<span class="t-fn">AddPolicy</span>(<span class="t-str">"per-user"</span>, ctx =&gt;
+        <span class="t-type">RateLimitPartition</span>.<span class="t-fn">GetTokenBucketLimiter</span>(
+            partitionKey: ctx.User.<span class="t-fn">FindFirst</span>(<span class="t-str">"sub"</span>)?.Value
+                          ?? ctx.Connection.RemoteIpAddress?.<span class="t-fn">ToString</span>() ?? <span class="t-str">"anon"</span>,
+            factory: _ =&gt; <span class="t-key">new</span> <span class="t-type">TokenBucketRateLimiterOptions</span>
+            {
+                TokenLimit          = <span class="t-num">20</span>,                     <span class="t-com">// burst</span>
+                TokensPerPeriod     = <span class="t-num">10</span>,                     <span class="t-com">// steady rate...</span>
+                ReplenishmentPeriod = <span class="t-type">TimeSpan</span>.<span class="t-fn">FromSeconds</span>(<span class="t-num">1</span>), <span class="t-com">// ...per second</span>
+                QueueLimit          = <span class="t-num">0</span>,
+                AutoReplenishment   = <span class="t-key">true</span>
+            }));
+
+    o.OnRejected = (ctx, _) =&gt;
+    {
+        ctx.HttpContext.Response.Headers.RetryAfter = <span class="t-str">"2"</span>;
+        <span class="t-key">return</span> <span class="t-type">ValueTask</span>.CompletedTask;
+    };
+});
+
+app.<span class="t-fn">UseRateLimiter</span>();
+app.<span class="t-fn">MapPost</span>(<span class="t-str">"/api/cart/items"</span>, AddToCart).<span class="t-fn">RequireRateLimiting</span>(<span class="t-str">"per-user"</span>);</code></pre>
+    </div>
+    <p>One trap: this limiter lives in each pod's memory. With 24 pods, a user whose requests are spread by the load balancer effectively gets 24 buckets. That is fine for protecting a pod from overload, which is what in-process limiters are for. For a hard per-user quota across the fleet, count in Redis or enforce at the gateway.</p>
+    <p>Always return <code>429</code> with <code>Retry-After</code>, and make sure your own mobile app honours it with exponential backoff and jitter. A client that retries immediately on failure turns a small overload into a large one. Utsav Mart's app retried instantly on timeout in an earlier release; the retries alone were 30% of traffic during one incident — self-inflicted load.</p>
+    <h3>Load shedding</h3>
+    <p>Rate limiting is about fairness between callers. Load shedding is about survival. When a pod's own queue gets too deep, it is better to reject new work fast than to accept it and time out slowly. A concurrency limiter on the pod (for example, 200 concurrent requests, then 503 immediately) keeps latency flat for the requests it does accept. Shed low-value traffic first: recommendations and "customers also viewed" can fail; add-to-cart and checkout should not.</p>
+    <h3>A waiting room for the stampede</h3>
+    <p>For the midnight deal itself — 2 lakh people, 5,000 phones — Utsav Mart puts checkout behind a <strong>virtual waiting room</strong>. Users get a signed token with a position; the gateway admits tokens at a rate the checkout path can sustain, say 800 a second. Everyone else sees a progress screen served entirely from the CDN. It feels less exciting than a free-for-all, but it turns an unbounded write spike into a controlled one, and customers prefer an honest queue to a spinning error page.</p>
+  </div>
+
+  <div class="radio alarm"><span class="ts">00:00:03</span><span class="who">Gateway:</span> 11,480 req/s. 4.1% rejected 429 per-user, 0.3% shed 503 on recs-api. Checkout admit rate holding at 800/s.</div>
+
+  <!-- 04 -->
+  <div class="section reveal">
+    <h2><span class="num">04 · 22:45 · THE CACHE</span>Three floors of cache</h2>
+    <p>Requests that make it past the edge and the gate reach the pods. Here the aim is to answer from memory as often as possible. Utsav Mart uses three floors, each closer to the code and each smaller than the one below.</p>
+    <ul class="notes">
+      <li><strong>Output cache</strong> in ASP.NET Core stores the whole serialised HTTP response. Nothing runs except the middleware. Good for public endpoints the CDN cannot cache for some reason (a partner API with an auth header, for example).</li>
+      <li><strong>L1: in-process memory</strong>, microseconds away, per pod. Holds a few thousand hot objects for 10 to 60 seconds.</li>
+      <li><strong>L2: distributed cache</strong>, Azure Cache for Redis, about a millisecond away over the VNet, shared by every pod. Holds the long tail for minutes.</li>
+    </ul>
+    <p>Since .NET 9, <strong>HybridCache</strong> gives you L1 and L2 behind one API and adds the feature that matters most at this volume: stampede protection. When a key expires and 500 requests ask for it at the same instant, only one of them runs the factory; the rest wait for its result.</p>
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">ProductQueries.cs · HybridCache over Redis</span></div>
+<pre><code><span class="t-com">// Program.cs</span>
+builder.Services.<span class="t-fn">AddStackExchangeRedisCache</span>(o =&gt; o.Configuration = redisConnection);
+builder.Services.<span class="t-fn">AddHybridCache</span>(o =&gt;
+{
+    o.DefaultEntryOptions = <span class="t-key">new</span> <span class="t-type">HybridCacheEntryOptions</span>
+    {
+        Expiration           = <span class="t-type">TimeSpan</span>.<span class="t-fn">FromMinutes</span>(<span class="t-num">5</span>),  <span class="t-com">// L2 (Redis)</span>
+        LocalCacheExpiration = <span class="t-type">TimeSpan</span>.<span class="t-fn">FromSeconds</span>(<span class="t-num">30</span>)  <span class="t-com">// L1 (this pod)</span>
+    };
+});
+
+<span class="t-com">// ProductQueries.cs</span>
+<span class="t-key">public</span> <span class="t-type">ValueTask</span>&lt;<span class="t-type">ProductDto</span>&gt; <span class="t-fn">GetAsync</span>(<span class="t-key">int</span> id, <span class="t-type">CancellationToken</span> ct) =&gt;
+    _cache.<span class="t-fn">GetOrCreateAsync</span>(
+        <span class="t-str">$"product:{id}"</span>,
+        <span class="t-key">async</span> token =&gt; <span class="t-key">await</span> _db.Products
+            .<span class="t-fn">AsNoTracking</span>()
+            .<span class="t-fn">Where</span>(p =&gt; p.Id == id)
+            .<span class="t-fn">Select</span>(p =&gt; <span class="t-key">new</span> <span class="t-type">ProductDto</span>(p.Id, p.Name, p.Price, p.Rating))
+            .<span class="t-fn">FirstAsync</span>(token),
+        tags: [<span class="t-str">$"product:{id}"</span>, <span class="t-str">"catalog"</span>],
+        cancellationToken: ct);
+
+<span class="t-com">// When the price changes (from an event handler):</span>
+<span class="t-key">await</span> _cache.<span class="t-fn">RemoveByTagAsync</span>(<span class="t-str">$"product:{id}"</span>);</code></pre>
+    </div>
+    <p>Try the difference below. Fifty requests per row, ten rows, all arriving the moment a hot product key expires.</p>
+  </div>
+
+  <div class="stampede reveal" id="stampede">
+    <div class="stampede-row">
+      <button class="st-btn" type="button" data-mode="naive">Expire key: plain cache-aside</button>
+      <button class="st-btn" type="button" data-mode="coalesce">Expire key: with stampede protection</button>
+    </div>
+    <div class="st-grid" id="stGrid" aria-hidden="true"></div>
+    <div class="st-out" id="stOut">500 concurrent requests for <b>product:88121</b>. Pick a mode.</div>
+  </div>
+
+  <div class="section reveal">
+    <h3>Expiry on purpose</h3>
+    <p>Two more habits keep the cache from turning on you. First, <strong>add jitter to TTLs</strong>. If you warm 50,000 product keys at 11 PM with a 60-minute TTL, all 50,000 expire at midnight, exactly when you least want it. Use 55 to 65 minutes, randomised per key. Second, <strong>warm the cache before the event</strong>. Utsav Mart runs a job at 11:30 PM that loads every sale SKU into Redis, so the first midnight request is a hit, not a miss.</p>
+    <h3>The hot key</h3>
+    <p>At midnight, one key gets a disproportionate share of traffic: the ₹49,999 phone. In Redis every key lives on one shard, so one key means one shard's CPU and network — however many shards you pay for. The fixes, in the order to reach for them: let L1 absorb it (30 seconds of in-process caching across 24 pods reduces Redis traffic for that key to about one read per pod per 30 seconds); if you truly need it in L2, replicate the value under several keys (<code>product:88121:r0</code> to <code>r7</code>) and have each pod read a random copy.</p>
+    <h3>Invalidation</h3>
+    <p>"When does the cache find out the price changed?" is the question that decides how long your TTLs can be. Utsav Mart's pricing service publishes a <code>PriceChanged</code> event (through an <a href="outbox-pattern.html">outbox</a>, so the event cannot be lost), and a subscriber removes the matching tags. TTLs then become the safety net for a missed event rather than the main mechanism, which means they can be minutes instead of seconds.</p>
+    <p>Stock is the exception. Showing "In stock" for a few seconds after the last unit sells is acceptable if checkout does the authoritative check. Showing a stale price is not, which is why price changes are invalidated by event and stock counts are allowed to lag.</p>
+  </div>
+
+  <p class="pull">The database should only hear about a read when <em>nobody else</em> in the building knows the answer.</p>
+
+  <!-- 05 -->
+  <div class="section reveal">
+    <h2><span class="num">05 · 23:00 · CQRS</span>Split the readers from the writers</h2>
+    <p>Back to the traffic mix: 90% reads, 10% writes, and the writes are where the money is. When both go through the same model and the same database, they fight. Reads want wide, denormalised rows and lots of indexes. Writes want narrow, normalised rows and few indexes, because every index is extra work on insert. A product page wants the product, its price, its rating summary, seller name and delivery estimate in one shot; the order service wants to insert an order row and decrement stock inside a short transaction.</p>
+    <p><strong>Command Query Responsibility Segregation</strong> gives each side its own model. Commands — <code>PlaceOrder</code>, <code>AddToCart</code>, <code>UpdatePrice</code> — go to the write side, which validates business rules and commits to the system of record. The write side publishes events. Projectors consume those events and build read models shaped exactly like the screens that query them.</p>
+
+    <div class="figure reveal">
+      <svg viewBox="0 0 660 300" role="img" aria-label="CQRS: commands go to the write model and Azure SQL; events flow through Service Bus to projectors that build read models in Redis, Cosmos DB and Azure AI Search; queries read from those">
+        <defs>
+          <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#838ba1"/></marker>
+          <marker id="ahs" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#ff8a3d"/></marker>
+          <marker id="ahc" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#3ed6a0"/></marker>
+        </defs>
+        <text class="fs" x="20" y="22" fill="#ff8a3d">WRITE SIDE · ~10% of traffic</text>
+        <rect class="fn hot" x="20" y="36" width="120" height="56" rx="10"/><text class="fl" x="80" y="60" text-anchor="middle">Commands</text><text class="fs" x="80" y="77" text-anchor="middle">PlaceOrder, AddToCart</text>
+        <rect class="fn hot" x="190" y="36" width="130" height="56" rx="10"/><text class="fl" x="255" y="60" text-anchor="middle">Order service</text><text class="fs" x="255" y="77" text-anchor="middle">rules + outbox</text>
+        <rect class="fn hot" x="370" y="36" width="120" height="56" rx="10"/><text class="fl" x="430" y="60" text-anchor="middle">Azure SQL</text><text class="fs" x="430" y="77" text-anchor="middle">system of record</text>
+        <path class="fa hot" d="M140 64 H186" marker-end="url(#ahs)"/>
+        <path class="fa hot" d="M320 64 H366" marker-end="url(#ahs)"/>
+        <rect class="fn" x="530" y="36" width="112" height="56" rx="10"/><text class="fl" x="586" y="60" text-anchor="middle">Service Bus</text><text class="fs" x="586" y="77" text-anchor="middle">events</text>
+        <path class="fa" d="M490 64 H526" marker-end="url(#ah)"/>
+        <rect class="fn" x="530" y="132" width="112" height="46" rx="10"/><text class="fl" x="586" y="152" text-anchor="middle">Projectors</text><text class="fs" x="586" y="167" text-anchor="middle">build read models</text>
+        <path class="fa" d="M586 92 V128" marker-end="url(#ah)"/>
+        <text class="fs" x="20" y="214" fill="#3ed6a0">READ SIDE · ~90% of traffic</text>
+        <rect class="fn ok" x="330" y="200" width="100" height="50" rx="10"/><text class="fl" x="380" y="222" text-anchor="middle">Redis</text><text class="fs" x="380" y="238" text-anchor="middle">product cards</text>
+        <rect class="fn ok" x="440" y="200" width="100" height="50" rx="10"/><text class="fl" x="490" y="222" text-anchor="middle">Cosmos DB</text><text class="fs" x="490" y="238" text-anchor="middle">order history</text>
+        <rect class="fn ok" x="550" y="200" width="100" height="50" rx="10"/><text class="fl" x="600" y="222" text-anchor="middle">AI Search</text><text class="fs" x="600" y="238" text-anchor="middle">search + filters</text>
+        <path class="fa ok" d="M586 178 C586 190 380 186 380 196" marker-end="url(#ahc)"/>
+        <path class="fa ok" d="M586 178 C586 190 490 188 490 196" marker-end="url(#ahc)"/>
+        <path class="fa ok" d="M600 178 V196" marker-end="url(#ahc)"/>
+        <rect class="fn ok" x="20" y="224" width="120" height="56" rx="10"/><text class="fl" x="80" y="248" text-anchor="middle">Queries</text><text class="fs" x="80" y="265" text-anchor="middle">GetProduct, Search</text>
+        <rect class="fn ok" x="180" y="224" width="120" height="56" rx="10"/><text class="fl" x="240" y="248" text-anchor="middle">Query API</text><text class="fs" x="240" y="265" text-anchor="middle">no joins, no rules</text>
+        <path class="fa ok" d="M140 252 H176" marker-end="url(#ahc)"/>
+        <path class="fa ok" d="M300 244 H326" marker-end="url(#ahc)"/>
+      </svg>
+      <div class="figcap">Writes go through <b>one</b> narrow path to the system of record. Reads come from <b>projections</b> built for each screen, and each read store scales on its own.</div>
+    </div>
+
+    <p>What this buys you at 10K requests a second:</p>
+    <ul class="notes">
+      <li><strong>Independent scaling.</strong> The query API runs 24 pods; the order service runs 8. Neither steals capacity from the other.</li>
+      <li><strong>The right store for each read.</strong> Search and faceted filters (brand, price band, RAM) go to Azure AI Search or Elasticsearch, which are built for them; running those as <code>LIKE</code> queries with six optional <code>WHERE</code> clauses against Azure SQL is how a catalogue database dies. Order history, partitioned by customer, goes to Cosmos DB.</li>
+      <li><strong>Queries with no joins.</strong> The product card read model already contains the seller name and rating summary. A read is one key lookup.</li>
+      <li><strong>A write path you can reason about.</strong> Short transactions, few indexes, and a single place where stock is decremented.</li>
+    </ul>
+    <p>The price is <strong>eventual consistency</strong>. Between the write committing and the projector updating the read model there is a lag — usually tens of milliseconds, sometimes seconds under load. Design the screens for it: after placing an order, show the confirmation from the command's response rather than re-querying the read model, and let order history catch up.</p>
+    <p>You do not need a separate database to start. A read replica of Azure SQL (read scale-out, reached with <code>ApplicationIntent=ReadOnly</code> in the connection string) plus separate query and command handlers in the code is a legitimate first step. Full CQRS with event-built projections is worth its moving parts when reads and writes differ this much in volume and shape. For a small internal API with a hundred users it is overhead you will regret.</p>
+  </div>
+
+  <!-- 06 -->
+  <div class="section reveal">
+    <h2><span class="num">06 · 23:15 · ASYNC</span>Say yes now, do the work later</h2>
+    <p>Placing an order at Utsav Mart touches seven things: validate the cart, reserve stock, create the order, call the payment gateway, send an SMS, update loyalty points, notify the warehouse. Doing all of that inside the HTTP request makes each order take as long as the slowest of them, and makes the checkout fail when any of them fails.</p>
+    <p>Only two of those steps must happen before you answer the user: reserve the stock and record the order. Everything else can happen seconds later. So the checkout endpoint does the minimum, writes a message, and returns <code>202 Accepted</code> with a URL the app can poll or a SignalR channel it can listen on.</p>
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">CheckoutEndpoint.cs · accept fast, idempotently</span></div>
+<pre><code>app.<span class="t-fn">MapPost</span>(<span class="t-str">"/api/orders"</span>, <span class="t-key">async</span> (
+    <span class="t-type">PlaceOrderRequest</span> req,
+    [<span class="t-type">FromHeader</span>(Name = <span class="t-str">"Idempotency-Key"</span>)] <span class="t-key">string</span> idemKey,
+    <span class="t-type">IDatabase</span> redis, <span class="t-type">OrderWriter</span> orders, <span class="t-type">CancellationToken</span> ct) =&gt;
+{
+    <span class="t-com">// A retry after a timeout must not create a second order.</span>
+    <span class="t-key">var</span> orderId = <span class="t-type">Guid</span>.<span class="t-fn">NewGuid</span>();
+    <span class="t-key">bool</span> first = <span class="t-key">await</span> redis.<span class="t-fn">StringSetAsync</span>(
+        <span class="t-str">$"idem:{idemKey}"</span>, orderId.<span class="t-fn">ToString</span>(), <span class="t-type">TimeSpan</span>.<span class="t-fn">FromHours</span>(<span class="t-num">24</span>), <span class="t-type">When</span>.NotExists);
+
+    <span class="t-key">if</span> (!first)
+    {
+        <span class="t-key">var</span> existing = <span class="t-key">await</span> redis.<span class="t-fn">StringGetAsync</span>(<span class="t-str">$"idem:{idemKey}"</span>);
+        <span class="t-key">return</span> <span class="t-type">Results</span>.<span class="t-fn">Accepted</span>(<span class="t-str">$"/api/orders/{existing}"</span>);
+    }
+
+    <span class="t-com">// Reserve stock atomically, then write order + outbox row in one transaction.</span>
+    <span class="t-key">if</span> (!<span class="t-key">await</span> orders.<span class="t-fn">TryReserveAndRecordAsync</span>(orderId, req, ct))
+        <span class="t-key">return</span> <span class="t-type">Results</span>.<span class="t-fn">Conflict</span>(<span class="t-key">new</span> { reason = <span class="t-str">"SoldOut"</span> });
+
+    <span class="t-key">return</span> <span class="t-type">Results</span>.<span class="t-fn">Accepted</span>(<span class="t-str">$"/api/orders/{orderId}"</span>, <span class="t-key">new</span> { orderId, status = <span class="t-str">"Processing"</span> });
+});</code></pre>
+    </div>
+    <p>The outbox relay then publishes <code>OrderPlaced</code> to Azure Service Bus, and separate consumers handle payment capture, SMS, loyalty and the warehouse, each at its own pace. The queue is a shock absorber: at midnight orders arrive at 800 a second; if the payment consumers can only do 500, the queue grows for a few minutes and drains afterwards. Nothing times out and nothing is lost. Enable duplicate detection on the queue and make every consumer idempotent — at-least-once delivery means "sometimes twice".</p>
+    <h3>Stock without a lock queue</h3>
+    <p>Five thousand phones and 2 lakh buyers is a contention problem. An <code>UPDATE Stock SET Qty = Qty - 1 WHERE Sku = @sku AND Qty &gt; 0</code> on one row serialises every buyer behind a single row lock. Utsav Mart keeps sale-SKU counters in Redis and decrements them with a small Lua script, which Redis runs atomically:</p>
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">reserve.lua · atomic check-and-decrement</span></div>
+<pre><code><span class="t-com">-- KEYS[1] = stock:{sku}   ARGV[1] = qty</span>
+<span class="t-key">local</span> left = <span class="t-fn">tonumber</span>(redis.<span class="t-fn">call</span>(<span class="t-str">'GET'</span>, KEYS[<span class="t-num">1</span>]) <span class="t-key">or</span> <span class="t-str">'0'</span>)
+<span class="t-key">if</span> left &gt;= <span class="t-fn">tonumber</span>(ARGV[<span class="t-num">1</span>]) <span class="t-key">then</span>
+  <span class="t-key">return</span> redis.<span class="t-fn">call</span>(<span class="t-str">'DECRBY'</span>, KEYS[<span class="t-num">1</span>], ARGV[<span class="t-num">1</span>])
+<span class="t-key">end</span>
+<span class="t-key">return</span> -<span class="t-num">1</span></code></pre>
+    </div>
+    <p>The reservation expires if payment does not complete within ten minutes, and a reconciliation job compares Redis counters with the SQL system of record every minute. Redis handles the contention; SQL remains the truth.</p>
+  </div>
+
+  <!-- 07 -->
+  <div class="section reveal">
+    <h2><span class="num">07 · 23:30 · THE CODE</span>The code review nobody wanted before the sale</h2>
+    <p>Architecture decides how many requests reach your code. Code decides how many pods it takes to serve them. On the load test three weeks out, one endpoint needed 22 pods on its own. The review that followed found the usual suspects, all in one method:</p>
+  </div>
+
+  <div class="tabs reveal" id="codeTabs">
+    <div class="tab-row" role="tablist">
+      <button class="tab-btn bad" role="tab" type="button" aria-selected="true" aria-controls="tabBefore" id="tbBefore">Before · 140 req/s per pod</button>
+      <button class="tab-btn good" role="tab" type="button" aria-selected="false" aria-controls="tabAfter" id="tbAfter">After · 780 req/s per pod</button>
+    </div>
+    <div class="tab-panel" role="tabpanel" id="tabBefore" aria-labelledby="tbBefore">
+      <div class="code-wrap">
+        <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">ProductsController.cs · as found</span></div>
+<pre><code>[<span class="t-type">HttpGet</span>(<span class="t-str">"{id}"</span>)]
+<span class="t-key">public</span> <span class="t-type">ProductDto</span> <span class="t-fn">Get</span>(<span class="t-key">int</span> id)
+{
+    <span class="t-key">var</span> client = <span class="t-key">new</span> <span class="t-type">HttpClient</span>();                          <span class="t-com">// 1. new socket every call</span>
+    <span class="t-key">var</span> price  = client.<span class="t-fn">GetStringAsync</span>(<span class="t-str">$"{_pricingUrl}/{id}"</span>)
+                       .Result;                                <span class="t-com">// 2. sync over async</span>
+    <span class="t-key">var</span> product = _db.Products
+        .<span class="t-fn">Include</span>(p =&gt; p.Reviews)                               <span class="t-com">// 3. loads 4,000 reviews</span>
+        .<span class="t-fn">First</span>(p =&gt; p.Id == id);                               <span class="t-com">// 4. tracked, blocking</span>
+    _logger.<span class="t-fn">LogInformation</span>(<span class="t-str">"Served "</span> + product.Name);         <span class="t-com">// 5. allocates every call</span>
+    <span class="t-key">return</span> <span class="t-key">new</span> <span class="t-type">ProductDto</span>(product, <span class="t-key">decimal</span>.<span class="t-fn">Parse</span>(price));
+}</code></pre>
+      </div>
+    </div>
+    <div class="tab-panel" role="tabpanel" id="tabAfter" aria-labelledby="tbAfter" hidden>
+      <div class="code-wrap">
+        <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">ProductsController.cs · after review</span></div>
+<pre><code>[<span class="t-type">HttpGet</span>(<span class="t-str">"{id}"</span>)]
+<span class="t-key">public</span> <span class="t-key">async</span> <span class="t-type">Task</span>&lt;<span class="t-type">ProductDto</span>&gt; <span class="t-fn">Get</span>(<span class="t-key">int</span> id, <span class="t-type">CancellationToken</span> ct)
+{
+    <span class="t-key">var</span> priceTask = _pricing.<span class="t-fn">GetPriceAsync</span>(id, ct);          <span class="t-com">// typed client, pooled, resilient</span>
+
+    <span class="t-key">var</span> product = <span class="t-key">await</span> _db.Products
+        .<span class="t-fn">AsNoTracking</span>()                                        <span class="t-com">// read-only, no change tracker</span>
+        .<span class="t-fn">Where</span>(p =&gt; p.Id == id)
+        .<span class="t-fn">Select</span>(p =&gt; <span class="t-key">new</span> { p.Id, p.Name, p.Rating, p.ReviewCount }) <span class="t-com">// only the columns</span>
+        .<span class="t-fn">FirstAsync</span>(ct);
+
+    _log.<span class="t-fn">ProductServed</span>(product.Id);                            <span class="t-com">// [LoggerMessage], Debug level</span>
+
+    <span class="t-key">return</span> <span class="t-key">new</span> <span class="t-type">ProductDto</span>(product.Id, product.Name, product.Rating,
+                          product.ReviewCount, <span class="t-key">await</span> priceTask);
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section reveal">
+    <p>Each of the five problems deserves a sentence, because all of them are common in production .NET code.</p>
+    <ul class="notes">
+      <li><strong><code>new HttpClient()</code> per call</strong> leaves sockets in <code>TIME_WAIT</code> and, at a few hundred calls a second, runs the pod out of ports. Register typed clients with <code>IHttpClientFactory</code>, which pools handlers and still respects DNS changes.</li>
+      <li><strong><code>.Result</code> and <code>.Wait()</code></strong> block a thread-pool thread while the I/O happens. Under load the pool runs out of threads, adds new ones only gradually, and latency climbs for every request on the pod, including ones that never touch this code. This is thread-pool starvation, and it looks like "the pod is slow but CPU is at 30%". Async all the way down; there is no safe partial version.</li>
+      <li><strong>Loading entities you do not need.</strong> <code>Include(p =&gt; p.Reviews)</code> pulled thousands of rows to show a rating. Project to exactly the columns the response needs, use <code>AsNoTracking()</code> for reads, and watch for N+1 loops that run one query per item in a list.</li>
+      <li><strong>Blocking EF calls</strong> (<code>First</code> rather than <code>FirstAsync</code>) are the database flavour of the same starvation problem.</li>
+      <li><strong>Logging on the hot path.</strong> String concatenation allocates even when the level is filtered out. Source-generated <code>[LoggerMessage]</code> methods avoid that, and at 10K requests a second an Information log per request is also 86 crore log lines a day that someone pays to ingest.</li>
+    </ul>
+    <h3>The rest of the .NET checklist</h3>
+    <p>Beyond that one method, these gave Utsav Mart measurable gains on the same hardware:</p>
+    <ul class="notes">
+      <li><strong>DbContext pooling</strong> with <code>AddDbContextPool</code> and <strong>compiled queries</strong> (<code>EF.CompileAsyncQuery</code>) for the three hottest queries, which skips LINQ translation on every call.</li>
+      <li><strong>Keyset pagination</strong> instead of <code>Skip/Take</code>. <code>OFFSET 20000</code> makes the database read and throw away 20,000 rows; <code>WHERE Id &gt; @lastSeenId ORDER BY Id</code> reads only the page you want.</li>
+      <li><strong>System.Text.Json source generation</strong> for response types: less reflection, lower allocation, faster startup.</li>
+      <li><strong>Response compression</strong> with Brotli for JSON, done at Front Door where possible so pods do not spend CPU on it.</li>
+      <li><strong>Parallelise independent calls</strong> with <code>Task.WhenAll</code>, as the price lookup above does. A page that makes four sequential 40 ms calls takes 160 ms; in parallel it takes 40.</li>
+      <li><strong>Timeouts on everything</strong>, including database commands and Redis calls. A default HTTP timeout of 100 seconds is a 100-second thread hold when a dependency hangs.</li>
+      <li><strong>Profile, then fix.</strong> <code>dotnet-counters</code> shows thread-pool queue length, GC pauses and allocation rate live; <code>dotnet-trace</code> and the Application Insights profiler show where time goes. Every item on this list was found by measurement, not by instinct.</li>
+    </ul>
+    <p>For calls to other services, the resilience handler from <code>Microsoft.Extensions.Http.Resilience</code> (.NET 8 and later) wraps timeouts, retries with jitter and a circuit breaker around a typed client in one line:</p>
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">Program.cs · pricing client with sensible failure behaviour</span></div>
+<pre><code>builder.Services.<span class="t-fn">AddHttpClient</span>&lt;<span class="t-type">PricingClient</span>&gt;(c =&gt; c.BaseAddress = <span class="t-key">new</span>(<span class="t-str">"http://pricing-api"</span>))
+    .<span class="t-fn">AddStandardResilienceHandler</span>(o =&gt;
+    {
+        o.AttemptTimeout.Timeout      = <span class="t-type">TimeSpan</span>.<span class="t-fn">FromMilliseconds</span>(<span class="t-num">300</span>);
+        o.TotalRequestTimeout.Timeout = <span class="t-type">TimeSpan</span>.<span class="t-fn">FromSeconds</span>(<span class="t-num">1</span>);
+        o.Retry.MaxRetryAttempts      = <span class="t-num">2</span>;     <span class="t-com">// with exponential backoff + jitter</span>
+        o.CircuitBreaker.FailureRatio = <span class="t-num">0.2</span>;   <span class="t-com">// open at 20% failures</span>
+    });</code></pre>
+    </div>
+  </div>
+
+  <!-- 08 -->
+  <div class="section reveal">
+    <h2><span class="num">08 · 23:40 · THE DATABASE</span>The last bottleneck standing</h2>
+    <p>Pods scale horizontally in a minute. A relational database does not. Everything above this section exists to keep the database's share of traffic small, and what is left still needs care.</p>
+    <ul class="notes">
+      <li><strong>Indexes for the actual queries.</strong> Pull the top 20 queries by total CPU from Query Store after the load test and check each has a covering index. One missing index on <code>Orders(CustomerId, CreatedAt)</code> was costing Utsav Mart 40% of database CPU.</li>
+      <li><strong>Read replicas</strong> for queries that tolerate slight lag. Azure SQL Premium, Business Critical and Hyperscale offer read scale-out; route with <code>ApplicationIntent=ReadOnly</code>.</li>
+      <li><strong>Connection pool arithmetic.</strong> Forty pods across all services, each with ADO.NET's default <code>Max Pool Size</code> of 100, can open 4,000 connections. Check that against the concurrent-session and worker limits of your database tier before the autoscaler checks it for you. Smaller pools with fast queries beat large pools with slow ones.</li>
+      <li><strong>Short transactions.</strong> No HTTP calls inside a transaction, ever. A payment call inside a transaction holds row locks for as long as the gateway takes to answer.</li>
+      <li><strong>Batch writes</strong> where the business allows: loyalty points and analytics events can be written in batches of 500 by a consumer instead of one insert per request.</li>
+      <li><strong>Partitioning</strong> when one database is no longer enough. In Cosmos DB the partition key is the whole design: <code>/customerId</code> spreads order history evenly, while <code>/saleId</code> would put every midnight order on one hot partition. In SQL, shard by tenant or region before you shard by anything clever.</li>
+    </ul>
+  </div>
+
+  <div class="radio"><span class="ts">00:00:41</span><span class="who">DBA:</span> SQL primary 38% CPU, 612 active sessions, longest wait PAGELATCH on Orders. Replica lag 1.2 s. Fine.</div>
+
+  <!-- 09 -->
+  <div class="section reveal">
+    <h2><span class="num">09 · 23:50 · THE PLATFORM</span>Scale before the cliff, not during it</h2>
+    <p>Utsav Mart runs on AKS, two clusters in Central India and South India behind Front Door. Autoscaling looks like the easy part of this story. At midnight it is the part most likely to let you down, for a simple reason: the traffic arrives in four seconds and a new node takes three to five minutes.</p>
+    <h3>Pre-scale on the clock, autoscale on the signal</h3>
+    <p>The Horizontal Pod Autoscaler reacts to CPU averaged over time, so it starts scaling after the spike has already hurt. The cluster autoscaler adds nodes only after pods are stuck pending. For a known event, schedule the capacity. KEDA's cron scaler raises the floor before midnight, and a traffic-based trigger handles anything beyond the forecast:</p>
+    <div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">catalog-api-scaledobject.yaml · KEDA</span></div>
+<pre><code><span class="t-key">apiVersion</span>: keda.sh/v1alpha1
+<span class="t-key">kind</span>: ScaledObject
+<span class="t-key">metadata</span>:
+  <span class="t-key">name</span>: catalog-api
+<span class="t-key">spec</span>:
+  <span class="t-key">scaleTargetRef</span>:
+    <span class="t-key">name</span>: catalog-api
+  <span class="t-key">minReplicaCount</span>: <span class="t-num">6</span>
+  <span class="t-key">maxReplicaCount</span>: <span class="t-num">80</span>
+  <span class="t-key">triggers</span>:
+    - <span class="t-key">type</span>: cron                    <span class="t-com"># floor of 24 pods from 23:00 to 02:00 IST</span>
+      <span class="t-key">metadata</span>:
+        <span class="t-key">timezone</span>: Asia/Kolkata
+        <span class="t-key">start</span>: <span class="t-str">"0 23 * * *"</span>
+        <span class="t-key">end</span>: <span class="t-str">"0 2 * * *"</span>
+        <span class="t-key">desiredReplicas</span>: <span class="t-str">"24"</span>
+    - <span class="t-key">type</span>: prometheus              <span class="t-com"># beyond the forecast: ~400 req/s per pod</span>
+      <span class="t-key">metadata</span>:
+        <span class="t-key">serverAddress</span>: http://prometheus.monitoring:9090
+        <span class="t-key">query</span>: sum(rate(http_server_request_duration_seconds_count{app="catalog-api"}[1m]))
+        <span class="t-key">threshold</span>: <span class="t-str">"400"</span></code></pre>
+    </div>
+    <p>The order consumers scale on queue depth with KEDA's <code>azure-servicebus</code> trigger, so they grow when orders pile up and shrink back to two when the queue drains. Nodes are pre-provisioned too: the user node pool's minimum count is raised at 10 PM so the extra pods have somewhere to land.</p>
+    <h3>Pods that are ready when they say they are</h3>
+    <ul class="notes">
+      <li><strong>Readiness that means ready.</strong> A pod that reports ready before its connection pools, JIT and caches are warm takes full traffic cold and serves its first thousand requests slowly. Use a startup probe for boot, and a readiness probe that passes only after a warm-up routine has run the hot paths once. ReadyToRun compilation shortens the cold start.</li>
+      <li><strong>CPU requests, careful limits.</strong> A CPU limit makes the kernel throttle the container in 100 ms windows, which appears as p99 spikes on a pod that looks idle on average. Many teams set CPU requests accurately and leave CPU limits off, or set them generously. Memory limits stay, and the .NET GC respects them.</li>
+      <li><strong>GC mode.</strong> ASP.NET Core uses Server GC by default, and since .NET 9 it adapts its heap count to load (DATAS), which suits pods with modest memory. Check GC pause time in <code>dotnet-counters</code> during the load test rather than tuning blind.</li>
+      <li><strong>Spread and survive.</strong> Topology spread across availability zones, a PodDisruptionBudget so a node upgrade cannot drain half the fleet at 11:58, and a change freeze from 8 PM.</li>
+    </ul>
+    <h3>The failure that was not about CPU</h3>
+    <p>Remember the first load test failing at 6,200 requests a second. Outbound calls from AKS to the payment gateway went out through the cluster's load balancer, which gives each node a fixed allocation of SNAT ports. Thousands of short-lived outbound connections used them up, and new connections simply waited until they timed out. The fix was two changes: a <strong>NAT Gateway</strong> on the node subnet (64,512 ports per public IP, and you can attach several IPs) and connection reuse through <code>IHttpClientFactory</code>, so the same ports carried many requests. If your pods call anything outside the VNet at volume, check this before sale night; the symptom is intermittent connect timeouts with healthy CPU everywhere.</p>
+    <h3>Two regions</h3>
+    <p>Front Door sends each user to the nearest healthy cluster. Reads are served from both regions (Redis and read models exist in each). Writes go to the primary region's database with a geo-replica ready in the other. Active-active writes across regions are possible, but they bring conflict resolution with them — and a festive sale is not the night to learn it. The second region earns its keep by carrying half the read traffic and by being there if a whole zone goes dark.</p>
+  </div>
+
+  <!-- 10 -->
+  <div class="section reveal">
+    <h2><span class="num">10 · 23:55 · DEGRADE</span>Decide how you will fail</h2>
+    <p>Something will break at midnight. The design question is what the customer sees when it does. Utsav Mart wrote a <strong>degradation ladder</strong> in advance, with a feature flag in Azure App Configuration for each rung, so the incident commander can flip a switch instead of asking for a deployment:</p>
+    <ul class="notes">
+      <li><strong>Rung 1:</strong> turn off personalised recommendations; show a static "Top deals" list from the CDN.</li>
+      <li><strong>Rung 2:</strong> hide review text and show only the rating summary from the read model.</li>
+      <li><strong>Rung 3:</strong> serve the category pages from a pre-rendered static snapshot generated at 11 PM.</li>
+      <li><strong>Rung 4:</strong> narrow the waiting room admit rate so checkout stays healthy for the people already in it.</li>
+    </ul>
+    <p>Circuit breakers do the automatic version of this. When the reviews service fails 20% of calls, its breaker opens and the product page renders without reviews instead of waiting on a dead dependency. A <strong>bulkhead</strong> (a separate, capped connection pool or concurrency limit per dependency) stops one slow dependency from using every thread and connection the pod has. The golden rule: checkout must never depend on anything that is not needed to take money and reserve stock.</p>
+  </div>
+
+  <!-- 11 -->
+  <div class="section reveal">
+    <h2><span class="num">11 · 00:00 · MIDNIGHT</span>What the war room watches</h2>
+    <p>At midnight the dashboards matter more than the code. Utsav Mart's big screen shows, per service, the four golden signals from OpenTelemetry metrics in Azure Monitor and Grafana: request rate, error rate, p99 latency, and saturation (thread-pool queue length, Redis server load, SQL CPU, Service Bus queue depth). Distributed traces in Application Insights show which hop is slow when p99 moves; I wrote about following one of those traces in <a href="observability-detective.html">The Case of the Vanishing Request</a>.</p>
+    <p>Alerts fire on SLO burn rate, not raw thresholds. The checkout SLO is 99.9% of requests under 800 ms; if the error budget for the hour is burning ten times faster than normal, someone's phone rings. Everything else waits for the morning.</p>
+  </div>
+
+  <div class="radio calm"><span class="ts">00:04:12</span><span class="who">Incident commander:</span> Peak 11,900 req/s at 00:00:06. Checkout p99 410 ms. Sold out 00:03:51. Queue draining. Well done, everyone. Go home.</div>
+
+  <!-- 12 -->
+  <div class="section reveal">
+    <h2><span class="num">12 · THE MORNING AFTER</span>Which levers for which workload</h2>
+    <p>A festive sale uses almost every technique at once. Most real workloads need a subset, and picking the wrong subset costs money without buying throughput. Here is a map for the next time someone says "we need to handle 10K requests a second":</p>
+  </div>
+
+  <div class="matrix-wrap reveal">
+    <table class="matrix">
+      <thead><tr><th>Workload shape</th><th>Reach for first</th><th>Watch out for</th></tr></thead>
+      <tbody>
+        <tr><td>Read-heavy, same for everyone<span class="ex">catalogue, news, live cricket score, config</span></td><td>CDN with <code>s-maxage</code>, output cache, short TTLs</td><td>Cache keys polluted by cookies and query strings</td></tr>
+        <tr><td>Read-heavy, personalised<span class="ex">cart, "my orders", dashboards</span></td><td>Split public shell from personal fragment; Redis per user; read replicas</td><td>Accidentally caching personal data at the edge</td></tr>
+        <tr><td>Search and filtering<span class="ex">faceted product search, log search</span></td><td>Dedicated search index as a CQRS read model</td><td>Complex <code>LIKE</code> queries against the OLTP database</td></tr>
+        <tr><td>Write burst<span class="ex">checkout, Tatkal booking, exam results upload</span></td><td>Waiting room, 202 + queue, idempotency keys, atomic counters</td><td>Retry storms and duplicate orders</td></tr>
+        <tr><td>One hot item<span class="ex">flash deal, celebrity post</span></td><td>L1 in-process cache, replicated keys, pre-allocated stock</td><td>A single Redis shard or DB row taking all load</td></tr>
+        <tr><td>Chatty fan-out<span class="ex">one page calls six services</span></td><td>BFF / aggregation layer, parallel calls, gRPC internally, fewer hops</td><td>Latencies adding up; one slow service stalls all</td></tr>
+        <tr><td>Predictable spike<span class="ex">sale at midnight, salary-day payments</span></td><td>Scheduled pre-scaling (KEDA cron), cache warming, change freeze</td><td>Trusting reactive autoscaling alone</td></tr>
+        <tr><td>Unpredictable spike<span class="ex">viral post, outage elsewhere</span></td><td>Autoscaling plus load shedding and a degradation ladder</td><td>Node provisioning time; cold pods</td></tr>
+        <tr><td>Slow third-party dependency<span class="ex">payment gateway, SMS, KYC</span></td><td>Async with callbacks, bulkheads, circuit breakers, timeouts</td><td>SNAT exhaustion; threads blocked on slow calls</td></tr>
+        <tr><td>Steady high throughput<span class="ex">internal APIs, telemetry ingestion</span></td><td>Code efficiency, pooling, batching, compression, async I/O</td><td>Allocation and GC pressure, logging volume</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section reveal">
+    <p>Notice how often the answer is "do less work per request" or "do the work somewhere cheaper" rather than "add servers". Adding pods is the last lever because it multiplies everything below it: more pods means more database connections, more Redis connections and more outbound ports. Scale out only after the layers above have taken their share.</p>
+  </div>
+
+  <!-- 13 -->
+  <div class="section reveal">
+    <h2><span class="num">13 · BEFORE YOUR OWN MIDNIGHT</span>The pre-sale checklist</h2>
+    <p>This is the list Utsav Mart's team walks through a week before any big event. Tick through it for your own system; it only lives in this browser tab.</p>
+  </div>
+
+  <div class="checklist reveal" id="checklist">
+    <div class="cl-head"><span>Readiness</span><b id="clCount">0 / 16</b></div>
+    <div class="cl-meter"><i id="clMeter"></i></div>
+    <ol>
+      <li><label><input type="checkbox"><span><span class="layer">Plan</span>Traffic mix and peak forecast agreed, and load tested at 2× the forecast with a realistic ramp.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Plan</span>Per-pod capacity measured for cache-hit and cache-miss paths.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Edge</span>Static assets content-hashed with long cache lifetimes; public API responses send <code>s-maxage</code>.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Edge</span>Cache keys ignore cookies and marketing parameters; WAF and bot rules on.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Gate</span>Global and per-user rate limits in place; 429s carry <code>Retry-After</code>; clients back off with jitter.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Gate</span>Waiting room ready for the write-heavy path.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Cache</span>Hot keys warmed before the event; TTLs jittered; stampede protection on.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Cache</span>Tested what happens when Redis is unavailable.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Data</span>Reads split from writes; top queries covered by indexes; pool sizes checked against database limits.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Async</span>Non-essential checkout steps moved behind a queue; consumers idempotent; duplicate detection on.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Code</span>No sync-over-async, no per-call <code>HttpClient</code>, projections and <code>AsNoTracking</code> on reads.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Code</span>Timeouts, retries with jitter and circuit breakers on every outbound call.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Platform</span>Pods and nodes pre-scaled on a schedule; readiness probes wait for warm-up.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Platform</span>Outbound SNAT capacity checked (NAT Gateway); PodDisruptionBudgets and zone spread set.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Degrade</span>Degradation ladder written, with a feature flag per rung, and rehearsed.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Observe</span>Golden-signal dashboards per service; SLO burn-rate alerts; change freeze agreed.</span></label></li>
+    </ol>
+  </div>
+
+  <div class="divider"><span>◆</span></div>
+
+  <div class="section reveal">
+    <h2>The key takeaway</h2>
+    <p>Ten thousand requests a second is a problem of subtraction. The CDN removes the repeat reads. The gateway removes the abusive and the excessive. The cache removes most of what is left. CQRS keeps the remaining reads away from the writes, and queues turn the write spike into a steady stream. By the time a request reaches the database, it is one of a few hundred — and the database can give it full attention.</p>
+    <p>The code-level work decides how cheaply each layer does its job, and the platform work makes sure the capacity is already standing when the wave arrives. None of it is exotic. All of it has to be done before the countdown starts, because at 12:00:00 the war room can do only one thing — watch.</p>
+    <div class="note"><b>A note on the numbers.</b> Utsav Mart is invented, and so are the war-room messages. The throughput figures, ratios and failure modes are realistic for .NET services on Azure, but your per-pod capacity depends on your code, payload sizes and SKUs. Measure your own before you size anything. Library and Azure features are as documented for .NET 8 to .NET 10 in September 2026.</div>
+  </div>
+
+</article>
+
+<div class="wrap end-back">
+  <a class="back-link" href="index.html">&larr; Back to all stories</a>
+  <div class="share-row"><span class="share-label">Share</span><a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fniluniverse.com%2Fmidnight-sale-war-room.html" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a><a class="share-btn" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fniluniverse.com%2Fmidnight-sale-war-room.html&text=10%2C000%20Requests%20a%20Second%3A%20The%20Midnight%20Sale%20War%20Room" target="_blank" rel="noopener" aria-label="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.7L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4h-2l12.3 16z"/></svg></a><a class="share-btn" href="mailto:?subject=10%2C000%20Requests%20a%20Second%3A%20The%20Midnight%20Sale%20War%20Room&body=https%3A%2F%2Fniluniverse.com%2Fmidnight-sale-war-room.html" aria-label="Share via email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a><button class="share-btn" type="button" data-copy-url="https://niluniverse.com/midnight-sale-war-room.html" aria-label="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button></div><div class="engage-row" data-engage="midnight-sale-war-room"><button class="like-btn" type="button" aria-pressed="false" aria-label="Like this article"><svg class="like-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 20.3l8.8-8.6a5 5 0 0 0 0-7.1z"/></svg><span class="like-count">&ndash;</span></button><span class="engage-stat views-stat" aria-label="Views"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span class="views-count">&ndash;</span></span><span class="engage-stat shares-stat" aria-label="Shares"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg><span class="shares-count">&ndash;</span></span></div>
+</div>
+<script>
+/* ---------- hero: traffic graph hitting the midnight wall ---------- */
+(function(){
+  var c = document.getElementById('trafficfield');
+  if (!c) return;
+  var ctx = c.getContext('2d');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var w, h, dpr, raf, t0 = null;
+  var CYCLE = 16000;                 // ms per loop: 20 s of "sale time" before midnight, then the wall
+  var clock = document.getElementById('wbClock'), rpsEl = document.getElementById('wbRps'),
+      p99El = document.getElementById('wbP99'), errEl = document.getElementById('wbErr');
+
+  function size(){
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = c.clientWidth; h = c.clientHeight;
+    c.width = w * dpr; c.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  // traffic as a function of phase 0..1 (midnight at 0.55)
+  function rps(p){
+    var m = 0.55;
+    if (p < m) return 1200 + 300 * Math.sin(p * 40) * 0.3 + p * 600;
+    var k = (p - m) / 0.03;
+    var ramp = Math.min(1, k);
+    return 1500 + ramp * 10400 - Math.max(0, (p - 0.75)) * 9000 + 220 * Math.sin(p * 90);
+  }
+  function fmt(n){ return Math.round(n).toLocaleString('en-IN'); }
+  function draw(ts){
+    if (t0 === null) t0 = ts;
+    var phase = ((ts - t0) % CYCLE) / CYCLE;
+    ctx.clearRect(0, 0, w, h);
+    // grid
+    ctx.strokeStyle = 'rgba(38,44,59,.55)'; ctx.lineWidth = 1;
+    for (var gy = 0; gy < 6; gy++){ var y = h * (0.35 + gy * 0.11); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+    // midnight line
+    var mx = w * 0.55;
+    ctx.strokeStyle = 'rgba(255,138,61,.35)'; ctx.setLineDash([4, 6]);
+    ctx.beginPath(); ctx.moveTo(mx, h * 0.25); ctx.lineTo(mx, h); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(255,138,61,.6)'; ctx.font = '11px "IBM Plex Mono", monospace';
+    ctx.fillText('00:00:00', mx + 6, h * 0.25 + 12);
+    // curve up to current phase
+    var base = h * 0.92, top = h * 0.3, maxR = 13000;
+    ctx.beginPath();
+    var steps = Math.max(60, Math.floor(w / 4));
+    var end = Math.floor(steps * phase);
+    for (var i = 0; i <= end; i++){
+      var p = i / steps, x = p * w, y = base - (rps(p) / maxR) * (base - top);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    var grad = ctx.createLinearGradient(0, 0, w, 0);
+    grad.addColorStop(0, 'rgba(111,179,255,.55)'); grad.addColorStop(0.54, 'rgba(111,179,255,.7)');
+    grad.addColorStop(0.56, 'rgba(255,138,61,.95)'); grad.addColorStop(1, 'rgba(255,77,94,.8)');
+    ctx.strokeStyle = grad; ctx.lineWidth = 2; ctx.stroke();
+    // leading dot
+    var lp = end / steps, lx = lp * w, ly = base - (rps(lp) / maxR) * (base - top);
+    ctx.beginPath(); ctx.arc(lx, ly, 3.5, 0, Math.PI * 2); ctx.fillStyle = '#ff8a3d'; ctx.fill();
+
+    // war board
+    var r = rps(phase);
+    var secs = Math.round((phase - 0.55) * 60);   // seconds relative to midnight
+    var tt = secs < 0 ? (86400 + secs) : secs;
+    var hh = Math.floor(tt / 3600) % 24, mm = Math.floor(tt / 60) % 60, ss = tt % 60;
+    if (clock) clock.textContent = [hh, mm, ss].map(function(v){ return (v < 10 ? '0' : '') + v; }).join(':');
+    if (rpsEl) rpsEl.textContent = fmt(r);
+    var p99 = r < 3000 ? 84 + (r - 1200) / 90 : 140 + (r - 3000) / 38;
+    if (p99El) p99El.textContent = Math.round(p99) + ' ms';
+    if (errEl){ var e = r > 9000 ? 0.04 + (r - 9000) / 60000 : 0.01; errEl.textContent = e.toFixed(2) + '%'; }
+    raf = requestAnimationFrame(draw);
+  }
+  size();
+  if (reduce){ draw(performance.now()); cancelAnimationFrame(raf); t0 = null; }
+  else raf = requestAnimationFrame(draw);
+  var to;
+  window.addEventListener('resize', function(){ clearTimeout(to); to = setTimeout(size, 150); });
+})();
+
+/* ---------- request funnel lab ---------- */
+(function(){
+  var lab = document.getElementById('funnelLab');
+  if (!lab) return;
+  var ids = ['Rps','Read','Shed','Cdn','Cache','Pod','Lat'];
+  var k = {}, o = {};
+  ids.forEach(function(id){ k[id] = document.getElementById('k' + id); o[id] = document.getElementById('o' + id); });
+  var $ = function(id){ return document.getElementById(id); };
+  var fmt = function(n){ return Math.round(n).toLocaleString('en-IN'); };
+  var presets = {
+    naive: { Rps:10000, Read:90, Shed:0, Cdn:0, Cache:0, Pod:140, Lat:220 },
+    tuned: { Rps:10000, Read:90, Shed:6, Cdn:65, Cache:88, Pod:600, Lat:60 },
+    redis: { Rps:10000, Read:90, Shed:6, Cdn:65, Cache:0, Pod:160, Lat:190 }
+  };
+  function colour(frac){
+    if (frac > 0.6) return 'linear-gradient(90deg,#ff8a3d,#ff4d5e)';
+    if (frac > 0.25) return 'linear-gradient(90deg,#ffb02e,#ff8a3d)';
+    return 'linear-gradient(90deg,#3ed6a0,#6fb3ff)';
+  }
+  function update(){
+    var v = {}; ids.forEach(function(id){ v[id] = +k[id].value; });
+    o.Rps.textContent = fmt(v.Rps); o.Read.textContent = v.Read + '%'; o.Shed.textContent = v.Shed + '%';
+    o.Cdn.textContent = v.Cdn + '%'; o.Cache.textContent = v.Cache + '%'; o.Pod.textContent = fmt(v.Pod); o.Lat.textContent = v.Lat + ' ms';
+
+    var gate = v.Rps * (1 - v.Shed / 100);
+    var reads = gate * v.Read / 100, writes = gate - reads;
+    var originReads = reads * (1 - v.Cdn / 100);
+    var origin = originReads + writes;
+    var dbReads = originReads * (1 - v.Cache / 100);
+    var db = dbReads + writes * 0.25;           // writes are queued; the database sees a smoothed share
+    var pods = Math.ceil(origin / v.Pod * 1.4);
+    var flight = origin * v.Lat / 1000;
+
+    var rows = [['In', v.Rps], ['Gate', gate], ['Origin', origin], ['Db', db]];
+    rows.forEach(function(r){
+      var frac = Math.min(1, r[1] / v.Rps);
+      $('b' + r[0]).textContent = fmt(r[1]) + ' /s';
+      var f = $('f' + r[0]); f.style.width = (Math.max(0.6, frac * 100)) + '%'; f.style.background = colour(frac);
+    });
+    $('vPods').textContent = fmt(pods);
+    $('vFlight').textContent = fmt(flight);
+    $('vDbr').textContent = fmt(dbReads);
+    $('vW').textContent = fmt(writes);
+    $('tPods').classList.toggle('warn', pods > 60);
+    $('tFlight').classList.toggle('warn', flight > 1500);
+    $('tDbr').classList.toggle('warn', dbReads > 800);
+
+    var msg;
+    if (dbReads > 2000) msg = '<b>The database is the story here.</b> ' + fmt(dbReads) + ' reads a second on a store sized for a few hundred. Expect lock waits, connection pool exhaustion, then timeouts all the way up the stack.';
+    else if (pods > 60) msg = '<b>You are buying pods to make up for missing layers.</b> ' + fmt(pods) + ' pods also means that many connection pools pointing at one database. Raise the CDN or cache hit ratio before adding compute.';
+    else if (flight > 1500) msg = '<b>Latency is multiplying your concurrency.</b> ' + fmt(flight) + ' requests in flight at once (Little’s Law). Shave milliseconds off the hot path and this number falls with it.';
+    else msg = '<b>This holds.</b> ' + fmt(origin) + ' req/s reach your pods, ' + fmt(dbReads) + ' reads/s reach the database. The layers above are doing the heavy lifting, which is the point.';
+    $('verdict').innerHTML = msg;
+  }
+  ids.forEach(function(id){ k[id].addEventListener('input', update); });
+  lab.querySelectorAll('[data-preset]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var p = presets[b.getAttribute('data-preset')];
+      ids.forEach(function(id){ k[id].value = p[id]; });
+      update();
+    });
+  });
+  update();
+})();
+
+/* ---------- cache stampede demo ---------- */
+(function(){
+  var box = document.getElementById('stampede');
+  if (!box) return;
+  var grid = document.getElementById('stGrid'), out = document.getElementById('stOut');
+  var N = 500, cells = [], timer = null;
+  for (var i = 0; i < N; i++){ var el = document.createElement('i'); grid.appendChild(el); cells.push(el); }
+  function run(mode){
+    clearInterval(timer);
+    cells.forEach(function(c){ c.className = ''; });
+    var i = 0, dbCalls = 0;
+    timer = setInterval(function(){
+      for (var s = 0; s < 20 && i < N; s++, i++){
+        if (mode === 'naive'){ cells[i].className = 'db'; dbCalls++; }
+        else if (i === 0){ cells[i].className = 'db'; dbCalls++; }
+        else cells[i].className = 'wait';
+      }
+      out.innerHTML = mode === 'naive'
+        ? '<b>' + dbCalls + '</b> identical queries sent to SQL for the same product.'
+        : '<b>' + dbCalls + '</b> query to SQL. <b>' + (i - 1) + '</b> requests waiting on its result.';
+      if (i >= N){
+        clearInterval(timer);
+        if (mode === 'coalesce'){
+          setTimeout(function(){
+            cells.forEach(function(c, j){ if (j) c.className = 'hit'; });
+            out.innerHTML = '<b>1</b> query to SQL, <b>499</b> requests served from the same result. Other pods do the same, so the database sees one query per pod, not per request.';
+          }, 350);
+        } else {
+          out.innerHTML = '<b>500</b> identical queries hit SQL in the same second. On 24 pods that is 12,000, for one product.';
+        }
+      }
+    }, 40);
+  }
+  box.querySelectorAll('[data-mode]').forEach(function(b){
+    b.addEventListener('click', function(){ run(b.getAttribute('data-mode')); });
+  });
+})();
+
+/* ---------- before / after tabs ---------- */
+(function(){
+  var root = document.getElementById('codeTabs');
+  if (!root) return;
+  var tabs = root.querySelectorAll('[role=tab]');
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){
+      tabs.forEach(function(x){
+        var on = x === t;
+        x.setAttribute('aria-selected', on ? 'true' : 'false');
+        document.getElementById(x.getAttribute('aria-controls')).hidden = !on;
+      });
+    });
+  });
+})();
+
+/* ---------- checklist ---------- */
+(function(){
+  var cl = document.getElementById('checklist');
+  if (!cl) return;
+  var boxes = cl.querySelectorAll('input[type=checkbox]');
+  var count = document.getElementById('clCount'), meter = document.getElementById('clMeter');
+  function upd(){
+    var n = 0; boxes.forEach(function(b){ if (b.checked) n++; });
+    count.textContent = n + ' / ' + boxes.length;
+    meter.style.width = (n / boxes.length * 100) + '%';
+  }
+  boxes.forEach(function(b){ b.addEventListener('change', upd); });
+  upd();
+})();
+
+/* ---------- scroll reveal ---------- */
+(function(){
+  var els = document.querySelectorAll('.reveal');
+  if (!('IntersectionObserver' in window)){ els.forEach(function(e){ e.classList.add('in'); }); return; }
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: .08, rootMargin: '0px 0px -6% 0px' });
+  els.forEach(function(e){ io.observe(e); });
+})();
+</script>
+<div class="wrap related-section" style="padding:44px 0 8px;border-top:1px solid var(--line);margin-top:8px">
+  <h2 style="margin-bottom:22px">Continue exploring</h2>
+  <div style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+    <a href="outbox-pattern.html" style="display:block;text-decoration:none">
+      <div style="font-family:var(--serif);font-size:1.05rem;font-weight:600;margin-bottom:6px">The Outbox Pattern &rarr;</div>
+      <div style="font-size:.92rem;opacity:.8;line-height:1.5">How one table and one transaction keep events from getting lost.</div>
+    </a>
+    <a href="observability-detective.html" style="display:block;text-decoration:none">
+      <div style="font-family:var(--serif);font-size:1.05rem;font-weight:600;margin-bottom:6px">The Case of the Vanishing Request &rarr;</div>
+      <div style="font-size:.92rem;opacity:.8;line-height:1.5">Cracking a cross-service failure with distributed tracing.</div>
+    </a>
+    <a href="terraform-kubernetes-theatre.html" style="display:block;text-decoration:none">
+      <div style="font-family:var(--serif);font-size:1.05rem;font-weight:600;margin-bottom:6px">Terraform and Kubernetes &rarr;</div>
+      <div style="font-size:.92rem;opacity:.8;line-height:1.5">Two heroes, five acts: the infrastructure under the services.</div>
+    </a>
+  </div>
+</div>
+<div class="wrap comments-section">
+  <h2 class="comments-heading">Discussion</h2>
+  <script src="https://giscus.app/client.js"
+    data-repo="niluniverse/niluniverse"
+    data-repo-id="R_kgDOTx5tWg"
+    data-category="Comments"
+    data-category-id="DIC_kwDOTx5tWs4DD7gV"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="bottom"
+    data-theme="https://niluniverse.com/giscus-theme.css"
+    data-lang="en"
+    crossorigin="anonymous"
+    async>
+  </script>
+</div>
+<footer>
+  <div class="wrap foot-inner">
+    <span>&copy; 2026 Nilesh Mohite &mdash; <a href="https://www.nileshmohite.com" style="color:var(--accent)">www.nileshmohite.com</a></span>
+    <span class="foot-social">
+      <a class="foot-icon" href="https://www.linkedin.com/in/nileshmohite/" target="_blank" rel="noopener" aria-label="LinkedIn profile"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></a>
+      <a class="foot-icon" href="https://github.com/niluniverse?tab=repositories" target="_blank" rel="noopener" aria-label="GitHub profile"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.05 11.05 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.8 1.19 1.83 1.19 3.09 0 4.43-2.7 5.41-5.26 5.7.41.36.78 1.07.78 2.15 0 1.56-.01 2.81-.01 3.19 0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12c0-6.27-5.23-11.5-11.5-11.5z"/></svg></a>
+    </span>
+    <span>Written between deployments &middot; Amalner, India</span>
+  </div>
+</footer>
+<script>
+(function(){
+  var KEY='nu-theme';
+  var toggle=document.getElementById('themeToggle');
+  if(!toggle) return;
+  function apply(t){
+    document.documentElement.setAttribute('data-theme',t);
+    toggle.setAttribute('aria-pressed', t==='linkedin' ? 'true':'false');
+    toggle.setAttribute('title', t==='linkedin' ? 'Switch to dark theme' : 'Switch to light theme');
+  }
+  var saved=null; try{saved=localStorage.getItem(KEY);}catch(e){}
+  if(saved==='linkedin' || saved==='cinema') apply(saved);
+  toggle.addEventListener('click',function(){
+    var isLight=document.documentElement.getAttribute('data-theme')==='linkedin';
+    var next=isLight?'cinema':'linkedin';
+    apply(next);
+    try{localStorage.setItem(KEY,next);}catch(e){}
+  });
+})();
+</script>
+<script>
+(function(){
+  document.querySelectorAll('[data-copy-url]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var url = btn.getAttribute('data-copy-url');
+      var done = function(){
+        var original = btn.getAttribute('aria-label');
+        btn.classList.add('copied');
+        btn.setAttribute('aria-label','Copied!');
+        setTimeout(function(){ btn.classList.remove('copied'); btn.setAttribute('aria-label', original); }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function(){});
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = url; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch(e){}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+})();
+</script>
+<script>
+(function(){
+  var HEADING_SELECTOR = 'article h2';
+  var headings = Array.prototype.slice.call(document.querySelectorAll(HEADING_SELECTOR));
+  if (!headings.length) return;
+
+  var fill = document.getElementById('rpFill');
+  var ring = document.getElementById('rpRing');
+  var pct = document.getElementById('rpPct');
+  var status = document.getElementById('rpStatus');
+  var list = document.getElementById('rpList');
+  var toc = document.getElementById('rpToc');
+  var toggle = document.getElementById('rpToggle');
+  if (!fill || !toc) return;
+
+  var RING_CIRC = 97.4;
+  var seen = {};
+
+  var items = headings.map(function(h, i){
+    var base = 'rp-section-' + (i + 1);
+    if (!h.id) h.id = base;
+    while (seen[h.id]) { h.id = base + '-' + Math.random().toString(36).slice(2,6); }
+    seen[h.id] = true;
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.textContent = h.textContent.replace(/\s+/g,' ').trim();
+    li.appendChild(a);
+    list.appendChild(li);
+    return { heading: h, li: li };
+  });
+
+  function updateProgress(){
+    var doc = document.documentElement;
+    var scrollTop = window.scrollY || doc.scrollTop;
+    var height = doc.scrollHeight - doc.clientHeight;
+    var ratio = height > 0 ? Math.min(1, Math.max(0, scrollTop / height)) : 0;
+    var percent = Math.round(ratio * 100);
+    fill.style.width = percent + '%';
+    if (ring) ring.style.strokeDashoffset = String(RING_CIRC * (1 - ratio));
+    if (pct) pct.textContent = percent + '%';
+    if (status) status.textContent = percent >= 99 ? 'Finished reading' : percent + '% read';
+
+    var activeIdx = 0;
+    var probe = scrollTop + window.innerHeight * 0.3;
+    for (var i = 0; i < items.length; i++) {
+      var top = items[i].heading.getBoundingClientRect().top + scrollTop;
+      if (top <= probe) activeIdx = i;
+    }
+    items.forEach(function(it, i){ it.li.classList.toggle('active', i === activeIdx); });
+  }
+
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  window.addEventListener('resize', updateProgress);
+  updateProgress();
+
+  toggle.addEventListener('click', function(){
+    var open = toc.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', function(e){
+    if (!toc.contains(e.target)) toc.classList.remove('open');
+  });
+})();
+</script>
+<script>
+(function(){
+  var rows = document.querySelectorAll('[data-engage]');
+  if (!rows.length) return;
+  var slug = rows[0].getAttribute('data-engage');
+
+  function req(method, url, body){
+    var opts = { method: method, headers: {} };
+    if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    return fetch(url, opts).then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('http ' + r.status)); });
+  }
+  function setAllText(cls, value){
+    document.querySelectorAll(cls).forEach(function(el){ el.textContent = value; });
+  }
+  function setLikedState(state){
+    document.querySelectorAll('.like-btn').forEach(function(btn){
+      btn.classList.toggle('liked', state);
+      btn.setAttribute('aria-pressed', state ? 'true' : 'false');
+    });
+  }
+
+  var likedKey = 'nu-liked-' + slug;
+  var liked = false;
+  try { liked = localStorage.getItem(likedKey) === '1'; } catch(e){}
+  setLikedState(liked);
+
+  Promise.all([
+    req('GET','/api/likes?slug=' + encodeURIComponent(slug)).catch(function(){ return null; }),
+    req('GET','/api/views?slug=' + encodeURIComponent(slug)).catch(function(){ return null; }),
+    req('GET','/api/shares?slug=' + encodeURIComponent(slug)).catch(function(){ return null; })
+  ]).then(function(res){
+    var likes = res[0], views = res[1], shares = res[2];
+    if (!likes && !views && !shares) { rows.forEach(function(r){ r.hidden = true; }); return; }
+    if (likes) setAllText('.like-count', likes.count);
+    if (views) setAllText('.views-count', views.count);
+    if (shares) setAllText('.shares-count', shares.count);
+  });
+
+  document.querySelectorAll('.like-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var next = !liked;
+      liked = next;
+      setLikedState(next);
+      var firstCount = document.querySelector('.like-count');
+      var current = parseInt(firstCount ? firstCount.textContent : '0', 10);
+      if (isNaN(current)) current = 0;
+      var optimistic = Math.max(0, current + (next ? 1 : -1));
+      setAllText('.like-count', optimistic);
+      try { localStorage.setItem(likedKey, next ? '1' : '0'); } catch(e){}
+      req('POST','/api/likes', { slug: slug, liked: next }).then(function(d){
+        setAllText('.like-count', d.count);
+      }).catch(function(){
+        liked = !next;
+        setLikedState(liked);
+        setAllText('.like-count', current);
+        try { localStorage.setItem(likedKey, liked ? '1' : '0'); } catch(e){}
+      });
+    });
+  });
+
+  var viewedKey = 'nu-viewed-' + slug;
+  var alreadyViewed = false;
+  try { alreadyViewed = sessionStorage.getItem(viewedKey) === '1'; } catch(e){}
+  if (!alreadyViewed) {
+    try { sessionStorage.setItem(viewedKey, '1'); } catch(e){}
+    req('POST','/api/views', { slug: slug }).then(function(d){
+      setAllText('.views-count', d.count);
+    }).catch(function(){});
+  }
+
+  document.querySelectorAll('.share-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var label = (btn.getAttribute('aria-label') || '').toLowerCase();
+      var channel = 'other';
+      if (label.indexOf('linkedin') > -1) channel = 'linkedin';
+      else if (label.indexOf('x') > -1) channel = 'x';
+      else if (label.indexOf('email') > -1) channel = 'email';
+      else if (label.indexOf('copy') > -1) channel = 'copy';
+      req('POST','/api/shares', { slug: slug, channel: channel }).then(function(d){
+        setAllText('.shares-count', d.count);
+      }).catch(function(){});
+    });
+  });
+})();
+</script>
+</body>
+</html>
