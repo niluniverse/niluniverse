@@ -734,7 +734,7 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
 
   <p><strong>Three — if one side is small, don't move the big one.</strong> Joining ten crore sales rows with a 200-row list of city names? Do not drag the sales data across the network. Send the tiny city list to every machine instead. This is a <span class="term">broadcast join</span>, and it turns hours into minutes.</p>
 
-  <p>And there is one more thing, added later, which is genuinely the cleverest part: <span class="term">Adaptive Query Execution (AQE)</span>. Catalyst makes his plan, but then he <em>watches the job while it runs</em>. If the real data turns out different from what he assumed (one district has ten times more rows than expected), he changes the plan mid-flight. Very few planners in this world have the humility to do that.</p>
+  <p>And there is one more thing, added later, which is the cleverest part: <span class="term">Adaptive Query Execution (AQE)</span>. Catalyst makes his plan, but then he <em>watches the job while it runs</em>. If the real data turns out different from what he expected (one district has ten times more rows than he thought), he changes the plan in the middle of the job. Very few planners in this world are humble enough to do that.</p>
 </div>
 
 <div class="wide reveal">
@@ -810,7 +810,7 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
 
   <p>So the gurukul gave the village a proper ledger: <span class="term">Delta Lake</span>. It sits on top of your ordinary files and adds three things every accountant has demanded since the beginning of time:</p>
 
-  <p><strong>ACID transactions</strong> — a write either fully happens or fully does not. No half-truths. <strong>Time travel</strong> — you can ask for the table as it stood twenty versions ago, which has saved more careers than any monitoring dashboard. <strong>Schema enforcement</strong> — if someone tries to push a string into a number column, the ledger refuses politely instead of corrupting six months of reports.</p>
+  <p><strong>ACID transactions</strong> — a write either happens fully or does not happen at all. No half-truths. <strong>Time travel</strong> — you can ask for the table as it was twenty versions ago, which has saved more careers than any monitoring dashboard. <strong>Schema enforcement</strong> — if someone tries to put text into a number column, the ledger politely refuses instead of spoiling six months of reports.</p>
 
   <h3 style="font-size:24px;margin:50px 0 10px;color:var(--gold)">Discipline two — the Lakehouse and the three vessels</h3>
 
@@ -843,7 +843,7 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
 
   <p>Spark's original body was built in Scala and runs on the JVM — flexible, portable, wonderful. But for pure number-crunching, a JVM has a ceiling. So Databricks built the magician a second heart, written in C++, and named it <span class="term">Photon</span>.</p>
 
-  <p>Photon's trick is called <span class="term">vectorisation</span>. The old way processed one row at a time: check this row, then the next, then the next. Photon takes a whole <em>batch</em> of values and applies the operation to all of them in a single stroke, using the SIMD instructions sitting unused inside every modern CPU.</p>
+  <p>Photon's trick is called <span class="term">vectorisation</span>. The old way handled one row at a time: check this row, then the next, then the next. Photon takes a whole <em>batch</em> of values and applies the operation to all of them in one stroke, using special instructions (called SIMD) that sit unused inside every modern CPU.</p>
 
   <p>Think of it as the difference between stamping one envelope, then the next, then the next, versus a machine that stamps forty envelopes in one press.</p>
 
@@ -862,7 +862,7 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
     <span class="pill" id="photA">Row-at-a-time: —</span>
     <span class="pill" id="photB">Photon vectorised: —</span>
   </div>
-  <figcaption><b>Same work, different rhythm.</b> The top lane handles one value per beat. The bottom lane loads eight values into a vector register and applies the operation to all eight in one CPU instruction. On real query workloads this shows up as a several-times speed-up on scans, filters, joins and aggregations — with zero code change.</figcaption>
+  <figcaption><b>Same work, different rhythm.</b> The top lane handles one value per beat. The bottom lane loads eight values together and applies the operation to all eight in one CPU instruction. On real queries this gives a speed-up of several times on scans, filters, joins and totals — without changing any code.</figcaption>
 </figure>
 </div>
 
@@ -893,7 +893,7 @@ footer.end .sig{font-family:var(--serif);font-size:22px;color:var(--gold);font-s
 
   <p><strong>He became lighter.</strong> With <span class="term">Spark Connect</span>, your code no longer has to sit inside the cluster shouting at it. A thin client (a mere 1.5 MB, and it no longer needs Java installed) talks to Spark over a proper protocol. Your laptop, your notebook, your web app, your agent: all can speak to the magician from a distance.</p>
 
-  <p><strong>He became stricter, in a good way.</strong> ANSI SQL mode is now the default. Earlier, a bad number would become <code>null</code> and your report would be wrong with no error anywhere. Now it raises its hand and says "this is an error." Loud failure is a kindness; silent wrongness is not.</p>
+  <p><strong>He became stricter, in a good way.</strong> ANSI SQL mode is now the default. Earlier, a bad number would quietly become <code>null</code> and your report would be wrong with no error anywhere. Now Spark raises its hand and says "this is an error". A loud failure is a kindness; a silent wrong answer is not.</p>
 
   <p><strong>He learned to hold messy shapes.</strong> The new <span class="term">VARIANT</span> type stores semi-structured JSON properly, flexible like a document store, but still fast to query, because half the world's data arrives as untidy JSON and pretending otherwise never worked.</p>
 

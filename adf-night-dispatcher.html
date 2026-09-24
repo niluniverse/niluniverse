@@ -605,8 +605,7 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   <div class="hero-in">
     <div class="kicker">Azure Data Factory · Data Integration</div>
     <h1>The Night<br><em>Dispatcher</em></h1>
-    <p class="dek">Every morning the numbers are correct. Nobody wonders why.
-      This is the freight yard that made it so, and the dispatcher who never sleeps.</p>
+    <p class="dek">Every morning the numbers are correct. Nobody asks why. This is the freight yard that makes it happen, and the dispatcher who never sleeps.</p>
     <div class="meta">16 August 2026 &middot; 17 min read &middot; Nilesh Mohite</div>
   </div>
   <div class="scrollcue">SCROLL</div>
@@ -629,44 +628,32 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
 
   <div class="scene">
     <div class="slug">INT. REPLENISHMENT OFFICE, LEEDS — MORNING</div>
-    <p>Priya puts her coffee down and opens the board. Three hundred and forty stores, six
-      distribution centres, tonight's truck manifests. Which pallets go where. What's short.
-      What's about to be short by Thursday.</p>
-    <p>It is correct. All of it. Yesterday's tills, last night's supplier confirmations, this
-      morning's stock positions, reconciled and sitting in one table as if they had always
-      belonged together.</p>
-    <p>She does not wonder how. Nobody wonders how. That is the entire point.</p>
+    <p>Priya puts down her coffee and opens the board. Three hundred and forty stores, six distribution centres, tonight's truck loads. Which pallets go where. What is short. What will be short by Thursday.</p>
+    <p>It is correct. All of it. Yesterday's billing counters, last night's supplier confirmations, this morning's stock levels, all matched up and sitting in one table as if they always belonged together.</p>
+    <p>She does not wonder how. Nobody does. That is exactly the point.</p>
   </div>
 
-  <p class="lede">Seven hours earlier, none of that data was in the same building — let alone the
-    same shape. It was scattered across a dozen systems that don't know each other exist, run on
-    different schedules, speak different formats, and fail in different ways. Something had to go
-    and get it. Something had to decide the order, handle the ones that didn't show up, retry the
-    ones that timed out, and finish before the sun did.</p>
+  <p class="lede">Seven hours earlier, none of this data was in the same building, let alone in the same format. It was spread across a dozen systems that do not know each other, run on different schedules, use different formats and fail in different ways. Something had to go and fetch it. Something had to decide the order, handle the files that never arrived, retry the ones that timed out, and finish before sunrise.</p>
 
-  <p>That something is <strong>Azure Data Factory</strong>. And the fastest way to understand what
-    it is for is to look at the mess it was invented to replace.</p>
+  <p>That something is <strong>Azure Data Factory</strong>. And the quickest way to understand what it does is to look at the mess it was built to replace.</p>
 
-  <p>Our company is <strong>Meridian Retail</strong>: 340 stores, 6 distribution centres, about 200
-    suppliers. Here is what has to arrive, every night, before Priya's coffee:</p>
+  <p>Our company is <strong>Meridian Retail</strong>: 340 stores, 6 distribution centres and about 200 suppliers. This is what has to arrive every night, before Priya's coffee:</p>
 
   <table>
     <tr><th>Source</th><th>Where it lives</th><th>Its personality</th></tr>
-    <tr><td>Till transactions</td><td>On-prem SQL Server, in the datacentre</td><td>Dumps at 23:15 when the last store closes. Enormous. No route in from the internet.</td></tr>
-    <tr><td>Stock positions</td><td>Warehouse management system, on-prem</td><td>Ancient, precious, and guarded by a team who will not be giving you a firewall exception.</td></tr>
-    <tr><td>Supplier confirmations</td><td>~200 SFTP drops, CSV</td><td>Arrive between 22:00 and 05:00 on nobody's schedule. Occasionally malformed. Occasionally not at all.</td></tr>
-    <tr><td>Carrier tracking</td><td>Third-party REST APIs</td><td>Paginated, rate-limited, and will 429 you at 02:00 without apology.</td></tr>
-    <tr><td>E-commerce orders</td><td>Azure SQL</td><td>The one that behaves.</td></tr>
-    <tr><td>Finance &amp; cost</td><td>SAP</td><td>Month-end shaped. Different owner. Different rules.</td></tr>
+    <tr><td>Till transactions</td><td>On-prem SQL Server, in the datacentre</td><td>Exported at 23:15 when the last store closes. Huge. No way to reach it from the internet.</td></tr>
+    <tr><td>Stock positions</td><td>Warehouse management system, on-prem</td><td>Very old, very important, and protected by a team that will not open a firewall port for you.</td></tr>
+    <tr><td>Supplier confirmations</td><td>~200 SFTP drops, CSV</td><td>Arrive any time between 22:00 and 05:00, on no fixed schedule. Sometimes broken. Sometimes missing.</td></tr>
+    <tr><td>Carrier tracking</td><td>Third-party REST APIs</td><td>Return data page by page, limit how often you can call, and will reply "429, too many requests" at 02:00 without saying sorry.</td></tr>
+    <tr><td>E-commerce orders</td><td>Azure SQL</td><td>The one that behaves itself.</td></tr>
+    <tr><td>Finance &amp; cost</td><td>SAP</td><td>Built around month-end. Different owner. Different rules.</td></tr>
   </table>
 
-  <p>Six sources, one destination, one deadline. That sounds like six jobs. It is not, and the reason it is not is the whole reason this category of tool exists.</p>
+  <p>Six sources, one destination, one deadline. It sounds like six jobs. It is not, and the reason why is the whole reason this kind of tool exists.</p>
 
   <div class="note cy">
     <div class="t">How to read this</div>
-    <p>The main text is the film — plain English, no prerequisites. Anywhere you see an
-      <strong>Under the hood</strong> panel, open it for the real pipeline JSON, the actual
-      settings, and the numbers. Skip every one of them and the story still works.</p>
+    <p>The main text is the story, in plain English, with no background needed. Wherever you see an <strong>Under the hood</strong> panel, open it for the real pipeline JSON, settings and numbers. Skip all of them and the story still makes sense.</p>
   </div>
 </div>
 </section>
@@ -677,17 +664,11 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   <div class="actmark">Setup · The yard before the dispatcher</div>
   <h2>Why six sources is never six jobs</h2>
 
-  <p class="lede">The instinct is to write a script per route. One to pull tills into the lake.
-    One to pull stock. One for each supplier feed. Small, understandable, independent. It works
-    beautifully — right up until it doesn't, and then it fails in a way that is very hard to
-    climb back out of.</p>
+  <p class="lede">The natural first idea is to write one script per route. One to copy billing data into the lake. One for stock. One for each supplier feed. Small, easy to understand, independent. It works well — until one day it does not, and then it fails in a way that is very hard to recover from.</p>
 
-  <p>There are two problems, and the second one is the one that kills you.</p>
+  <p>There are two problems, and the second one is the one that really hurts.</p>
 
-  <p><strong>The first is arithmetic.</strong> Sources multiply by destinations. The lake wants raw
-    tills; the warehouse model wants cleaned tills; finance wants an aggregate; the ML forecaster
-    wants its own slice. Every new destination re-crosses every existing source. Move the slider
-    below and watch the line count go somewhere unpleasant.</p>
+  <p><strong>The first is simple maths.</strong> Sources multiply with destinations. The lake wants raw billing data; the warehouse model wants cleaned data; finance wants a summary; the ML forecast wants its own slice. Every new destination has to connect to every existing source again. Move the slider below and watch the number of connections grow.</p>
 </div>
 
 <div class="wide reveal">
@@ -724,40 +705,28 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
 </div>
 
 <div class="wrap reveal">
-  <p><strong>The second problem is the one that gets you paged.</strong> Every one of those scripts
-    invents its own answer to the same six questions, and invents it slightly differently.</p>
+  <p><strong>The second problem is the one that wakes you up at night.</strong> Every one of those scripts invents its own answer to the same six questions, each a little differently.</p>
 
   <ul>
-    <li><strong>When do I run?</strong> A cron entry here, a Task Scheduler job there, a
-      <code>while true</code> loop in a service somewhere nobody remembers deploying.</li>
-    <li><strong>What if the source isn't ready?</strong> Sleep 300 and hope. Or fail, and let
-      the morning find out.</li>
-    <li><strong>What if I fail halfway?</strong> Re-run everything from the top, probably.
-      Four hundred gigabytes, again.</li>
-    <li><strong>Who do I tell?</strong> A log file on a VM. Sometimes an email, from an address
-      that stopped existing when someone left.</li>
-    <li><strong>What ran last night?</strong> Nobody knows without SSH-ing somewhere.</li>
-    <li><strong>Where did this number come from?</strong> Silence.</li>
+    <li><strong>When do I run?</strong> A cron job here, a Windows Task Scheduler job there, a <code>while true</code> loop in some service nobody remembers deploying.</li>
+    <li><strong>What if the source is not ready?</strong> Sleep for 300 seconds and hope. Or fail, and let the morning team find out.</li>
+    <li><strong>What if I fail halfway?</strong> Run everything again from the start, probably. Four hundred gigabytes, all over again.</li>
+    <li><strong>Whom do I inform?</strong> A log file on some VM. Sometimes an email, from an address that stopped existing when someone left the company.</li>
+    <li><strong>What ran last night?</strong> Nobody knows without logging in to some server.</li>
+    <li><strong>Where did this number come from?</strong> No answer.</li>
   </ul>
 
   <div class="scene">
     <div class="slug">THE REAL FAILURE MODE</div>
-    <p>It is 03:00. A number on the board is wrong. Somewhere among two hundred scripts on four
-      machines, one of them either didn't run, ran twice, ran early, or ran against a source that
-      was mid-backup and returned half a table.</p>
-    <p>You do not have a data problem. You have an <em>archaeology</em> problem.</p>
+    <p>It is 03:00. A number on the board is wrong. Somewhere among two hundred scripts on four machines, one of them either did not run, ran twice, ran too early, or ran while the source was in the middle of a backup and returned half a table.</p>
+    <p>You do not have a data problem. You have a <em>digging-through-history</em> problem.</p>
   </div>
 
-  <p>So the job to be done isn't "copy data." Copying is easy; every language has a library for it.
-    The job is <strong>everything around the copying</strong> — the ordering, the timing, the
-    waiting, the retrying, the alerting, the record of what happened and when. That's not
-    plumbing. That's <em>dispatch</em>.</p>
+  <p>So the real job is not "copy data". Copying is easy; every language has a library for it. The real job is <strong>everything around the copying</strong>: the order, the timing, the waiting, the retrying, the alerts, and the record of what happened and when. That is not plumbing. That is <em>dispatch</em>.</p>
 
   <div class="note">
     <div class="t">The one-sentence version</div>
-    <p>Azure Data Factory exists so that the answers to "when does this run, in what order, what
-      happens when it breaks, and who finds out" are written down in one place, in one way, for every route in the yard, instead of two hundred times, slightly differently, by whoever
-      happened to be on that ticket.</p>
+    <p>Azure Data Factory exists so that the answers to "when does this run, in what order, what happens when it breaks, and who finds out" are written down in one place, in one way, for every route in the yard — instead of two hundred times, each a little different, by whoever happened to get that ticket.</p>
   </div>
 </div>
 </section>
@@ -767,26 +736,17 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   <div class="actmark">Act I · The dispatch board</div>
   <h2>The dispatcher does not drive the trains</h2>
 
-  <p class="lede">Here is the single most clarifying thing you can know about Azure Data Factory,
-    and it is the thing most introductions bury: <strong>ADF is a dispatcher, not a lorry.</strong>
-    Its job is to decide what moves, in what order, when, and what happens when something doesn't
-    arrive. It is a control system first and a hauler second.</p>
+  <p class="lede">Here is the most useful thing to know about Azure Data Factory, and most introductions hide it: <strong>ADF is a dispatcher, not a truck.</strong> Its job is to decide what moves, in what order and when, and what happens when something does not arrive. It is a control system first and a mover second.</p>
 
-  <p>That distinction matters because it tells you what to expect. ADF <em>does</em> shift bulk data itself: its Copy activity is a genuinely fast, heavily parallel mover, and for most ingestion
-    that's all you need. But when the work gets computational — joins across billions of rows,
-    complex reshaping, machine learning — ADF does what a good dispatcher does: it hands the job to
-    something built for it (Databricks, a SQL engine, an Azure Function) and goes back to watching
-    the board. It can also run that transformation on Spark it manages for you, which we'll get to.</p>
+  <p>This matters because it tells you what to expect. ADF <em>does</em> move bulk data itself; its Copy activity is fast and runs many transfers in parallel, and for most data loading that is all you need. But when the work needs real computing, like joins across billions of rows, complex reshaping or machine learning, ADF does what a good dispatcher does: it gives the job to something built for it (Databricks, a SQL engine, an Azure Function) and goes back to watching the board. It can also run that work on a Spark cluster it manages for you, which we will see later.</p>
 
   <div class="scene">
     <div class="slug">THE SHAPE OF THE THING</div>
-    <p>A dispatcher's value is not muscle. It is that at 02:00 exactly one person knows what is
-      on which track, what is late, what is blocked behind what, and which siding the 400-tonne
-      thing is waiting in.</p>
-    <p>Take the dispatcher away and you still have all the trains. You just have no railway.</p>
+    <p>A dispatcher's value is not muscle. At 02:00, exactly one person knows what is on which track, what is late, what is stuck behind what, and on which siding the 400-tonne load is waiting.</p>
+    <p>Take the dispatcher away and you still have all the trains. You just do not have a railway.</p>
   </div>
 
-  <p>Six nouns run the whole product. Click through them: every one is either something you will configure on your first day or something you will be reading about at 3am on some later one.</p>
+  <p>Six nouns run the whole product. Click through them. Each one is either something you will set up on day one, or something you will be reading about at 3 a.m. on some later day.</p>
 </div>
 
 <div class="wide reveal">
@@ -874,30 +834,19 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
 
 <div class="wrap reveal">
   <h3>The one everybody skips</h3>
-  <p>Five of those six nouns are intuitive. The one that decides whether your project
-    succeeds is the <strong>integration runtime</strong>, because it is the answer to a question
-    nobody thinks to ask until the security review: <em>whose network is this happening
-    on?</em></p>
+  <p>Five of the six nouns are easy to understand. The one that decides whether your project succeeds is the <strong>integration runtime</strong>, because it answers a question nobody asks until the security review: <em>whose network is this happening on?</em></p>
 
-  <p>Meridian's till database is in a datacentre, behind a firewall, and the network team will not
-    be opening an inbound port so that a cloud service can reach in. That is not obstruction; that
-    is correct. So ADF doesn't reach in. You install a <strong>self-hosted integration runtime</strong>
-    on a machine <em>inside</em> that network, and it dials <em>out</em> to Azure on 443. The
-    connection is established from the trusted side. Nothing inbound is ever opened.</p>
+  <p>Meridian's billing database is in a datacentre, behind a firewall, and the network team will not open an incoming port so that a cloud service can reach in. That is not them being difficult; that is correct. So ADF does not reach in. You install a <strong>self-hosted integration runtime</strong> on a machine <em>inside</em> that network, and it connects <em>out</em> to Azure on port 443. The connection starts from the trusted side. No incoming port is ever opened.</p>
 
   <div class="note gr">
     <div class="t">Why this design keeps everyone happy</div>
-    <p>The self-hosted IR needs only outbound HTTPS: to Azure Relay for control messages and to
-      the Data Factory endpoint. Credentials are encrypted and stored on that machine, not in the
-      cloud. You can run up to four nodes for high availability and throughput. From the security
-      team's point of view, you installed an agent that phones home; you did not punch a hole in
-      the perimeter. That difference is why hybrid data integration is possible at all.</p>
+    <p>The self-hosted runtime needs only outgoing HTTPS: to Azure Relay for control messages and to the Data Factory endpoint. Passwords are encrypted and stored on that machine, not in the cloud. You can run up to four machines for backup and extra speed. From the security team's point of view, you installed an agent that calls home; you did not make a hole in the firewall. That difference is why moving data between on-premises and cloud is possible at all.</p>
   </div>
 
   <details class="hood">
     <summary>Under the hood · a linked service, a dataset, and the pipeline that uses them</summary>
     <div class="hoodbody">
-      <p>Everything in ADF is JSON underneath, whether or not you ever open the code view. A linked service is a connection; note that the secret is a Key Vault reference, never a literal:</p>
+      <p>Everything in ADF is JSON underneath, whether or not you ever open the code view. A linked service is a connection. See that the secret is a Key Vault reference, never the actual password:</p>
       <div class="filetag">linkedService/OnPremTills.json</div>
 <pre><code>{
   <span class="nm">"name"</span>: <span class="st">"OnPremTills"</span>,
@@ -919,7 +868,7 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   }
 }</code></pre>
 
-      <p>A dataset names a shape of data at that place. Keep them generic and parameterised: one dataset for "a table in tills", not forty datasets for forty tables:</p>
+      <p>A dataset describes a set of data at that location. Keep datasets generic, with parameters: one dataset for "a table in the billing database", not forty datasets for forty tables:</p>
       <div class="filetag">dataset/TillsTable.json</div>
 <pre><code>{
   <span class="nm">"name"</span>: <span class="st">"TillsTable"</span>,
@@ -937,10 +886,7 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
     }
   }
 }</code></pre>
-      <p><strong>The parameterised dataset is the difference between a project that scales and one
-        that doesn't.</strong> Teams that skip it end up hand-building one dataset, one pipeline and
-        one trigger per table, and by table ninety nobody can change anything safely. We'll build
-        the alternative — one pipeline driven by a control table — in Act IV.</p>
+      <p><strong>The parameterised dataset is the difference between a project that grows smoothly and one that does not.</strong> Teams that skip it build one dataset, one pipeline and one trigger for every table, and by table ninety nobody can change anything safely. We will build the better version, one pipeline driven by a control table, in Act IV.</p>
     </div>
   </details>
 </div>
@@ -952,21 +898,15 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   <div class="actmark">Act II · The timetable</div>
   <h2>Three ways to say "now"</h2>
 
-  <p class="lede">A dispatcher's first decision is <em>when</em>. ADF gives you three fundamentally
-    different answers, and choosing wrong is the single most common cause of the 03:00 phone call, because two of them look identical until the night something goes wrong.</p>
+  <p class="lede">A dispatcher's first decision is <em>when</em>. ADF gives you three very different answers, and picking the wrong one is the most common reason for the 03:00 phone call, because two of them look the same until the night something goes wrong.</p>
 
-  <p>The <strong>schedule trigger</strong> is a wall clock. Every day at 23:30, run this. Simple,
-    familiar, and the one you reach for first.</p>
+  <p>The <strong>schedule trigger</strong> is a wall clock. Every day at 23:30, run this. Simple, familiar, and the one everyone picks first.</p>
 
-  <p>The <strong>tumbling window trigger</strong> is a series of contiguous, non-overlapping time slices: 23:00–00:00, 00:00–01:00, and so on, forever, with no gaps. Each run knows which slice
-    it owns, because ADF hands it <code>WindowStart</code> and <code>WindowEnd</code> as parameters.</p>
+  <p>The <strong>tumbling window trigger</strong> cuts time into back-to-back slices that never overlap: 23:00–00:00, 00:00–01:00, and so on, with no gaps. Each run knows which slice belongs to it, because ADF passes <code>WindowStart</code> and <code>WindowEnd</code> as parameters.</p>
 
-  <p>The <strong>event trigger</strong> doesn't watch a clock at all. It watches a storage account,
-    and fires when a blob appears. This is how you handle two hundred suppliers who upload whenever
-    they feel like it: you stop polling and start reacting.</p>
+  <p>The <strong>event trigger</strong> does not watch a clock at all. It watches a storage account, and fires when a file appears. This is how you handle two hundred suppliers who upload whenever they like: you stop checking again and again, and start reacting.</p>
 
-  <p>Run the night below. Let it play, then break it: knock out the middle of the night with an
-    outage and watch what each lane does about the runs it missed.</p>
+  <p>Run the night below. Let it play, then break it: cause an outage in the middle of the night and watch what each lane does about the runs it missed.</p>
 </div>
 
 <div class="wide reveal">
@@ -1009,21 +949,15 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
 </div>
 
 <div class="wrap reveal">
-  <p>That's the whole lesson, and it costs people real money. When the source came back at 03:00,
-    the <strong>schedule trigger moved on</strong>. Its 02:30 run happened during the outage,
-    failed, and that slice of the night is now gone — nothing will ever go back for it unless a
-    human notices and does it by hand.</p>
+  <p>That is the whole lesson, and people lose real money over it. When the source came back at 03:00, the <strong>schedule trigger just moved on</strong>. Its 02:30 run happened during the outage and failed, and that slice of the night is now gone. Nothing will go back for it unless a person notices and does it by hand.</p>
 
-  <p>The <strong>tumbling window trigger walked back</strong> and ran the windows it had missed, in
-    order. It could do that because it keeps state: it knows which windows exist, which have
-    succeeded, and which haven't. That's also why it supports backfill in general: set the start date to last month and it will work through every window since, honouring however much
-    concurrency you allow it.</p>
+  <p>The <strong>tumbling window trigger went back</strong> and ran the windows it missed, in order. It can do this because it remembers: it knows which windows exist, which succeeded and which did not. That is also why it supports backfill: set the start date to last month and it will work through every window since then, running as many at a time as you allow.</p>
 
   <table>
     <tr><th></th><th>Schedule</th><th>Tumbling window</th></tr>
     <tr><td>Backfill the past</td><td>No — future times only</td><td>Yes, that's the point</td></tr>
     <tr><td>Built-in retry</td><td>No</td><td>Yes, configurable</td></tr>
-    <tr><td>Concurrency control</td><td>No</td><td>Yes, 1–50</td></tr>
+    <tr><td>Limit on runs at the same time</td><td>No</td><td>Yes, 1–50</td></tr>
     <tr><td>Knows its time slice</td><td>Only "when it fired"</td><td><code>WindowStart</code> / <code>WindowEnd</code></td></tr>
     <tr><td>Pipelines per trigger</td><td>Many-to-many</td><td>Strictly one-to-one</td></tr>
     <tr><td>When is it "successful"?</td><td>When the run <em>starts</em></td><td>When the run <em>finishes</em></td></tr>
@@ -1032,18 +966,11 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
 
   <div class="note rd">
     <div class="t">Read that last-but-one row again</div>
-    <p>A schedule trigger is fire-and-forget: it reports success once it has <em>launched</em> the
-      pipeline. The pipeline can fail thirty seconds later and the trigger's own history still says
-      it did its job. A tumbling window trigger waits for the pipeline and takes on its outcome. If
-      you have ever looked at a green trigger history while the data was plainly missing, this is
-      the row that explains it.</p>
+    <p>A schedule trigger is fire-and-forget. It reports success as soon as it has <em>started</em> the pipeline. The pipeline can fail thirty seconds later and the trigger's history still shows success. A tumbling window trigger waits for the pipeline and takes on its result. If you have ever seen a green trigger history while the data was clearly missing, this row explains why.</p>
   </div>
 
   <h3>So which one?</h3>
-  <p>A useful rule: <strong>if the run is about a period of time, use a tumbling window.</strong>
-    "Yesterday's sales", "last hour's transactions", "the 03:00–04:00 slice": anything where a run owns a slice and a missed slice leaves a hole. Use a schedule trigger for work that is genuinely
-    about the wall clock rather than a period — a nightly full refresh, a 07:00 report send — where
-    missing one occurrence is an inconvenience, not a gap in a table.</p>
+  <p>A simple rule: <strong>if the run is about a period of time, use a tumbling window.</strong> "Yesterday's sales", "last hour's transactions", "the 03:00–04:00 slice": anything where a run owns a slice and a missed run leaves a hole. Use a schedule trigger for work that is really about the clock and not a period, like a nightly full refresh or a 07:00 report, where missing one run is an inconvenience and not a gap in a table.</p>
 
   <details class="hood">
     <summary>Under the hood · a tumbling window trigger, and why the window parameters matter</summary>
@@ -1076,17 +1003,13 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
     }
   }
 }</code></pre>
-      <p>The pipeline then filters on exactly its own slice, which is what makes a rerun harmless:</p>
+      <p>The pipeline then filters for exactly its own slice, which is what makes a rerun harmless:</p>
 <pre><code><span class="cm">-- inside the Copy activity's source query</span>
 <span class="kw">SELECT</span> * <span class="kw">FROM</span> dbo.TillTransactions
 <span class="kw">WHERE</span> ModifiedUtc &gt;= <span class="st">'@{pipeline().parameters.windowStart}'</span>
   <span class="kw">AND</span> ModifiedUtc &lt;  <span class="st">'@{pipeline().parameters.windowEnd}'</span>;</code></pre>
-      <p><strong>Note the asymmetry: <code>&gt;=</code> on the start, <code>&lt;</code> on the end.</strong>
-        Get that wrong and every boundary row is either loaded twice or missed entirely, a bug that surfaces as "the daily total is off by a rounding error" and takes a week to find.</p>
-      <p>The <code>dependsOn</code> block is the underrated feature. It lets a window wait on
-        another window — including an earlier window of the same trigger — so a backfill of three
-        days' worth of hourly loads runs in the right order instead of forty runs stampeding your
-        source database simultaneously.</p>
+      <p><strong>See the difference: <code>&gt;=</code> for the start, <code>&lt;</code> for the end.</strong> Get this wrong and every row exactly on the boundary is either loaded twice or missed. The bug shows up as "the daily total is off by a small amount" and takes a week to find.</p>
+      <p>The <code>dependsOn</code> block is the feature people miss. It lets one window wait for another, even an earlier window of the same trigger, so a backfill of three days of hourly loads runs in the right order, instead of forty runs hitting your source database all at once.</p>
     </div>
   </details>
 </div>
@@ -1097,35 +1020,26 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   <div class="actmark">Act III · The long haul</div>
   <h2>Moving four hundred gigabytes before the sun comes up</h2>
 
-  <p class="lede">The Copy activity is the workhorse, and it is a good deal cleverer than it looks.
-    It has two dials worth understanding, and one mental model that will save you from turning them
-    pointlessly.</p>
+  <p class="lede">The Copy activity does most of the heavy lifting, and it is smarter than it looks. It has two settings worth understanding, and one way of thinking that will stop you changing them for no reason.</p>
 
-  <p>The first dial is <strong>Data Integration Units</strong>, or DIUs. A DIU is an abstract bundle of
-    CPU, memory and network on the Azure integration runtime. You can request anywhere from 4 to 256
-    of them, and by default ADF picks a number for you based on what you're copying from and to.
-    More DIUs means more machine pointed at the problem.</p>
+  <p>The first setting is <strong>Data Integration Units</strong>, or DIUs. A DIU is a bundle of CPU, memory and network on the Azure integration runtime. You can ask for anywhere from 4 to 256, and by default ADF picks a number for you based on the source and destination. More DIUs means more machine power on the job.</p>
 
-  <p>The second is <strong>degree of parallelism</strong> — <code>parallelCopies</code> — the number
-    of concurrent threads reading from the source and writing to the sink. For a folder of two
-    thousand supplier CSVs, that's how many files move at once. For a partitioned table, it's how
-    many partitions stream in parallel.</p>
+  <p>The second is <strong>parallel copies</strong> (<code>parallelCopies</code>): how many threads read from the source and write to the destination at the same time. For a folder of two thousand supplier CSVs, it is how many files move at once. For a partitioned table, it is how many partitions move together.</p>
 
   <div class="scene">
     <div class="slug">THE MODEL THAT MATTERS</div>
-    <p>Throughput is not what you provisioned. Throughput is the <em>narrowest point on the route</em>, whichever is smallest of: what the source is willing to hand over, what the network can
-      carry, what the sink will accept, and what you paid for.</p>
-    <p>Turning up the dial on the widest part of the route costs money and changes nothing.</p>
+    <p>Speed is not what you paid for. Speed is decided by the <em>narrowest point on the route</em>: whichever is smallest out of what the source can give, what the network can carry, what the destination can accept, and what you paid for.</p>
+    <p>Widening the part of the route that is already wide costs money and changes nothing.</p>
   </div>
 
-  <p>Play with it. Try to make it fast, then work out which lever did it.</p>
+  <p>Try it. Make it fast, then work out which setting actually did it.</p>
 </div>
 
 <div class="wide reveal">
 <div class="module">
   <div class="module-head">
     <span class="chip" style="color:var(--amber);border-color:rgba(240,166,60,.4)">Diagram 4</span>
-    <span class="ttl">Copy throughput · find the real bottleneck</span>
+    <span class="ttl">Copy speed · find the real bottleneck</span>
     <span class="hint">illustrative model &rarr;</span>
   </div>
   <div class="mbody">
@@ -1164,7 +1078,7 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
 
     <div class="tune-bar"><i id="tuneFill"></i><span class="cap" id="tuneCap">—</span></div>
     <div class="statrow">
-      <div><span>effective throughput</span><b id="stThru">—</b></div>
+      <div><span>actual speed</span><b id="stThru">—</b></div>
       <div><span>400 GB would take</span><b id="stTime">—</b></div>
       <div><span>relative compute cost</span><b id="stCost">—</b></div>
       <div id="stEffWrap"><span>capacity actually used</span><b id="stEff">—</b></div>
@@ -1175,18 +1089,11 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
 </div>
 
 <div class="wrap reveal">
-  <p>The un-partitioned table is the one that teaches the lesson. A single table with no partition
-    column is a single stream — one reader, one connection, one queue. You can request 256 DIUs and
-    48 parallel copies and the source will still hand you one row at a time in one order. The fix is
-    not a bigger dial; it's giving the source something to parallelise <em>on</em>: a partition column, a date range, a set of key ranges.</p>
+  <p>The table without partitions is the one that teaches the lesson. A single table with no partition column is a single stream: one reader, one connection, one queue. You can ask for 256 DIUs and 48 parallel copies and the source will still give you one row at a time, in one order. The fix is not a bigger setting. It is giving the source something to split the work <em>on</em>: a partition column, a date range, or a set of key ranges.</p>
 
   <div class="note">
     <div class="t">Staged copy — the two-hop trick</div>
-    <p>Sometimes the right move is to copy in two stages: source → blob storage → sink. It sounds
-      slower and often isn't. Enable compression and a slow on-prem link carries far fewer bytes.
-      Some sinks — Synapse via PolyBase, Snowflake, Redshift — are dramatically faster loading from
-      blob than accepting a row stream. And when a firewall only permits 443, staging is what makes
-      the route possible at all. ADF cleans up the interim files itself when the copy completes.</p>
+    <p>Sometimes the right move is to copy in two steps: source → blob storage → destination. It sounds slower and often is not. Turn on compression and a slow on-premises link carries far fewer bytes. Some destinations — Synapse via PolyBase, Snowflake, Redshift — load much faster from blob storage than from a stream of rows. And when the firewall allows only port 443, staging is the only way the route works at all. ADF deletes the temporary files itself when the copy finishes.</p>
   </div>
 
   <details class="hood">
@@ -1223,17 +1130,8 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
     }
   }
 }</code></pre>
-      <p><strong>Start by setting neither dial.</strong> ADF's automatic choice is genuinely good and
-        adapts to the shape of each run. Set them only when you have measured a specific run and
-        know which way you need to push it, and remember DIUs apply to the Azure integration
-        runtime only. Copies executed by a self-hosted IR are bounded by that machine's cores,
-        memory and link, which is why the node slider above matters more than the DIU one when the
-        source is on-prem.</p>
-      <p>Billing follows the same shape as the dials: data movement is charged per DIU-hour, so
-        <em>used DIUs × how long the copy ran</em>. Doubling DIUs on a route that then finishes in
-        half the time costs roughly the same. Doubling DIUs on a route that doesn't speed up at all
-        costs exactly double. Rates vary by region; the <a href="https://azure.microsoft.com/en-us/pricing/calculator/">Azure pricing calculator</a>
-        is the only honest source for a number.</p>
+      <p><strong>Start by setting neither value.</strong> ADF's automatic choice is good and adjusts to each run. Change them only after you have measured a specific run and know which way to push. Also remember that DIUs apply only to the Azure integration runtime. Copies run by a self-hosted runtime are limited by that machine's CPU, memory and network, which is why the machines slider above matters more than the DIU slider when the source is on-premises.</p>
+      <p>Billing works the same way as the settings: data movement is charged per DIU-hour, so <em>DIUs used × how long the copy ran</em>. Doubling DIUs on a route that then finishes in half the time costs about the same. Doubling DIUs on a route that does not get faster costs exactly double. Rates differ by region; the <a href="https://azure.microsoft.com/en-us/pricing/calculator/">Azure pricing calculator</a> is the only reliable source for a number.</p>
     </div>
   </details>
 </div>
@@ -1245,28 +1143,19 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   <div class="actmark">Act IV · The yard crew</div>
   <h2>One pipeline that loads two hundred tables</h2>
 
-  <p class="lede">Here is where teams either discover the pattern that makes ADF scale, or build themselves a
-    maintenance nightmare that takes two years to admit to.</p>
+  <p class="lede">This is where teams either find the pattern that makes ADF scale, or build a maintenance headache that takes two years to admit.</p>
 
-  <p>The nightmare version is reasonable-looking: one pipeline per table. Table one gets a pipeline,
-    a dataset, a trigger. So does table two. By table two hundred you have six hundred objects, no
-    two quite alike, and a change to the retry policy is a fortnight of clicking.</p>
+  <p>The headache version looks sensible: one pipeline per table. Table one gets a pipeline, a dataset and a trigger. So does table two. By table two hundred you have six hundred objects, no two exactly alike, and changing the retry policy means two weeks of clicking.</p>
 
-  <p>The pattern that works is <strong>metadata-driven</strong>: one pipeline, one parameterised
-    dataset, and a control table that lists what to load. Want to add a table? Insert a row. The
-    pipeline doesn't change. Neither does the trigger. Nothing gets clicked.</p>
+  <p>The pattern that works is <strong>metadata-driven</strong>: one pipeline, one parameterised dataset, and a control table that lists what to load. Want to add a table? Insert a row. The pipeline does not change. Neither does the trigger. Nothing needs clicking.</p>
 
   <div class="scene">
     <div class="slug">THE SHIFT IN THINKING</div>
-    <p>Stop drawing one pipeline per thing you load. Draw one pipeline that reads a list, then
-      does the same careful thing to every item on it.</p>
-    <p>Your pipelines stop being a picture of your data estate and become a description of your
-      <em>process</em>. The estate lives in a table, where it can be queried, audited and changed
-      by a person who has never opened Data Factory.</p>
+    <p>Stop drawing one pipeline for each thing you load. Draw one pipeline that reads a list, then does the same careful work for every item on it.</p>
+    <p>Your pipelines stop being a picture of all your data, and become a description of your <em>process</em>. The list of data lives in a table, where anyone can query it, audit it and change it, even someone who has never opened Data Factory.</p>
   </div>
 
-  <p>Below is that pipeline, running. The Lookup reads the control table; the ForEach fans out across
-    every table it found. Change the batch count and watch the wall-clock time move.</p>
+  <p>Below is that pipeline, running. The Lookup reads the control table; the ForEach spreads out across every table it found. Change the batch count and watch the total time change.</p>
 </div>
 
 <div class="wide reveal">
@@ -1310,30 +1199,19 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
 </div>
 
 <div class="wrap reveal">
-  <p>Notice the trade in the batch count. One at a time is gentle and slow. Twenty at a time is fast
-    right up until your source database notices twenty concurrent extract queries and starts refusing connections, or your on-prem IR machine runs out of memory. <strong>The batch count is a politeness setting rather than a performance one</strong>, and the correct value is whatever the system on the other end can tolerate at 02:00 without paging its own owner.</p>
+  <p>Look at the trade-off in the batch count. One at a time is gentle and slow. Twenty at a time is fast, until your source database notices twenty extract queries at once and starts refusing connections, or your on-premises runtime machine runs out of memory. <strong>The batch count is really a politeness setting, not a speed setting</strong>, and the right value is whatever the system on the other side can handle at 02:00 without waking up its own team.</p>
 
   <h3>When copying isn't enough</h3>
-  <p>Everything so far has been movement. Real pipelines also reshape: join tills to products,
-    deduplicate supplier rows, pivot a week into columns. ADF gives you two honest options.</p>
+  <p>Everything so far has been about moving data. Real pipelines also reshape it: join billing data to products, remove duplicate supplier rows, turn a week into columns. ADF gives you two honest options.</p>
 
-  <p><strong>Mapping data flows</strong> let you draw the transformation — join, aggregate, derive,
-    pivot — and ADF compiles it to Spark and runs it on a cluster it manages. You never write Scala
-    and you never manage a cluster. The costs to know: a cold cluster takes a few minutes to start
-    before any of your data moves, and clusters are billed per vCore-hour with a floor of 8 vCores.
-    That startup is why a pipeline with six sequential data flows can spend more time booting than working, and why the integration runtime's <em>time-to-live</em> setting exists, keeping a
-    cluster warm between sequential runs so the second flow doesn't pay the startup toll again.</p>
+  <p><strong>Mapping data flows</strong> let you draw the transformation (join, total, add columns, pivot), and ADF turns it into Spark code and runs it on a cluster it manages. You never write Scala and never manage a cluster. Two costs to know: a cold cluster takes a few minutes to start before any data moves, and clusters are charged per vCore-hour, with a minimum of 8 vCores. That start-up time is why a pipeline with six data flows one after another can spend more time starting than working, and why the integration runtime has a <em>time-to-live</em> setting, which keeps the cluster warm between runs so the second flow does not pay the start-up cost again.</p>
 
-  <p><strong>Or delegate.</strong> If the transformation already lives somewhere — a stored procedure
-    your DBAs trust, a Databricks notebook your data scientists own, a Function that calls a pricing
-    API — ADF calls it, waits, and handles the failure. That's the dispatcher doing its actual job.
-    A pipeline made mostly of "go ask that system to do the thing it's good at" is not a cop-out;
-    it's frequently the correct architecture.</p>
+  <p><strong>Or hand it over.</strong> If the transformation already lives somewhere, like a stored procedure your DBAs trust, a Databricks notebook your data scientists own, or a Function that calls a pricing API, ADF calls it, waits, and handles any failure. That is the dispatcher doing its real job. A pipeline made mostly of "ask that system to do what it is good at" is not a shortcut; very often it is the right design.</p>
 
   <details class="hood">
     <summary>Under the hood · the control table and the pipeline that reads it</summary>
     <div class="hoodbody">
-      <p>The control table is unglamorous and it is the most valuable object in the whole solution:</p>
+      <p>The control table is not exciting, and it is the most valuable object in the whole solution:</p>
 <pre><code><span class="kw">CREATE TABLE</span> ctl.LoadRegistry (
   LoadId          <span class="kw">INT</span> <span class="kw">IDENTITY</span> <span class="kw">PRIMARY KEY</span>,
   SourceSchema    <span class="kw">SYSNAME</span>      <span class="kw">NOT NULL</span>,
@@ -1345,7 +1223,7 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   IsEnabled       <span class="kw">BIT</span>          <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="nu">1</span>,
   LoadGroup       <span class="kw">TINYINT</span>      <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="nu">1</span>    <span class="cm">-- lets you stagger the night</span>
 );</code></pre>
-      <p>And the pipeline that consumes it. Note <code>isSequential: false</code> with an explicit <code>batchCount</code>: that pair is the politeness setting discussed above:</p>
+      <p>And here is the pipeline that reads it. See <code>isSequential: false</code> with a fixed <code>batchCount</code>: that pair is the politeness setting we just discussed:</p>
 <pre><code>{
   <span class="nm">"name"</span>: <span class="st">"LoadEverything"</span>,
   <span class="nm">"properties"</span>: {
@@ -1393,10 +1271,7 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
     ]
   }
 }</code></pre>
-      <p>Two details that bite people. <code>firstRowOnly</code> defaults to <code>true</code> on a
-        Lookup, so a forgotten <code>false</code> loads one table and reports success.
-        And a Lookup returns at most a few thousand rows; for a genuinely large control set you
-        page it or drive the ForEach from a stored procedure instead.</p>
+      <p>Two details that catch people out. <code>firstRowOnly</code> is <code>true</code> by default on a Lookup, so if you forget to set it to <code>false</code>, it loads one table and reports success. And a Lookup returns at most a few thousand rows; for a really large control list, fetch it page by page or drive the ForEach from a stored procedure.</p>
     </div>
   </details>
 </div>
@@ -1408,31 +1283,20 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   <div class="actmark">Act V · 02:47</div>
   <h2>The night it went wrong</h2>
 
-  <p class="lede">It always goes wrong somewhere. A supplier ships a CSV with an unescaped comma
-    in a product description. The on-prem SQL box starts its backup window and stops answering. A
-    carrier API decides you've asked enough questions for one night and starts returning 429.</p>
+  <p class="lede">Something always goes wrong. A supplier sends a CSV with an extra comma inside a product description. The on-premises SQL server starts its backup and stops responding. A courier API decides you have asked enough questions for one night and starts returning 429.</p>
 
-  <p>None of this is exceptional. All of it is Tuesday. The measure of a pipeline is not whether it
-    fails — it's what the failure costs you.</p>
+  <p>None of this is unusual. It is just a normal Tuesday. A pipeline is judged not by whether it fails, but by how much the failure costs you.</p>
 
-  <p>ADF gives you three tools, and then asks you one question that it cannot answer on your behalf.</p>
+  <p>ADF gives you three tools, and then asks you one question that it cannot answer for you.</p>
 
-  <p>The tools: <strong>retry policies</strong> per activity, because most 3am failures are transient
-    and a second attempt four minutes later just works. <strong>Failure paths</strong>, because
-    activity dependencies aren't only "then": they're <em>Succeeded</em>, <em>Failed</em>,
-    <em>Completed</em> and <em>Skipped</em>, so you can wire a real handler that logs the error,
-    writes the bad file to a quarantine folder, and raises an alert. And <strong>rerun from the
-    failed activity</strong>, so a pipeline that died on step nine of eleven doesn't re-copy four
-    hundred gigabytes to get back to where it was.</p>
+  <p>The tools: <strong>retry policies</strong> for each activity, because most 3 a.m. failures are temporary and a second try four minutes later just works. <strong>Failure paths</strong>, because activity links are not only "then": they can be <em>Succeeded</em>, <em>Failed</em>, <em>Completed</em> or <em>Skipped</em>, so you can connect a proper handler that logs the error, moves the bad file to a quarantine folder and sends an alert. And <strong>rerun from the failed activity</strong>, so a pipeline that died at step nine of eleven does not copy four hundred gigabytes again to get back there.</p>
 
   <div class="scene">
     <div class="slug">THE QUESTION ADF CANNOT ANSWER FOR YOU</div>
     <p>If I run this again, do I get the same answer — or do I get the answer twice?</p>
   </div>
 
-  <p>That property is <strong>idempotency</strong>, and it is not a setting. It's a design decision
-    you make in how you write to the sink. Get it right and reruns are boring. Get it wrong and every
-    incident has a second, worse incident hiding inside it — the cleanup.</p>
+  <p>That property is called <strong>idempotency</strong>, which simply means running it twice gives the same result as running it once. It is not a setting. It is a design decision about how you write to the destination. Get it right and reruns are boring. Get it wrong and every incident hides a second, worse incident inside it: the clean-up.</p>
 
   <p>Break the night below, both ways.</p>
 </div>
@@ -1478,34 +1342,20 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
 </div>
 
 <div class="wrap reveal">
-  <p>Same failure. Same rerun. Two completely different mornings — and the difference was decided
-    weeks earlier, by whoever chose how the sink gets written.</p>
+  <p>Same failure. Same rerun. Two completely different mornings. And the difference was decided weeks earlier, by whoever chose how data is written to the destination.</p>
 
-  <p>The append version is not stupid; it's just optimistic. It assumes every run happens exactly
-    once, which is true until the first time it isn't. The upsert version makes a stronger promise:
-    <em>running me twice is the same as running me once.</em> That promise is what lets you retry
-    automatically, backfill freely, and rerun at 03:00 without first having to reason about what's
-    already in the table.</p>
+  <p>The append version is not stupid, just hopeful. It assumes every run happens exactly once, which is true until the first time it is not. The upsert version makes a stronger promise: <em>running me twice is the same as running me once.</em> That promise is what lets you retry automatically, backfill freely and rerun at 03:00 without first working out what is already in the table.</p>
 
   <div class="note gr">
-    <div class="t">What makes a load idempotent</div>
-    <p>Three things, and you need all three. A <strong>business key</strong>, the thing that makes a row genuinely unique, not an auto-increment surrogate. A <strong>time slice</strong> that the
-      run owns, so it knows exactly which rows are its responsibility. And a <strong>write that replaces rather than adds</strong>, an upsert/merge, or a delete-then-insert of just that
-      slice. Miss the key and you can't match. Miss the slice and you don't know what to replace.
-      Miss the merge and you're appending.</p>
+    <div class="t">What makes a load safe to repeat</div>
+    <p>You need all three of these. A <strong>business key</strong>, the value that really makes a row unique, not an auto-number. A <strong>time slice</strong> that belongs to the run, so it knows exactly which rows it is responsible for. And a <strong>write that replaces instead of adding</strong>: an upsert or merge, or a delete-then-insert for just that slice. Miss the key and you cannot match rows. Miss the slice and you do not know what to replace. Miss the merge and you are just appending.</p>
   </div>
 
   <h3>And tell someone</h3>
-  <p>A failure nobody hears about is just a slower, more expensive kind of data loss. ADF emits
-    metrics and run logs to Azure Monitor, so the useful setup is small and worth doing on day one:
-    alert on <em>pipeline failed</em>, alert on <em>pipeline elapsed time above the usual</em>
-    (a run that used to take twenty minutes and now takes ninety is a real signal that nothing else
-    catches), and route both to the place people look. Then keep the run history somewhere
-    that outlives ADF's own retention, because the question "what did this pipeline do six weeks
-    ago?" arrives eventually and it always arrives urgently.</p>
+  <p>A failure nobody hears about is just a slower, costlier way of losing data. ADF sends metrics and run logs to Azure Monitor, so a small, useful setup is worth doing on day one: alert when a <em>pipeline fails</em>, alert when a <em>pipeline takes longer than usual</em> (a run that used to take twenty minutes and now takes ninety is a real warning that nothing else will catch), and send both to where people actually look. Also keep the run history somewhere that lasts longer than ADF's own retention, because sooner or later someone asks "what did this pipeline do six weeks ago?", and they always ask urgently.</p>
 
   <details class="hood">
-    <summary>Under the hood · retry, failure paths, and an idempotent sink</summary>
+    <summary>Under the hood · retry, failure paths, and a safe-to-repeat write</summary>
     <div class="hoodbody">
       <h4>Retry and the four dependency conditions</h4>
 <pre><code>{
@@ -1526,12 +1376,10 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   <span class="cm">// runs either way — this is how the control table learns what happened</span>
   <span class="nm">"dependsOn"</span>: [{ <span class="nm">"activity"</span>: <span class="st">"CopySupplierFile"</span>, <span class="nm">"dependencyConditions"</span>: [<span class="st">"Completed"</span>] }]
 }</code></pre>
-      <p><code>Completed</code> is the one people forget exists. It fires on success <em>or</em>
-        failure, which is exactly what you want for logging, watermark bookkeeping and cleanup.</p>
+      <p><code>Completed</code> is the one people forget. It fires on success <em>or</em> failure, which is exactly what you want for logging, watermark updates and clean-up.</p>
 
-      <h4>The idempotent write</h4>
-      <p>Land the slice in a staging table, then merge on the business key. Re-running replaces
-        rather than duplicates, so the second run is a no-op:</p>
+      <h4>The safe-to-repeat write</h4>
+      <p>Load the slice into a staging table, then merge using the business key. Running again replaces rows instead of duplicating them, so the second run changes nothing:</p>
 <pre><code><span class="kw">CREATE PROCEDURE</span> ctl.MergeTills
     @WindowStart <span class="kw">DATETIME2</span>,
     @WindowEnd   <span class="kw">DATETIME2</span>
@@ -1557,8 +1405,7 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
 
   <span class="kw">COMMIT</span>;
 <span class="kw">END</span></code></pre>
-      <p><strong>The watermark update belongs inside the same transaction as the merge.</strong>
-        Advance it first and a failure between the two steps means you've recorded progress you didn't make, and that gap will never be filled by anything except a human noticing.</p>
+      <p><strong>Update the watermark in the same transaction as the merge.</strong> If you move it forward first and something fails between the two steps, you have recorded progress you never made, and that gap will never be filled unless a person notices.</p>
     </div>
   </details>
 </div>
@@ -1570,20 +1417,14 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   <div class="actmark">Credits · 06:41</div>
   <h2>Why the board is right</h2>
 
-  <p class="lede">Because at 22:00 a trigger fired. Because a pipeline read a list rather than
-    hard-coding one. Because an agent inside the datacentre dialled out instead of a firewall being
-    opened. Because each run owned a slice of time and knew it. Because when the supplier file was
-    malformed, three retries happened, a quarantine folder filled, an alert went out, and the other
-    hundred and ninety-nine files carried on. Because when someone reran the failed step at 03:10,
-    the merge replaced rather than doubled.</p>
+  <p class="lede">Because at 22:00 a trigger fired. Because a pipeline read a list instead of hard-coding one. Because an agent inside the datacentre connected out, instead of someone opening the firewall. Because each run owned a slice of time and knew it. Because when the supplier file was broken, three retries happened, a quarantine folder filled up, an alert went out, and the other hundred and ninety-nine files carried on. Because when someone reran the failed step at 03:10, the merge replaced rows instead of doubling them.</p>
 
-  <p>And because none of that was invented that night. It was decided once, written down, and
-    applied to every route in the yard.</p>
+  <p>And because none of that was invented that night. It was decided once, written down, and applied to every route in the yard.</p>
 
   <div class="scene">
     <div class="slug">THE THROUGH-LINE</div>
-    <p>Azure Data Factory earns its keep as a place to put the <em>answers</em>: to when, in what order, how many at a time, what if it fails, who finds out, and what happened last night. Those answers then exist once instead of two hundred times.</p>
-    <p>The data movement is the easy part. It was always the easy part.</p>
+    <p>Azure Data Factory is worth it because it gives you one place to keep the <em>answers</em>: when, in what order, how many at a time, what if it fails, who finds out, and what happened last night. Those answers then exist once, instead of two hundred times.</p>
+    <p>Moving the data is the easy part. It always was.</p>
   </div>
 
   <h3>If you're starting on Monday</h3>
@@ -1592,7 +1433,7 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
     <tr><td>1</td><td>Parameterise datasets from the very first one</td><td>One dataset per table, forever</td></tr>
     <tr><td>2</td><td>A control table driving one pipeline</td><td>A pipeline per table</td></tr>
     <tr><td>3</td><td>Tumbling windows for anything that owns a time slice</td><td>Schedule triggers everywhere by habit</td></tr>
-    <tr><td>4</td><td>Design the idempotent write before the first load</td><td>Discovering duplicates during an incident</td></tr>
+    <tr><td>4</td><td>Design a safe-to-repeat write before the first load</td><td>Discovering duplicates during an incident</td></tr>
     <tr><td>5</td><td>Secrets in Key Vault, referenced — never typed in</td><td>A password in a linked service</td></tr>
     <tr><td>6</td><td>Leave DIU and parallelism on auto until you've measured</td><td>Turning dials on the widest part of the route</td></tr>
     <tr><td>7</td><td>Failure alerts and a duration alert on day one</td><td>Finding out from Priya at 06:40</td></tr>
@@ -1601,24 +1442,12 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
 
   <div class="note cy">
     <div class="t">A note on the last row</div>
-    <p>Connect the factory to Git on day one, before there is anything to lose. Development happens
-      on branches; merging to main is what makes a change real. The modern deployment path skips the
-      old "click Publish in the portal" step entirely: a build pipeline validates the factory and
-      exports the ARM template programmatically via Microsoft's
-      <code>@microsoft/azure-data-factory-utilities</code> npm package, and a release pipeline
-      deploys that artifact to test and production. The portal stops being where you ship and goes
-      back to being where you look.</p>
+    <p>Connect the factory to Git on day one, before there is anything to lose. Work happens on branches; merging to main is what makes a change real. The modern way to deploy skips the old "click Publish in the portal" step. A build pipeline checks the factory and exports the ARM template using Microsoft's <code>@microsoft/azure-data-factory-utilities</code> npm package, and a release pipeline deploys it to test and production. The portal stops being where you release changes and goes back to being where you look.</p>
   </div>
 
   <div class="note">
     <div class="t">Colophon</div>
-    <p>Every diagram on this page is a live simulation, not a screenshot. Diagram 4's throughput
-      figures are an illustrative model built to teach where bottlenecks live — not a capacity
-      planner; measure your own runs. Behaviour described here reflects Azure Data Factory as of
-      August 2026: DIUs range 4–256, tumbling window concurrency 1–50, self-hosted integration
-      runtime up to 4 nodes. Pricing is charged per activity run, per DIU-hour and per data-flow
-      vCore-hour, with rates that vary by region; check the calculator rather than trusting any
-      number in a blog post, including this one.</p>
+    <p>Every diagram on this page is a live simulation, not a screenshot. The speed figures in Diagram 4 come from a simple teaching model meant to show where bottlenecks are. It is not a capacity planner; measure your own runs. What is described here is Azure Data Factory as of August 2026: DIUs from 4 to 256, tumbling window runs at a time from 1 to 50, and up to 4 machines for a self-hosted integration runtime. You pay per activity run, per DIU-hour and per data-flow vCore-hour, at rates that differ by region; check the calculator instead of trusting any number in a blog post, including this one.</p>
   </div>
 </div>
 </section>
@@ -1998,12 +1827,12 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
     // identify the binding constraint
     if(thru===sourceCap && sourceCap<provisioned && sourceCap<netCap){
       why = src==='single'
-        ? 'The source is one un-partitioned table — a single stream. It hands you rows in one order down one connection, so extra DIUs and extra threads have nothing to do. Give the copy a partition column, a date range, or key ranges to split on. Until then this number will not move.'
+        ? 'The source is one table without partitions, so it is a single stream. It sends rows in one order over one connection, so extra DIUs and extra threads have nothing to do. Give the copy a partition column, a date range or key ranges to split the work. Until then, this number will not move.'
         : (src==='files'
-            ? 'You are thread-bound, not DIU-bound. Each file is one unit of work, so throughput tracks the degree of parallelism. Raise parallelism (or accept this is as fast as this file count goes).'
-            : 'You are thread-bound. The table is partitioned, so raising parallelism gets you more partitions in flight — up to the point the source database starts complaining.');
+            ? 'The number of threads is the limit, not DIUs. Each file is one piece of work, so speed follows the parallel copies setting. Raise parallel copies (or accept that this is as fast as this many files can go).'
+            : 'The number of threads is the limit. The table has partitions, so more parallel copies means more partitions moving at once, until the source database starts complaining.');
     } else if(thru===netCap && netCap<provisioned){
-      why='The self-hosted integration runtime is the ceiling. All of this data is being pulled through your own machines — DIUs do not apply to a self-hosted runtime. Add nodes (up to 4), give them more network, or enable staged copy with compression so fewer bytes cross the link.';
+      why='The self-hosted integration runtime is the limit. All this data goes through your own machines, and DIUs do not apply to a self-hosted runtime. Add machines (up to 4), give them a faster network, or turn on staged copy with compression so fewer bytes cross the link.';
     } else if(thru===provisioned && provisioned<sourceCap){
       why=null; // genuinely DIU-bound: healthy
     }

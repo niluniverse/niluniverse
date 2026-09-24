@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>10,000 Requests a Second: The Midnight Sale War Room | Nilesh Mohite</title>
-<meta name="description" content="How a .NET and Azure team keeps APIs standing when a festive sale opens at midnight: capacity maths, CDN, rate limiting, caching, CQRS, queues, code fixes and AKS scaling.">
+<meta name="description" content="A festive sale opens at midnight and traffic jumps to 10,000 requests a second. A simple, layer-by-layer guide to keeping .NET and Azure APIs running: CDN, rate limits, caching, CQRS, queues, code fixes and AKS scaling.">
 <meta name="author" content="Nilesh Mohite">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://niluniverse.com/midnight-sale-war-room.html">
 <meta property="og:title" content="10,000 Requests a Second: The Midnight Sale War Room" />
-<meta property="og:description" content="How a .NET and Azure team keeps APIs standing when a festive sale opens at midnight: capacity maths, CDN, rate limiting, caching, CQRS, queues, code fixes and AKS scaling." />
+<meta property="og:description" content="A festive sale opens at midnight and traffic jumps to 10,000 requests a second. A simple, layer-by-layer guide to keeping .NET and Azure APIs running: CDN, rate limits, caching, CQRS, queues, code fixes and AKS scaling." />
 <meta property="og:url" content="https://niluniverse.com/midnight-sale-war-room.html" />
 <meta property="og:type" content="article" />
 <meta property="og:image" content="https://niluniverse.com/midnight-sale-war-room-banner.jpg" />
@@ -17,7 +17,7 @@
 <meta property="og:image:height" content="788" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="10,000 Requests a Second: The Midnight Sale War Room" />
-<meta name="twitter:description" content="How a .NET and Azure team keeps APIs standing when a festive sale opens at midnight: capacity maths, CDN, rate limiting, caching, CQRS, queues, code fixes and AKS scaling." />
+<meta name="twitter:description" content="A festive sale opens at midnight and traffic jumps to 10,000 requests a second. A simple, layer-by-layer guide to keeping .NET and Azure APIs running: CDN, rate limits, caching, CQRS, queues, code fixes and AKS scaling." />
 <meta name="twitter:image" content="https://niluniverse.com/midnight-sale-war-room-banner.jpg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -356,6 +356,24 @@
     *{animation:none!important;transition:none!important}
     .reveal{opacity:1;transform:none}
   }
+
+  /* slow / better code tags */
+  .verdict-tag{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
+    padding:.15rem .5rem;border-radius:4px;margin-left:.5rem;flex:none}
+  .verdict-tag.bad{color:var(--alarm);border:1px solid rgba(255,77,94,.45);background:rgba(255,77,94,.08)}
+  .verdict-tag.good{color:var(--calm);border:1px solid rgba(62,214,160,.45);background:rgba(62,214,160,.08)}
+  .code-wrap.bad{border-color:rgba(255,77,94,.35);margin-bottom:.7rem}
+  .code-wrap.good{border-color:rgba(62,214,160,.35)}
+  .code-wrap.bad + .code-wrap.good{margin-top:0}
+
+  /* parallel vs sequential race */
+  .race{margin:1.6rem 0 2rem;border:1px solid var(--edge);border-radius:12px;background:var(--ink-2);padding:1rem 1.2rem}
+  .race-head{display:flex;justify-content:space-between;align-items:center;gap:.8rem;flex-wrap:wrap;margin-bottom:.9rem}
+  .race-head>span{font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--signal)}
+  .race-btns{display:flex;gap:.5rem;flex-wrap:wrap}
+  .race-row{display:grid;grid-template-columns:5.5rem 1fr;gap:.6rem;align-items:center;margin-bottom:.45rem;font-family:var(--mono);font-size:.7rem;color:var(--fog)}
+  .race-track{position:relative;height:14px;background:var(--steel);border:1px solid var(--edge);border-radius:4px;overflow:hidden}
+  .race-bar{position:absolute;top:0;bottom:0;left:0;width:0;border-radius:3px;background:linear-gradient(90deg,var(--volt),var(--calm))}
   /* ==== Cinema theme (new default) + toggle button — shared with www.nileshmohite.com ==== */
   [data-theme="cinema"] {
     --bg: #14171D; --panel: #1B1F27; --panel-2: #212630; --line: #2E3440;
@@ -481,7 +499,7 @@
   "@context": "https://schema.org",
   "@type": "BlogPosting",
   "headline": "10,000 Requests a Second: The Midnight Sale War Room",
-  "description": "How a .NET and Azure team keeps APIs standing when a festive sale opens at midnight: capacity maths, CDN, rate limiting, caching, CQRS, queues, code fixes and AKS scaling.",
+  "description": "A festive sale opens at midnight and traffic jumps to 10,000 requests a second. A simple, layer-by-layer guide to keeping .NET and Azure APIs running: CDN, rate limits, caching, CQRS, queues, code fixes and AKS scaling.",
   "image": "https://niluniverse.com/midnight-sale-war-room-banner.jpg",
   "url": "https://niluniverse.com/midnight-sale-war-room.html",
   "datePublished": "2026-09-23",
@@ -546,11 +564,11 @@
   <div class="hero-inner">
     <span class="eyebrow">System Design · Midnight Sale War Room</span>
     <h1>10,000 Requests<br><span class="hot">a Second</span></h1>
-    <p class="dek">A festive sale opens at midnight and every phone in the country taps "Buy" at once. This is how a .NET and Azure team keeps its APIs standing, layer by layer, from the CDN to the last database index.</p>
+    <p class="dek">A festive sale opens at midnight and lakhs of people press "Buy" at the same time. Here is how a .NET and Azure team keeps its APIs running, one layer at a time, from the CDN down to the database.</p>
     <div class="warboard" aria-label="Simulated war-room dashboard">
       <div><small>IST</small><b id="wbClock">23:59:40</b></div>
       <div><small>req/s</small><b class="hot" id="wbRps">1,200</b></div>
-      <div><small>p99</small><b id="wbP99">84 ms</b></div>
+      <div><small>response</small><b id="wbP99">84 ms</b></div>
       <div><small>errors</small><b class="ok" id="wbErr">0.01%</b></div>
     </div>
     <p class="byline">.NET · Azure · AKS · Redis · CQRS · Front Door</p>
@@ -562,29 +580,29 @@
 <article>
 
   <div class="section reveal">
-    <p class="lead">At 11:40 PM on sale night the war room at Utsav Mart (a fictional retailer; the numbers are realistic for a mid-sized Indian e-commerce platform, so treat them as illustrative rather than a benchmark) is quieter than you would expect. Twelve engineers, two big screens, a steel tumbler of filter coffee going cold on every desk. The home page shows a countdown. The load balancer shows 1,200 requests a second. At 12:00:00 the countdown hits zero, a phone that costs ₹79,999 goes on sale for ₹49,999, and that number goes to 10,000 in under four seconds.</p>
-    <p>Nobody in the room is going to write code tonight. Everything that decides whether the site survives midnight was decided in the weeks before: what gets cached where, which requests are allowed through, which work happens now and which happens later, how many pods are already running when the wave arrives. This article walks through those decisions in the order a request meets them, from the edge of the internet down to the database, and then maps them back to the kinds of workload you will meet outside a festive sale.</p>
-    <p>Ten thousand requests a second sounds large. It is about 86 crore requests a day if sustained — which it never is. The real difficulty is the shape: flat for hours, then a vertical wall. A system that handles 10,000 requests a second on a gentle ramp can still fall over when all of them arrive in the same four seconds.</p>
+    <p class="lead">It is 11:40 PM on sale night. The war room at Utsav Mart is calmer than you would think. Utsav Mart is a made-up online shop, but the numbers in this story are close to what a mid-sized Indian e-commerce site sees, so use them as a guide and not as a benchmark. Twelve engineers sit in front of two big screens. Filter coffee is going cold on every desk. The home page shows a countdown, and the site is getting 1,200 requests a second. At 12:00:00 a phone that normally costs ₹79,999 goes on sale for ₹49,999. Within four seconds, traffic jumps to 10,000 requests a second.</p>
+    <p>Nobody is writing code tonight. Everything that decides whether the site survives was done in the weeks before: what to keep in cache, which requests to let in, which work to do now and which to do later, and how many servers to keep ready. This article goes through those decisions in the same order a request travels, from the internet edge down to the database. At the end, there is a table that maps each idea to other kinds of traffic you will face outside a sale.</p>
+    <p>10,000 requests a second sounds like a lot. If it ran all day, it would be about 86 crore requests — but it never runs all day. The real problem is the shape of the traffic. It stays flat for hours and then shoots straight up. A system that can handle 10,000 requests a second when traffic grows slowly can still fall over when all of them arrive in the same four seconds.</p>
   </div>
 
-  <div class="radio"><span class="ts">23:41</span><span class="who">SRE lead:</span> Catalogue pods at 24 (twice the forecast needs), Redis at 18% CPU, Front Door hit ratio 71%. Nobody touch anything.</div>
+  <div class="radio"><span class="ts">23:41</span><span class="who">SRE lead:</span> Catalogue pods at 24, Redis at 18% CPU, CDN answering 71% of requests. Nobody touch anything.</div>
 
   <!-- 01 -->
   <div class="section reveal">
-    <h2><span class="num">01 · THREE WEEKS OUT</span>Do the arithmetic before the architecture</h2>
-    <p>The first meeting about sale night had no diagrams in it. It had a spreadsheet. Every scaling decision later in this article depends on three numbers, and teams that skip them end up buying capacity in the wrong layer.</p>
-    <h3>The traffic mix</h3>
-    <p>"10K requests a second" is never 10K of the same request. On Utsav Mart's previous sale, the split looked like this: about 90% reads (home page, category listings, product pages, price and stock checks), about 8% cart operations, and around 2% checkout and payment. Those 2% are the requests that earn money — and the hardest to scale, because they write. The 90% are easy to scale because they can be copied, cached and served from somewhere closer than your database.</p>
-    <p>So the first design rule falls out of the arithmetic: <strong>treat reads and writes as two different systems</strong>, because at this volume they are. Section 05 turns that into CQRS.</p>
-    <h3>Little's Law</h3>
-    <p>The second number is concurrency. Little's Law says the average number of requests in flight equals arrival rate multiplied by time in the system: <code>L = λ × W</code>. At 10,000 requests a second and 200 ms average latency, you have 2,000 requests in flight at any moment. Each one holds a thread-pool work item, a socket, maybe a database connection. Cut latency to 50 ms and the same traffic needs only 500 in flight.</p>
-    <p>This is why latency work and throughput work are the same work. Every millisecond you remove from the hot path reduces the number of things you need to hold open at once. A slow downstream call makes one user wait, and it also multiplies the concurrency your whole fleet has to carry.</p>
-    <h3>Per-pod capacity, measured, not guessed</h3>
-    <p>The third number comes from a load test against one pod. For Utsav Mart's catalogue API on a 2 vCPU pod, a cached product read sustained about 800 requests a second before p99 crossed 150 ms. A read that missed the cache and hit Azure SQL managed about 140. That gap of almost six times is the single most useful number in capacity planning: it tells you that the cache hit ratio, not the pod count, decides your bill.</p>
-    <p>Play with the funnel below. It follows 10,000 requests a second through the layers this article covers and shows what reaches your pods and your database.</p>
+    <h2><span class="num">01 · THREE WEEKS BEFORE</span>Do the maths first</h2>
+    <p>The first meeting about sale night had no diagrams. It had one spreadsheet. Every decision later in this article depends on three simple numbers. Teams that skip this step usually spend money on the wrong layer.</p>
+    <h3>What kind of requests are coming?</h3>
+    <p>10,000 requests a second is never 10,000 of the same request. In Utsav Mart's last sale, about 90% were <strong>reads</strong>: people opening the home page, category pages and product pages, or checking price and stock. About 8% were cart actions. Only about 2% were checkout and payment. Those 2% bring in the money — and they are also the hardest to scale, because they <strong>write</strong> data. The 90% reads are easier, because the same answer can be copied, cached and served from somewhere closer to the user.</p>
+    <p>So the first rule is simple: <strong>treat reads and writes as two separate problems</strong>. At this volume, they behave very differently. Section 05 turns this idea into CQRS.</p>
+    <h3>How many requests are open at the same time?</h3>
+    <p>There is an easy formula here. Requests open at any moment = requests per second × time each request takes. At 10,000 requests a second and 200 ms (0.2 seconds) per request, you have 2,000 requests open at once. Each open request holds a thread, a network connection and maybe a database connection. If you bring the time down to 50 ms, the same traffic needs only 500 open requests.</p>
+    <p>That is why making the code faster and handling more traffic are the same job. Every millisecond you save means fewer things held open. One slow call to another service makes that user wait, and it also adds load to the whole system.</p>
+    <h3>How much can one server handle?</h3>
+    <p>The third number comes from testing one pod (one running copy of the service). Utsav Mart's catalogue API, on a pod with 2 CPU cores, could handle about 800 requests a second when the product came from cache. When it had to go to the Azure SQL database, the same pod managed only about 140. That is almost six times less. This one number tells you something important: <strong>how often you hit the cache decides your bill</strong>, much more than how many pods you run.</p>
+    <p>Try the funnel below. It follows 10,000 requests a second through all the layers in this article and shows how many actually reach your servers and your database.</p>
   </div>
 
-  <div class="lab reveal" id="funnelLab">
+<div class="lab reveal" id="funnelLab">
     <div class="lab-head">
       <span class="lab-title">Request funnel · sale night</span>
       <div class="presets">
@@ -596,12 +614,12 @@
     <div class="lab-body">
       <div class="knobs">
         <div class="knob"><label for="kRps">Incoming req/s <output id="oRps"></output></label><input type="range" id="kRps" min="1000" max="50000" step="500" value="10000"></div>
-        <div class="knob"><label for="kRead">Share that are reads <output id="oRead"></output></label><input type="range" id="kRead" min="50" max="99" step="1" value="90"></div>
-        <div class="knob"><label for="kShed">Blocked at gate (bots, over-limit) <output id="oShed"></output></label><input type="range" id="kShed" min="0" max="40" step="1" value="6"></div>
-        <div class="knob"><label for="kCdn">CDN hit ratio on reads <output id="oCdn"></output></label><input type="range" id="kCdn" min="0" max="95" step="1" value="65"></div>
-        <div class="knob"><label for="kCache">App cache hit ratio <output id="oCache"></output></label><input type="range" id="kCache" min="0" max="99" step="1" value="88"></div>
-        <div class="knob"><label for="kPod">Req/s one pod sustains <output id="oPod"></output></label><input type="range" id="kPod" min="100" max="1500" step="50" value="600"></div>
-        <div class="knob"><label for="kLat">Avg origin latency <output id="oLat"></output></label><input type="range" id="kLat" min="10" max="800" step="10" value="60"></div>
+        <div class="knob"><label for="kRead">Share of reads <output id="oRead"></output></label><input type="range" id="kRead" min="50" max="99" step="1" value="90"></div>
+        <div class="knob"><label for="kShed">Blocked at the gate (bots, over limit) <output id="oShed"></output></label><input type="range" id="kShed" min="0" max="40" step="1" value="6"></div>
+        <div class="knob"><label for="kCdn">Reads answered by the CDN <output id="oCdn"></output></label><input type="range" id="kCdn" min="0" max="95" step="1" value="65"></div>
+        <div class="knob"><label for="kCache">Reads answered by the cache <output id="oCache"></output></label><input type="range" id="kCache" min="0" max="99" step="1" value="88"></div>
+        <div class="knob"><label for="kPod">Requests one pod can handle per second <output id="oPod"></output></label><input type="range" id="kPod" min="100" max="1500" step="50" value="600"></div>
+        <div class="knob"><label for="kLat">Average response time <output id="oLat"></output></label><input type="range" id="kLat" min="10" max="800" step="10" value="60"></div>
       </div>
       <div class="readout">
         <div class="bar"><div class="bar-top"><span>Arriving at the edge</span><b id="bIn"></b></div><div class="bar-track"><div class="bar-fill" id="fIn"></div></div></div>
@@ -609,10 +627,10 @@
         <div class="bar"><div class="bar-top"><span>Reaching your pods</span><b id="bOrigin"></b></div><div class="bar-track"><div class="bar-fill" id="fOrigin"></div></div></div>
         <div class="bar"><div class="bar-top"><span>Reaching the database</span><b id="bDb"></b></div><div class="bar-track"><div class="bar-fill" id="fDb"></div></div></div>
         <div class="tiles">
-          <div class="tile" id="tPods"><small>Pods (+40% headroom)</small><b id="vPods"></b></div>
-          <div class="tile" id="tFlight"><small>In flight at origin</small><b id="vFlight"></b></div>
+          <div class="tile" id="tPods"><small>Pods needed (+40% spare)</small><b id="vPods"></b></div>
+          <div class="tile" id="tFlight"><small>Requests open at once</small><b id="vFlight"></b></div>
           <div class="tile" id="tDbr"><small>DB reads/s</small><b id="vDbr"></b></div>
-          <div class="tile"><small>Writes/s (to queue)</small><b id="vW"></b></div>
+          <div class="tile"><small>Writes/s (to the queue)</small><b id="vW"></b></div>
         </div>
       </div>
       <div class="verdict" id="verdict"></div>
@@ -620,45 +638,45 @@
   </div>
 
   <div class="section reveal">
-    <p>Press "Redis goes down" and watch the database line. With the cache gone, a database sized for a few hundred reads a second is suddenly asked for several thousand. That scenario took down Utsav Mart two years ago — and shaped half of what follows.</p>
-    <h3>Rehearse it</h3>
-    <p>Three weeks before the sale the team ran the whole thing on <strong>Azure Load Testing</strong> with a JMeter script replaying a recorded traffic mix, ramping from 1,000 to 20,000 requests a second in five seconds. Twice the expected peak, because forecasts for festive sales are always low. The first run failed at 6,200. The failure had nothing to do with CPU; it was outbound connection exhaustion to the payment gateway, which you will meet in section 09. You find these things in a rehearsal — or you find them at midnight.</p>
-    <p>Measure p95 and p99 latency, error rate and saturation per layer. Averages hide the problem: a 90 ms average can sit on top of a p99 of four seconds, and the p99 users are the ones hammering refresh and doubling your traffic.</p>
+    <p>Now press "Redis goes down" and look at the database line. Without the cache, a database built for a few hundred reads a second suddenly gets several thousand. This exact problem took Utsav Mart down two years ago — and it shaped half of this article.</p>
+    <h3>Practise before the real day</h3>
+    <p>Three weeks before the sale, the team ran a full practice using <strong>Azure Load Testing</strong>. They replayed the real mix of traffic and pushed it from 1,000 to 20,000 requests a second in five seconds. That is double the expected peak, because sale forecasts are almost always too low. The first run failed at 6,200 requests a second. CPU was fine. The servers had run out of outgoing connections to the payment gateway. Section 10 explains this. You find such problems in practice — or you find them at midnight.</p>
+    <p>When you test, do not look only at the average response time. An average of 90 ms can hide a small group of users who wait four seconds. Those users keep pressing refresh, and that doubles your traffic. Always check how long the <strong>slowest requests</strong> take, how many requests fail, and how close each layer is to its limit.</p>
   </div>
 
   <!-- 02 -->
   <div class="section reveal">
-    <h2><span class="num">02 · 22:00 · THE EDGE</span>Answer before the request reaches you</h2>
-    <p>The cheapest request is the one your servers never see. Utsav Mart fronts everything with <strong>Azure Front Door</strong> (the same idea applies to Cloudflare, Akamai or CloudFront). Front Door terminates TLS at a point of presence close to the user — in Mumbai, Chennai or Delhi — and can serve cached responses from there.</p>
-    <p>Static assets are the obvious part: images, JavaScript bundles, fonts, CSS. Give them content-hashed file names and a year-long cache lifetime and they stop being your problem. On sale night the product images alone were about 70% of bytes transferred — and none of them touched a pod.</p>
-    <p>The less obvious part is caching <strong>API responses</strong> at the edge. A category listing, a product description, the sale banner configuration: these are identical for every user for at least a few seconds. If the origin marks them cacheable, the edge absorbs the repeat traffic:</p>
-    <div class="code-wrap">
+    <h2><span class="num">02 · 22:00 · THE EDGE</span>Answer the request before it reaches you</h2>
+    <p>The cheapest request is the one your servers never see. Utsav Mart puts <strong>Azure Front Door</strong> in front of everything. Cloudflare, Akamai or CloudFront work the same way. Front Door has servers in many cities — Mumbai, Chennai, Delhi and more — so the user connects to a nearby one, and it can send back a saved copy of the response from there.</p>
+    <p>Static files are the easy part: images, JavaScript, fonts and CSS. Put a version number or hash in each file name and tell the CDN to keep them for a year. After that, they are not your problem. On sale night, product images alone were about 70% of all data sent — and none of it touched a pod.</p>
+    <p>The less obvious part is saving <strong>API responses</strong> at the edge. A category listing, a product description or the sale banner settings are the same for every user for at least a few seconds. If your API marks them as cacheable, the CDN handles the repeat requests:</p>
+<div class="code-wrap">
       <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">GET /api/categories/phones?page=1 · response headers</span></div>
 <pre><code><span class="t-attr">Cache-Control</span>: public, max-age=10, s-maxage=30, stale-while-revalidate=30
 <span class="t-attr">Vary</span>: Accept-Encoding
 <span class="t-attr">ETag</span>: <span class="t-str">"cat-phones-p1-v8812"</span></code></pre>
     </div>
-    <p><code>s-maxage=30</code> lets the shared cache hold the response for 30 seconds while browsers keep it for 10. If 3,000 users a second request the phones category, a 30-second edge lifetime means the origin sees roughly one request per point of presence every 30 seconds instead of 90,000. Even a <em>five-second</em> TTL on a hot listing cuts origin load by orders of magnitude, and five seconds of staleness on a product list is invisible to shoppers. <code>stale-while-revalidate</code> lets a cache that supports it keep serving the old copy while it fetches a fresh one in the background, so the expiry moment does not become a spike.</p>
-    <h3>Cache key discipline</h3>
-    <p>Edge caching stops working, with no error anywhere, when the cache key is too specific. A tracking parameter like <code>?utm_source=whatsapp</code>, a session cookie forwarded to the origin, or a <code>Vary: Cookie</code> header turns one cacheable object into a million uncacheable ones. Configure the CDN to strip marketing parameters and ignore cookies on public routes, and never emit <code>Vary: Cookie</code> on something that is the same for everyone.</p>
-    <p>The rule that follows: <strong>anything personalised stays off the shared cache</strong>. The price is public; the "you have 2 items in your cart" badge is not. Split the page so the public shell is cached at the edge and the personal fragment comes from a separate, small API call. That one split moved Utsav Mart's product page from 0% edge-cacheable to about 85%.</p>
-    <h3>The edge also defends</h3>
-    <p>Sale nights attract bots: scalpers scripting the checkout, scrapers watching prices, the occasional flood that looks a lot like an attack. Front Door's WAF with bot protection and rate-limit rules at the edge drops that traffic before it costs you a pod. On sale night about 6% of requests were blocked there, which is the "blocked at gate" slider in the funnel above.</p>
+    <p><code>s-maxage=30</code> tells the CDN to keep the response for 30 seconds, while <code>max-age=10</code> tells the browser to keep it for 10. Suppose 3,000 users a second open the phones category. With a 30-second CDN cache, your server gets about one request per CDN location every 30 seconds, instead of 90,000. Even a <em>five-second</em> cache on a busy listing cuts load massively, and no shopper notices a product list that is five seconds old. <code>stale-while-revalidate</code> lets the CDN (where supported) keep serving the old copy while it fetches a fresh one, so the moment of expiry does not create a sudden rush.</p>
+    <h3>Keep the cache key clean</h3>
+    <p>The cache key is what the CDN uses to decide whether two requests are "the same". If it includes too much, caching stops working and nothing warns you. A marketing tag like <code>?utm_source=whatsapp</code>, a login cookie sent along to the server, or a <code>Vary: Cookie</code> header can turn one cacheable page into a million different ones. Set up the CDN to ignore marketing tags and cookies on public pages.</p>
+    <p>One more rule: <strong>anything personal must never go into the shared cache</strong>. The price is the same for everyone. "You have 2 items in your cart" is not. So split the page. The common part comes from the CDN, and the personal part comes from a small separate API call. This one change made about 85% of Utsav Mart's product page cacheable, up from zero.</p>
+    <h3>The edge also protects you</h3>
+    <p>Sale nights bring bots: people using scripts to grab stock, scrapers copying prices, and sometimes traffic that looks like an attack. The web application firewall (WAF) and bot rules in Front Door block this traffic before it reaches a pod. On sale night, about 6% of all requests were blocked here. That is the "blocked at gate" slider in the funnel above.</p>
   </div>
 
   <!-- 03 -->
   <div class="section reveal">
-    <h2><span class="num">03 · 22:30 · THE FRONT GATE</span>Admit, throttle, or queue</h2>
-    <p>Behind the edge sits the gateway. Utsav Mart uses <strong>Azure API Management</strong> for external partners and YARP inside the cluster for the storefront, but the job is the same: decide which requests get in, at what rate, and what happens to the rest.</p>
-    <h3>Rate limiting at two levels</h3>
-    <p>A <strong>global</strong> limit protects the system as a whole and belongs somewhere that sees all traffic: the edge or the gateway. In API Management that is one policy:</p>
-    <div class="code-wrap">
-      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">APIM inbound policy · per-caller limit</span></div>
+    <h2><span class="num">03 · 22:30 · THE GATE</span>Let in, slow down, or ask to wait</h2>
+    <p>After the edge comes the gateway. Think of it as the security guard at a housing society gate. Utsav Mart uses <strong>Azure API Management</strong> for partner APIs and YARP inside the cluster for the shopping site. Both do the same job: decide which requests come in, how fast, and what happens to the rest.</p>
+    <h3>Rate limits at two levels</h3>
+    <p>An <strong>overall limit</strong> protects the whole system. It must sit somewhere that sees all the traffic, which means the edge or the gateway. In API Management, it is one policy:</p>
+<div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">APIM inbound policy · limit per caller</span></div>
 <pre><code>&lt;<span class="t-key">rate-limit-by-key</span> <span class="t-attr">calls</span>=<span class="t-str">"600"</span> <span class="t-attr">renewal-period</span>=<span class="t-str">"60"</span>
     <span class="t-attr">counter-key</span>=<span class="t-str">"@(context.Subscription?.Key ?? context.Request.IpAddress)"</span> /&gt;</code></pre>
     </div>
-    <p>A <strong>per-endpoint</strong> limit protects expensive operations from any single user. ASP.NET Core ships a rate limiter middleware (since .NET 7) with fixed-window, sliding-window, token-bucket and concurrency limiters. A token bucket suits shoppers well because it allows a short burst (a user opening five tabs) and then settles to a steady rate:</p>
-    <div class="code-wrap">
+    <p>A <strong>per-endpoint limit</strong> stops any one user from hammering a costly operation. ASP.NET Core has built-in rate limiting (since .NET 7). The "token bucket" type works well for shoppers. Each user gets a small bucket of tokens. A quick burst, like opening five tabs, is allowed. After that, the bucket refills at a fixed speed:</p>
+<div class="code-wrap">
       <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">Program.cs · token bucket per user</span></div>
 <pre><code>builder.Services.<span class="t-fn">AddRateLimiter</span>(o =&gt;
 {
@@ -687,27 +705,27 @@
 app.<span class="t-fn">UseRateLimiter</span>();
 app.<span class="t-fn">MapPost</span>(<span class="t-str">"/api/cart/items"</span>, AddToCart).<span class="t-fn">RequireRateLimiting</span>(<span class="t-str">"per-user"</span>);</code></pre>
     </div>
-    <p>One trap: this limiter lives in each pod's memory. With 24 pods, a user whose requests are spread by the load balancer effectively gets 24 buckets. That is fine for protecting a pod from overload, which is what in-process limiters are for. For a hard per-user quota across the fleet, count in Redis or enforce at the gateway.</p>
-    <p>Always return <code>429</code> with <code>Retry-After</code>, and make sure your own mobile app honours it with exponential backoff and jitter. A client that retries immediately on failure turns a small overload into a large one. Utsav Mart's app retried instantly on timeout in an earlier release; the retries alone were 30% of traffic during one incident — self-inflicted load.</p>
-    <h3>Load shedding</h3>
-    <p>Rate limiting is about fairness between callers. Load shedding is about survival. When a pod's own queue gets too deep, it is better to reject new work fast than to accept it and time out slowly. A concurrency limiter on the pod (for example, 200 concurrent requests, then 503 immediately) keeps latency flat for the requests it does accept. Shed low-value traffic first: recommendations and "customers also viewed" can fail; add-to-cart and checkout should not.</p>
-    <h3>A waiting room for the stampede</h3>
-    <p>For the midnight deal itself — 2 lakh people, 5,000 phones — Utsav Mart puts checkout behind a <strong>virtual waiting room</strong>. Users get a signed token with a position; the gateway admits tokens at a rate the checkout path can sustain, say 800 a second. Everyone else sees a progress screen served entirely from the CDN. It feels less exciting than a free-for-all, but it turns an unbounded write spike into a controlled one, and customers prefer an honest queue to a spinning error page.</p>
+    <p>Be careful about one thing. This limit is kept in each pod's own memory. With 24 pods, a user whose requests are spread across pods gets 24 buckets. That is fine for protecting a single pod from overload. If you need one strict limit per user across all pods, keep the count in Redis or apply it at the gateway.</p>
+    <p>When you reject a request, return status <code>429</code> with a <code>Retry-After</code> header. Make sure your own mobile app respects it and waits a little longer before each retry, with some randomness added. An app that retries immediately turns a small problem into a big one. An old version of Utsav Mart's app did exactly that. During one incident, 30% of all traffic was just retries — load the team created for itself.</p>
+    <h3>Drop some load to save the rest</h3>
+    <p>Rate limiting is about being fair to each user. Load shedding is about staying alive. When a pod already has too much work waiting, it is better to say "no" quickly than to accept the request and fail slowly. For example, a pod can allow 200 requests at a time and return 503 at once for anything more. This keeps it fast for the requests it does accept. Drop the less important traffic first. Recommendations and "customers also viewed" can fail. Add to cart and checkout should not.</p>
+    <h3>A waiting room, like a railway queue</h3>
+    <p>For the midnight deal itself — 2 lakh people, 5,000 phones — Utsav Mart puts checkout behind a <strong>virtual waiting room</strong>. It works like the Tatkal booking queue. Each user gets a token with a place in the line. The gateway lets people through at a speed checkout can handle, say 800 a second. Everyone else sees a waiting screen that comes straight from the CDN. It is less exciting than a free-for-all, but it turns an uncontrolled rush of orders into a steady flow. And customers prefer an honest queue to an error page.</p>
   </div>
 
-  <div class="radio alarm"><span class="ts">00:00:03</span><span class="who">Gateway:</span> 11,480 req/s. 4.1% rejected 429 per-user, 0.3% shed 503 on recs-api. Checkout admit rate holding at 800/s.</div>
+  <div class="radio alarm"><span class="ts">00:00:03</span><span class="who">Gateway:</span> 11,480 req/s. 4.1% told to slow down (429), 0.3% of recommendation calls dropped. Checkout letting in 800 a second.</div>
 
   <!-- 04 -->
   <div class="section reveal">
-    <h2><span class="num">04 · 22:45 · THE CACHE</span>Three floors of cache</h2>
-    <p>Requests that make it past the edge and the gate reach the pods. Here the aim is to answer from memory as often as possible. Utsav Mart uses three floors, each closer to the code and each smaller than the one below.</p>
+    <h2><span class="num">04 · 22:45 · THE CACHE</span>Three levels of cache</h2>
+    <p>Requests that get past the edge and the gate reach the pods. Here, the goal is to answer from memory as often as possible, without going to the database. Utsav Mart uses three levels. Each one is closer to the code and smaller than the one below it.</p>
     <ul class="notes">
-      <li><strong>Output cache</strong> in ASP.NET Core stores the whole serialised HTTP response. Nothing runs except the middleware. Good for public endpoints the CDN cannot cache for some reason (a partner API with an auth header, for example).</li>
-      <li><strong>L1: in-process memory</strong>, microseconds away, per pod. Holds a few thousand hot objects for 10 to 60 seconds.</li>
-      <li><strong>L2: distributed cache</strong>, Azure Cache for Redis, about a millisecond away over the VNet, shared by every pod. Holds the long tail for minutes.</li>
+      <li><strong>Output cache</strong> in ASP.NET Core saves the complete HTTP response. Your code does not run at all. It is useful for public endpoints that the CDN cannot cache, for example a partner API that needs a login header.</li>
+      <li><strong>Level 1: memory inside the pod.</strong> Extremely fast, but each pod has its own copy. It keeps a few thousand popular items for 10 to 60 seconds.</li>
+      <li><strong>Level 2: shared cache</strong> in Azure Cache for Redis. About one millisecond away, and shared by all pods. It keeps many more items, for minutes.</li>
     </ul>
-    <p>Since .NET 9, <strong>HybridCache</strong> gives you L1 and L2 behind one API and adds the feature that matters most at this volume: stampede protection. When a key expires and 500 requests ask for it at the same instant, only one of them runs the factory; the rest wait for its result.</p>
-    <div class="code-wrap">
+    <p>From .NET 9, <strong>HybridCache</strong> gives you both levels through one simple API. It also solves a problem that matters a lot at this volume. When a cached item expires and 500 requests ask for it at the same moment, only one of them goes to the database. The other 499 wait for that one answer and share it.</p>
+<div class="code-wrap">
       <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">ProductQueries.cs · HybridCache over Redis</span></div>
 <pre><code><span class="t-com">// Program.cs</span>
 builder.Services.<span class="t-fn">AddStackExchangeRedisCache</span>(o =&gt; o.Configuration = redisConnection);
@@ -735,37 +753,37 @@ builder.Services.<span class="t-fn">AddHybridCache</span>(o =&gt;
 <span class="t-com">// When the price changes (from an event handler):</span>
 <span class="t-key">await</span> _cache.<span class="t-fn">RemoveByTagAsync</span>(<span class="t-str">$"product:{id}"</span>);</code></pre>
     </div>
-    <p>Try the difference below. Fifty requests per row, ten rows, all arriving the moment a hot product key expires.</p>
+    <p>See the difference below. There are 500 requests, all arriving the moment a popular product's cache entry expires.</p>
   </div>
 
-  <div class="stampede reveal" id="stampede">
+<div class="stampede reveal" id="stampede">
     <div class="stampede-row">
-      <button class="st-btn" type="button" data-mode="naive">Expire key: plain cache-aside</button>
-      <button class="st-btn" type="button" data-mode="coalesce">Expire key: with stampede protection</button>
+      <button class="st-btn" type="button" data-mode="naive">Item expires: normal cache</button>
+      <button class="st-btn" type="button" data-mode="coalesce">Item expires: HybridCache (one request refills)</button>
     </div>
     <div class="st-grid" id="stGrid" aria-hidden="true"></div>
-    <div class="st-out" id="stOut">500 concurrent requests for <b>product:88121</b>. Pick a mode.</div>
+    <div class="st-out" id="stOut">500 requests arriving together for <b>product:88121</b>. Pick a mode.</div>
   </div>
 
   <div class="section reveal">
-    <h3>Expiry on purpose</h3>
-    <p>Two more habits keep the cache from turning on you. First, <strong>add jitter to TTLs</strong>. If you warm 50,000 product keys at 11 PM with a 60-minute TTL, all 50,000 expire at midnight, exactly when you least want it. Use 55 to 65 minutes, randomised per key. Second, <strong>warm the cache before the event</strong>. Utsav Mart runs a job at 11:30 PM that loads every sale SKU into Redis, so the first midnight request is a hit, not a miss.</p>
-    <h3>The hot key</h3>
-    <p>At midnight, one key gets a disproportionate share of traffic: the ₹49,999 phone. In Redis every key lives on one shard, so one key means one shard's CPU and network — however many shards you pay for. The fixes, in the order to reach for them: let L1 absorb it (30 seconds of in-process caching across 24 pods reduces Redis traffic for that key to about one read per pod per 30 seconds); if you truly need it in L2, replicate the value under several keys (<code>product:88121:r0</code> to <code>r7</code>) and have each pod read a random copy.</p>
-    <h3>Invalidation</h3>
-    <p>"When does the cache find out the price changed?" is the question that decides how long your TTLs can be. Utsav Mart's pricing service publishes a <code>PriceChanged</code> event (through an <a href="outbox-pattern.html">outbox</a>, so the event cannot be lost), and a subscriber removes the matching tags. TTLs then become the safety net for a missed event rather than the main mechanism, which means they can be minutes instead of seconds.</p>
-    <p>Stock is the exception. Showing "In stock" for a few seconds after the last unit sells is acceptable if checkout does the authoritative check. Showing a stale price is not, which is why price changes are invalidated by event and stock counts are allowed to lag.</p>
+    <h3>Plan the expiry times</h3>
+    <p>Two habits stop the cache from causing trouble. First, <strong>do not give every item the same expiry time</strong>. If you load 50,000 products into the cache at 11 PM with a 60-minute expiry, all 50,000 expire together at midnight — exactly when you need them most. Use a random time between 55 and 65 minutes for each item. Second, <strong>fill the cache before the sale starts</strong>. At 11:30 PM, Utsav Mart runs a job that loads every sale product into Redis. So the very first request at midnight finds the answer ready.</p>
+    <h3>The one very popular item</h3>
+    <p>At midnight, one product gets a huge share of all traffic: the ₹49,999 phone. In Redis, each item is stored on one server (called a shard), so one item means one shard does all the work — no matter how many shards you pay for. The fix is simple. Let the in-pod memory (level 1) take the load. With 30 seconds of in-pod caching across 24 pods, Redis sees about one request per pod every 30 seconds for that phone. If you still need it in Redis, keep a few copies under different names (<code>product:88121:r0</code> to <code>r7</code>) and let each pod read a random one.</p>
+    <h3>When the data changes</h3>
+    <p>"How does the cache know that the price changed?" Your answer to this question decides how long you can cache. At Utsav Mart, the pricing service sends a <code>PriceChanged</code> event whenever a price changes. It uses the <a href="outbox-pattern.html">outbox pattern</a>, so the event can never get lost. A listener then removes that product from the cache. The expiry time becomes only a backup in case an event is missed, so it can be minutes instead of seconds.</p>
+    <p>Stock is different. Showing "In stock" for a few seconds after the last piece is sold is acceptable, as long as checkout does the final check. Showing an old price is not acceptable. That is why price changes clear the cache immediately, while stock counts are allowed to be a little behind.</p>
   </div>
 
-  <p class="pull">The database should only hear about a read when <em>nobody else</em> in the building knows the answer.</p>
+  <p class="pull">The database should hear about a read only when <em>nobody else</em> in the building knows the answer.</p>
 
   <!-- 05 -->
   <div class="section reveal">
-    <h2><span class="num">05 · 23:00 · CQRS</span>Split the readers from the writers</h2>
-    <p>Back to the traffic mix: 90% reads, 10% writes, and the writes are where the money is. When both go through the same model and the same database, they fight. Reads want wide, denormalised rows and lots of indexes. Writes want narrow, normalised rows and few indexes, because every index is extra work on insert. A product page wants the product, its price, its rating summary, seller name and delivery estimate in one shot; the order service wants to insert an order row and decrement stock inside a short transaction.</p>
-    <p><strong>Command Query Responsibility Segregation</strong> gives each side its own model. Commands — <code>PlaceOrder</code>, <code>AddToCart</code>, <code>UpdatePrice</code> — go to the write side, which validates business rules and commits to the system of record. The write side publishes events. Projectors consume those events and build read models shaped exactly like the screens that query them.</p>
+    <h2><span class="num">05 · 23:00 · CQRS</span>Keep readers and writers apart</h2>
+    <p>Remember the traffic mix: 90% reads, 10% writes, and the money comes from the writes. When both go through the same code and the same database, they get in each other's way. Reads want wide tables with everything in one place and many indexes. Writes want small, simple tables with few indexes, because every index slows down an insert. A product page wants the product, price, rating, seller name and delivery date in one go. The order service wants to add one order row and reduce the stock count in a short transaction.</p>
+    <p><strong>CQRS</strong> (Command Query Responsibility Segregation) is a long name for a simple idea: give reading and writing their own separate models. Commands — <code>PlaceOrder</code>, <code>AddToCart</code>, <code>UpdatePrice</code> — go to the write side. It checks the business rules and saves to the main database. Then it sends out events. Small background services called projectors listen to these events and build "read models": ready-made copies of the data, shaped exactly the way each screen needs it.</p>
 
-    <div class="figure reveal">
+<div class="figure reveal">
       <svg viewBox="0 0 660 300" role="img" aria-label="CQRS: commands go to the write model and Azure SQL; events flow through Service Bus to projectors that build read models in Redis, Cosmos DB and Azure AI Search; queries read from those">
         <defs>
           <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#838ba1"/></marker>
@@ -775,12 +793,12 @@ builder.Services.<span class="t-fn">AddHybridCache</span>(o =&gt;
         <text class="fs" x="20" y="22" fill="#ff8a3d">WRITE SIDE · ~10% of traffic</text>
         <rect class="fn hot" x="20" y="36" width="120" height="56" rx="10"/><text class="fl" x="80" y="60" text-anchor="middle">Commands</text><text class="fs" x="80" y="77" text-anchor="middle">PlaceOrder, AddToCart</text>
         <rect class="fn hot" x="190" y="36" width="130" height="56" rx="10"/><text class="fl" x="255" y="60" text-anchor="middle">Order service</text><text class="fs" x="255" y="77" text-anchor="middle">rules + outbox</text>
-        <rect class="fn hot" x="370" y="36" width="120" height="56" rx="10"/><text class="fl" x="430" y="60" text-anchor="middle">Azure SQL</text><text class="fs" x="430" y="77" text-anchor="middle">system of record</text>
+        <rect class="fn hot" x="370" y="36" width="120" height="56" rx="10"/><text class="fl" x="430" y="60" text-anchor="middle">Azure SQL</text><text class="fs" x="430" y="77" text-anchor="middle">main database</text>
         <path class="fa hot" d="M140 64 H186" marker-end="url(#ahs)"/>
         <path class="fa hot" d="M320 64 H366" marker-end="url(#ahs)"/>
         <rect class="fn" x="530" y="36" width="112" height="56" rx="10"/><text class="fl" x="586" y="60" text-anchor="middle">Service Bus</text><text class="fs" x="586" y="77" text-anchor="middle">events</text>
         <path class="fa" d="M490 64 H526" marker-end="url(#ah)"/>
-        <rect class="fn" x="530" y="132" width="112" height="46" rx="10"/><text class="fl" x="586" y="152" text-anchor="middle">Projectors</text><text class="fs" x="586" y="167" text-anchor="middle">build read models</text>
+        <rect class="fn" x="530" y="132" width="112" height="46" rx="10"/><text class="fl" x="586" y="152" text-anchor="middle">Projectors</text><text class="fs" x="586" y="167" text-anchor="middle">build read copies</text>
         <path class="fa" d="M586 92 V128" marker-end="url(#ah)"/>
         <text class="fs" x="20" y="214" fill="#3ed6a0">READ SIDE · ~90% of traffic</text>
         <rect class="fn ok" x="330" y="200" width="100" height="50" rx="10"/><text class="fl" x="380" y="222" text-anchor="middle">Redis</text><text class="fs" x="380" y="238" text-anchor="middle">product cards</text>
@@ -790,31 +808,31 @@ builder.Services.<span class="t-fn">AddHybridCache</span>(o =&gt;
         <path class="fa ok" d="M586 178 C586 190 490 188 490 196" marker-end="url(#ahc)"/>
         <path class="fa ok" d="M600 178 V196" marker-end="url(#ahc)"/>
         <rect class="fn ok" x="20" y="224" width="120" height="56" rx="10"/><text class="fl" x="80" y="248" text-anchor="middle">Queries</text><text class="fs" x="80" y="265" text-anchor="middle">GetProduct, Search</text>
-        <rect class="fn ok" x="180" y="224" width="120" height="56" rx="10"/><text class="fl" x="240" y="248" text-anchor="middle">Query API</text><text class="fs" x="240" y="265" text-anchor="middle">no joins, no rules</text>
+        <rect class="fn ok" x="180" y="224" width="120" height="56" rx="10"/><text class="fl" x="240" y="248" text-anchor="middle">Query API</text><text class="fs" x="240" y="265" text-anchor="middle">simple lookups</text>
         <path class="fa ok" d="M140 252 H176" marker-end="url(#ahc)"/>
         <path class="fa ok" d="M300 244 H326" marker-end="url(#ahc)"/>
       </svg>
-      <div class="figcap">Writes go through <b>one</b> narrow path to the system of record. Reads come from <b>projections</b> built for each screen, and each read store scales on its own.</div>
+      <div class="figcap">Writes take <b>one</b> short path to the main database. Reads come from <b>ready-made copies</b> built for each screen, and each copy scales on its own.</div>
     </div>
 
-    <p>What this buys you at 10K requests a second:</p>
+    <p>What this gives you at 10,000 requests a second:</p>
     <ul class="notes">
-      <li><strong>Independent scaling.</strong> The query API runs 24 pods; the order service runs 8. Neither steals capacity from the other.</li>
-      <li><strong>The right store for each read.</strong> Search and faceted filters (brand, price band, RAM) go to Azure AI Search or Elasticsearch, which are built for them; running those as <code>LIKE</code> queries with six optional <code>WHERE</code> clauses against Azure SQL is how a catalogue database dies. Order history, partitioned by customer, goes to Cosmos DB.</li>
-      <li><strong>Queries with no joins.</strong> The product card read model already contains the seller name and rating summary. A read is one key lookup.</li>
-      <li><strong>A write path you can reason about.</strong> Short transactions, few indexes, and a single place where stock is decremented.</li>
+      <li><strong>Each side scales on its own.</strong> The read API runs 24 pods and the order service runs 8. Neither takes capacity from the other.</li>
+      <li><strong>The right storage for each kind of read.</strong> Product search and filters (brand, price range, RAM) go to Azure AI Search or Elasticsearch, which are made for this. Running such searches as <code>LIKE</code> queries with six optional filters on Azure SQL is a common way to kill a database. Order history, split by customer, goes to Cosmos DB.</li>
+      <li><strong>No joins while reading.</strong> The product card copy already has the seller name and rating inside it. One read is one simple lookup.</li>
+      <li><strong>A simple write path.</strong> Short transactions, few indexes, and only one place in the whole system that reduces stock.</li>
     </ul>
-    <p>The price is <strong>eventual consistency</strong>. Between the write committing and the projector updating the read model there is a lag — usually tens of milliseconds, sometimes seconds under load. Design the screens for it: after placing an order, show the confirmation from the command's response rather than re-querying the read model, and let order history catch up.</p>
-    <p>You do not need a separate database to start. A read replica of Azure SQL (read scale-out, reached with <code>ApplicationIntent=ReadOnly</code> in the connection string) plus separate query and command handlers in the code is a legitimate first step. Full CQRS with event-built projections is worth its moving parts when reads and writes differ this much in volume and shape. For a small internal API with a hundred users it is overhead you will regret.</p>
+    <p>There is a cost. The read copy is always <strong>slightly behind</strong> the main database. Usually the gap is a few milliseconds, but under heavy load it can be a few seconds. Design your screens with this in mind. For example, after a user places an order, show the confirmation using the order details you already have, instead of reading them back from the read copy. The order history page can catch up a second later.</p>
+    <p>You do not need a separate database on day one. An Azure SQL read replica (connect with <code>ApplicationIntent=ReadOnly</code> in the connection string), plus separate classes for reading and writing in your code, is a good first step. Full CQRS with events and projectors is worth the extra parts only when reads and writes are very different in volume and shape. For a small internal API with a hundred users, it is extra work you will regret.</p>
   </div>
 
   <!-- 06 -->
   <div class="section reveal">
     <h2><span class="num">06 · 23:15 · ASYNC</span>Say yes now, do the work later</h2>
-    <p>Placing an order at Utsav Mart touches seven things: validate the cart, reserve stock, create the order, call the payment gateway, send an SMS, update loyalty points, notify the warehouse. Doing all of that inside the HTTP request makes each order take as long as the slowest of them, and makes the checkout fail when any of them fails.</p>
-    <p>Only two of those steps must happen before you answer the user: reserve the stock and record the order. Everything else can happen seconds later. So the checkout endpoint does the minimum, writes a message, and returns <code>202 Accepted</code> with a URL the app can poll or a SignalR channel it can listen on.</p>
-    <div class="code-wrap">
-      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">CheckoutEndpoint.cs · accept fast, idempotently</span></div>
+    <p>When a customer places an order at Utsav Mart, seven things need to happen: check the cart, reserve the stock, create the order, call the payment gateway, send an SMS, add loyalty points and inform the warehouse. If all of this happens inside one HTTP request, every order takes as long as the slowest step. And if any one step fails, the whole checkout fails.</p>
+    <p>Only two steps must finish before you reply to the customer: reserve the stock and save the order. Everything else can happen a few seconds later. So the checkout API does only these two, puts a message in a queue, and replies with <code>202 Accepted</code>. This means "we have your order and we are working on it". The app can then check the order status using the link it gets back.</p>
+<div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">CheckoutEndpoint.cs · reply fast, no double orders</span></div>
 <pre><code>app.<span class="t-fn">MapPost</span>(<span class="t-str">"/api/orders"</span>, <span class="t-key">async</span> (
     <span class="t-type">PlaceOrderRequest</span> req,
     [<span class="t-type">FromHeader</span>(Name = <span class="t-str">"Idempotency-Key"</span>)] <span class="t-key">string</span> idemKey,
@@ -838,11 +856,12 @@ builder.Services.<span class="t-fn">AddHybridCache</span>(o =&gt;
     <span class="t-key">return</span> <span class="t-type">Results</span>.<span class="t-fn">Accepted</span>(<span class="t-str">$"/api/orders/{orderId}"</span>, <span class="t-key">new</span> { orderId, status = <span class="t-str">"Processing"</span> });
 });</code></pre>
     </div>
-    <p>The outbox relay then publishes <code>OrderPlaced</code> to Azure Service Bus, and separate consumers handle payment capture, SMS, loyalty and the warehouse, each at its own pace. The queue is a shock absorber: at midnight orders arrive at 800 a second; if the payment consumers can only do 500, the queue grows for a few minutes and drains afterwards. Nothing times out and nothing is lost. Enable duplicate detection on the queue and make every consumer idempotent — at-least-once delivery means "sometimes twice".</p>
-    <h3>Stock without a lock queue</h3>
-    <p>Five thousand phones and 2 lakh buyers is a contention problem. An <code>UPDATE Stock SET Qty = Qty - 1 WHERE Sku = @sku AND Qty &gt; 0</code> on one row serialises every buyer behind a single row lock. Utsav Mart keeps sale-SKU counters in Redis and decrements them with a small Lua script, which Redis runs atomically:</p>
-    <div class="code-wrap">
-      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">reserve.lua · atomic check-and-decrement</span></div>
+    <p>Next, the outbox sends an <code>OrderPlaced</code> message to Azure Service Bus. Separate background workers handle payment, SMS, loyalty points and the warehouse, each at its own speed. The queue works like a shock absorber. Orders arrive at 800 a second at midnight. If the payment workers can handle only 500, the queue grows for a few minutes and then empties. Nothing times out and nothing is lost.</p>
+    <p>Two safety rules here. The same message can sometimes arrive twice, so every worker must be <strong>safe to repeat</strong>: processing a message a second time should change nothing. And the customer's app may resend the order if the network drops. That is why the code above uses an <code>Idempotency-Key</code>, a unique ID the app sends with each order. If the same key comes again, the server returns the first order instead of creating a second one. Turn on duplicate detection in Service Bus as well.</p>
+    <h3>Reducing stock without a long line</h3>
+    <p>5,000 phones and 2 lakh buyers means everyone is fighting over one number. If you run <code>UPDATE Stock SET Qty = Qty - 1 WHERE Sku = @sku AND Qty &gt; 0</code> on one database row, every buyer stands in a single line behind that row's lock. Utsav Mart keeps the stock count of sale items in Redis instead, and reduces it with a small Lua script. Redis runs the whole script in one step, so two buyers can never get the same last piece:</p>
+<div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">reserve.lua · check and reduce stock in one step</span></div>
 <pre><code><span class="t-com">-- KEYS[1] = stock:{sku}   ARGV[1] = qty</span>
 <span class="t-key">local</span> left = <span class="t-fn">tonumber</span>(redis.<span class="t-fn">call</span>(<span class="t-str">'GET'</span>, KEYS[<span class="t-num">1</span>]) <span class="t-key">or</span> <span class="t-str">'0'</span>)
 <span class="t-key">if</span> left &gt;= <span class="t-fn">tonumber</span>(ARGV[<span class="t-num">1</span>]) <span class="t-key">then</span>
@@ -850,16 +869,16 @@ builder.Services.<span class="t-fn">AddHybridCache</span>(o =&gt;
 <span class="t-key">end</span>
 <span class="t-key">return</span> -<span class="t-num">1</span></code></pre>
     </div>
-    <p>The reservation expires if payment does not complete within ten minutes, and a reconciliation job compares Redis counters with the SQL system of record every minute. Redis handles the contention; SQL remains the truth.</p>
+    <p>If payment does not finish within ten minutes, the reserved piece goes back to stock. A job runs every minute to compare the Redis numbers with the SQL database. Redis handles the rush; SQL stays the final record.</p>
   </div>
 
   <!-- 07 -->
   <div class="section reveal">
-    <h2><span class="num">07 · 23:30 · THE CODE</span>The code review nobody wanted before the sale</h2>
-    <p>Architecture decides how many requests reach your code. Code decides how many pods it takes to serve them. On the load test three weeks out, one endpoint needed 22 pods on its own. The review that followed found the usual suspects, all in one method:</p>
+    <h2><span class="num">07 · 23:30 · THE CODE</span>The code review before the sale</h2>
+    <p>Design decides how many requests reach your code. Your code decides how many pods you need to serve them. In the practice test, one API alone needed 22 pods. The code review that followed found the usual mistakes, all in one method:</p>
   </div>
 
-  <div class="tabs reveal" id="codeTabs">
+<div class="tabs reveal" id="codeTabs">
     <div class="tab-row" role="tablist">
       <button class="tab-btn bad" role="tab" type="button" aria-selected="true" aria-controls="tabBefore" id="tbBefore">Before · 140 req/s per pod</button>
       <button class="tab-btn good" role="tab" type="button" aria-selected="false" aria-controls="tabAfter" id="tbAfter">After · 780 req/s per pod</button>
@@ -870,13 +889,13 @@ builder.Services.<span class="t-fn">AddHybridCache</span>(o =&gt;
 <pre><code>[<span class="t-type">HttpGet</span>(<span class="t-str">"{id}"</span>)]
 <span class="t-key">public</span> <span class="t-type">ProductDto</span> <span class="t-fn">Get</span>(<span class="t-key">int</span> id)
 {
-    <span class="t-key">var</span> client = <span class="t-key">new</span> <span class="t-type">HttpClient</span>();                          <span class="t-com">// 1. new socket every call</span>
+    <span class="t-key">var</span> client = <span class="t-key">new</span> <span class="t-type">HttpClient</span>();                          <span class="t-com">// 1. new connection every call</span>
     <span class="t-key">var</span> price  = client.<span class="t-fn">GetStringAsync</span>(<span class="t-str">$"{_pricingUrl}/{id}"</span>)
-                       .Result;                                <span class="t-com">// 2. sync over async</span>
+                       .Result;                                <span class="t-com">// 2. thread sits and waits</span>
     <span class="t-key">var</span> product = _db.Products
         .<span class="t-fn">Include</span>(p =&gt; p.Reviews)                               <span class="t-com">// 3. loads 4,000 reviews</span>
-        .<span class="t-fn">First</span>(p =&gt; p.Id == id);                               <span class="t-com">// 4. tracked, blocking</span>
-    _logger.<span class="t-fn">LogInformation</span>(<span class="t-str">"Served "</span> + product.Name);         <span class="t-com">// 5. allocates every call</span>
+        .<span class="t-fn">First</span>(p =&gt; p.Id == id);                               <span class="t-com">// 4. blocking call</span>
+    _logger.<span class="t-fn">LogInformation</span>(<span class="t-str">"Served "</span> + product.Name);         <span class="t-com">// 5. wastes memory every call</span>
     <span class="t-key">return</span> <span class="t-key">new</span> <span class="t-type">ProductDto</span>(product, <span class="t-key">decimal</span>.<span class="t-fn">Parse</span>(price));
 }</code></pre>
       </div>
@@ -887,12 +906,12 @@ builder.Services.<span class="t-fn">AddHybridCache</span>(o =&gt;
 <pre><code>[<span class="t-type">HttpGet</span>(<span class="t-str">"{id}"</span>)]
 <span class="t-key">public</span> <span class="t-key">async</span> <span class="t-type">Task</span>&lt;<span class="t-type">ProductDto</span>&gt; <span class="t-fn">Get</span>(<span class="t-key">int</span> id, <span class="t-type">CancellationToken</span> ct)
 {
-    <span class="t-key">var</span> priceTask = _pricing.<span class="t-fn">GetPriceAsync</span>(id, ct);          <span class="t-com">// typed client, pooled, resilient</span>
+    <span class="t-key">var</span> priceTask = _pricing.<span class="t-fn">GetPriceAsync</span>(id, ct);          <span class="t-com">// typed client, reuses connections</span>
 
     <span class="t-key">var</span> product = <span class="t-key">await</span> _db.Products
-        .<span class="t-fn">AsNoTracking</span>()                                        <span class="t-com">// read-only, no change tracker</span>
+        .<span class="t-fn">AsNoTracking</span>()                                        <span class="t-com">// read-only query</span>
         .<span class="t-fn">Where</span>(p =&gt; p.Id == id)
-        .<span class="t-fn">Select</span>(p =&gt; <span class="t-key">new</span> { p.Id, p.Name, p.Rating, p.ReviewCount }) <span class="t-com">// only the columns</span>
+        .<span class="t-fn">Select</span>(p =&gt; <span class="t-key">new</span> { p.Id, p.Name, p.Rating, p.ReviewCount }) <span class="t-com">// only needed columns</span>
         .<span class="t-fn">FirstAsync</span>(ct);
 
     _log.<span class="t-fn">ProductServed</span>(product.Id);                            <span class="t-com">// [LoggerMessage], Debug level</span>
@@ -905,28 +924,17 @@ builder.Services.<span class="t-fn">AddHybridCache</span>(o =&gt;
   </div>
 
   <div class="section reveal">
-    <p>Each of the five problems deserves a sentence, because all of them are common in production .NET code.</p>
+    <p>Here is what was wrong with each line, in simple words. All five are common in .NET code.</p>
     <ul class="notes">
-      <li><strong><code>new HttpClient()</code> per call</strong> leaves sockets in <code>TIME_WAIT</code> and, at a few hundred calls a second, runs the pod out of ports. Register typed clients with <code>IHttpClientFactory</code>, which pools handlers and still respects DNS changes.</li>
-      <li><strong><code>.Result</code> and <code>.Wait()</code></strong> block a thread-pool thread while the I/O happens. Under load the pool runs out of threads, adds new ones only gradually, and latency climbs for every request on the pod, including ones that never touch this code. This is thread-pool starvation, and it looks like "the pod is slow but CPU is at 30%". Async all the way down; there is no safe partial version.</li>
-      <li><strong>Loading entities you do not need.</strong> <code>Include(p =&gt; p.Reviews)</code> pulled thousands of rows to show a rating. Project to exactly the columns the response needs, use <code>AsNoTracking()</code> for reads, and watch for N+1 loops that run one query per item in a list.</li>
-      <li><strong>Blocking EF calls</strong> (<code>First</code> rather than <code>FirstAsync</code>) are the database flavour of the same starvation problem.</li>
-      <li><strong>Logging on the hot path.</strong> String concatenation allocates even when the level is filtered out. Source-generated <code>[LoggerMessage]</code> methods avoid that, and at 10K requests a second an Information log per request is also 86 crore log lines a day that someone pays to ingest.</li>
+      <li><strong><code>new HttpClient()</code> on every call.</strong> Each call opens a new network connection and leaves the old one hanging for a while. At a few hundred calls a second, the pod runs out of connections. Use <code>IHttpClientFactory</code> with a typed client. It reuses connections safely.</li>
+      <li><strong><code>.Result</code> and <code>.Wait()</code>.</strong> These make a thread sit and wait while data comes over the network. Under load, all threads end up waiting, new threads are added only slowly, and every request on that pod becomes slow, even requests that never touch this code. The typical sign: the pod is slow but CPU is only at 30%. The fix is to use <code>async</code> and <code>await</code> everywhere. Doing it only halfway does not work.</li>
+      <li><strong>Loading data you do not need.</strong> <code>Include(p =&gt; p.Reviews)</code> loaded thousands of review rows just to show a star rating. Select only the columns the response needs, use <code>AsNoTracking()</code> for read-only queries, and watch out for loops that fire one database query per item in a list.</li>
+      <li><strong>Blocking database calls</strong> like <code>First</code> instead of <code>FirstAsync</code> cause the same thread problem, only in the database layer.</li>
+      <li><strong>Logging on every request.</strong> Joining strings for a log message uses memory even when that log level is switched off. Source-generated <code>[LoggerMessage]</code> methods avoid this. Also, one log line per request at 10,000 requests a second is 86 crore log lines a day, and somebody pays to store them.</li>
     </ul>
-    <h3>The rest of the .NET checklist</h3>
-    <p>Beyond that one method, these gave Utsav Mart measurable gains on the same hardware:</p>
-    <ul class="notes">
-      <li><strong>DbContext pooling</strong> with <code>AddDbContextPool</code> and <strong>compiled queries</strong> (<code>EF.CompileAsyncQuery</code>) for the three hottest queries, which skips LINQ translation on every call.</li>
-      <li><strong>Keyset pagination</strong> instead of <code>Skip/Take</code>. <code>OFFSET 20000</code> makes the database read and throw away 20,000 rows; <code>WHERE Id &gt; @lastSeenId ORDER BY Id</code> reads only the page you want.</li>
-      <li><strong>System.Text.Json source generation</strong> for response types: less reflection, lower allocation, faster startup.</li>
-      <li><strong>Response compression</strong> with Brotli for JSON, done at Front Door where possible so pods do not spend CPU on it.</li>
-      <li><strong>Parallelise independent calls</strong> with <code>Task.WhenAll</code>, as the price lookup above does. A page that makes four sequential 40 ms calls takes 160 ms; in parallel it takes 40.</li>
-      <li><strong>Timeouts on everything</strong>, including database commands and Redis calls. A default HTTP timeout of 100 seconds is a 100-second thread hold when a dependency hangs.</li>
-      <li><strong>Profile, then fix.</strong> <code>dotnet-counters</code> shows thread-pool queue length, GC pauses and allocation rate live; <code>dotnet-trace</code> and the Application Insights profiler show where time goes. Every item on this list was found by measurement, not by instinct.</li>
-    </ul>
-    <p>For calls to other services, the resilience handler from <code>Microsoft.Extensions.Http.Resilience</code> (.NET 8 and later) wraps timeouts, retries with jitter and a circuit breaker around a typed client in one line:</p>
-    <div class="code-wrap">
-      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">Program.cs · pricing client with sensible failure behaviour</span></div>
+    <p>For calls to other services, the <code>Microsoft.Extensions.Http.Resilience</code> package (.NET 8 and later) adds timeouts, retries and a circuit breaker to a typed client in a few lines. A circuit breaker works like the MCB in your home: when too many calls fail, it stops calling that service for a while instead of making things worse.</p>
+<div class="code-wrap">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">Program.cs · pricing client with timeouts, retries and circuit breaker</span></div>
 <pre><code>builder.Services.<span class="t-fn">AddHttpClient</span>&lt;<span class="t-type">PricingClient</span>&gt;(c =&gt; c.BaseAddress = <span class="t-key">new</span>(<span class="t-str">"http://pricing-api"</span>))
     .<span class="t-fn">AddStandardResilienceHandler</span>(o =&gt;
     {
@@ -936,31 +944,349 @@ builder.Services.<span class="t-fn">AddHybridCache</span>(o =&gt;
         o.CircuitBreaker.FailureRatio = <span class="t-num">0.2</span>;   <span class="t-com">// open at 20% failures</span>
     });</code></pre>
     </div>
+    <p>These fixes took that one API from 140 to 780 requests a second per pod. But one method is only a start. The next section goes through the code-level techniques the team now uses everywhere, each with a small example.</p>
   </div>
 
   <!-- 08 -->
   <div class="section reveal">
-    <h2><span class="num">08 · 23:40 · THE DATABASE</span>The last bottleneck standing</h2>
-    <p>Pods scale horizontally in a minute. A relational database does not. Everything above this section exists to keep the database's share of traffic small, and what is left still needs care.</p>
-    <ul class="notes">
-      <li><strong>Indexes for the actual queries.</strong> Pull the top 20 queries by total CPU from Query Store after the load test and check each has a covering index. One missing index on <code>Orders(CustomerId, CreatedAt)</code> was costing Utsav Mart 40% of database CPU.</li>
-      <li><strong>Read replicas</strong> for queries that tolerate slight lag. Azure SQL Premium, Business Critical and Hyperscale offer read scale-out; route with <code>ApplicationIntent=ReadOnly</code>.</li>
-      <li><strong>Connection pool arithmetic.</strong> Forty pods across all services, each with ADO.NET's default <code>Max Pool Size</code> of 100, can open 4,000 connections. Check that against the concurrent-session and worker limits of your database tier before the autoscaler checks it for you. Smaller pools with fast queries beat large pools with slow ones.</li>
-      <li><strong>Short transactions.</strong> No HTTP calls inside a transaction, ever. A payment call inside a transaction holds row locks for as long as the gateway takes to answer.</li>
-      <li><strong>Batch writes</strong> where the business allows: loyalty points and analytics events can be written in batches of 500 by a consumer instead of one insert per request.</li>
-      <li><strong>Partitioning</strong> when one database is no longer enough. In Cosmos DB the partition key is the whole design: <code>/customerId</code> spreads order history evenly, while <code>/saleId</code> would put every midnight order on one hot partition. In SQL, shard by tenant or region before you shard by anything clever.</li>
-    </ul>
+    <h2><span class="num">08 · 23:35 · INSIDE THE CODE</span>Fourteen code-level techniques, with examples</h2>
+    <p>The CDN, cache and Kubernetes decide how many requests reach your code. After that, everything depends on what your code does with each request. A pod that wastes 5 ms of CPU per request needs twice the pods of one that wastes 2.5 ms. Multiply that by 24 pods and a sale night — small code habits turn into a big Azure bill.</p>
+    <p>Each technique below has a short "slow" version and a "better" version. None of them needs a new framework. They are all standard .NET 8 to .NET 10 features.</p>
+    <h3>1. Make independent calls at the same time</h3>
+    <p>A product page needs four things: product details, price, stock and a delivery estimate for the user's PIN code. None of these depends on the other. If you call them one after another, the waiting times add up.</p>
+<div class="code-wrap bad">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag bad">Slow</span><span class="code-name">ProductPageService.cs</span></div>
+<pre><code><span class="t-com">// Each call waits for the previous one: 40 + 60 + 35 + 50 = 185 ms</span>
+<span class="t-key">var</span> product  = <span class="t-key">await</span> _catalogue.<span class="t-fn">GetAsync</span>(id, ct);
+<span class="t-key">var</span> price    = <span class="t-key">await</span> _pricing.<span class="t-fn">GetAsync</span>(id, ct);
+<span class="t-key">var</span> stock    = <span class="t-key">await</span> _stock.<span class="t-fn">GetAsync</span>(id, ct);
+<span class="t-key">var</span> delivery = <span class="t-key">await</span> _delivery.<span class="t-fn">EstimateAsync</span>(id, pin, ct);</code></pre>
+    </div>
+<div class="code-wrap good">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag good">Better</span><span class="code-name">ProductPageService.cs</span></div>
+<pre><code><span class="t-com">// Start all four, then wait once: total time = slowest call = 60 ms</span>
+<span class="t-key">var</span> productTask  = _catalogue.<span class="t-fn">GetAsync</span>(id, ct);
+<span class="t-key">var</span> priceTask    = _pricing.<span class="t-fn">GetAsync</span>(id, ct);
+<span class="t-key">var</span> stockTask    = _stock.<span class="t-fn">GetAsync</span>(id, ct);
+<span class="t-key">var</span> deliveryTask = _delivery.<span class="t-fn">EstimateAsync</span>(id, pin, ct);
+
+<span class="t-key">await</span> <span class="t-type">Task</span>.<span class="t-fn">WhenAll</span>(productTask, priceTask, stockTask, deliveryTask);
+
+<span class="t-key">return</span> <span class="t-key">new</span> <span class="t-type">ProductPage</span>(productTask.Result, priceTask.Result,   <span class="t-com">// safe: already completed</span>
+                       stockTask.Result, deliveryTask.Result);</code></pre>
+    </div>
+    <div class="race reveal" id="race">
+      <div class="race-head"><span>Four calls, two ways</span>
+        <div class="race-btns"><button type="button" class="st-btn" data-race="seq">One after another</button><button type="button" class="st-btn" data-race="par">All together</button></div></div>
+      <div class="race-rows" id="raceRows"></div>
+      <div class="st-out" id="raceOut">Press a button to run the four calls.</div>
+    </div>
+    <p>One warning: <code>DbContext</code> is not thread-safe. Do not run two queries on the same <code>DbContext</code> in parallel. Parallel calls are for different services, or for queries that each get their own context from <code>IDbContextFactory</code>.</p>
+    <h3>2. Stop the "one query per row" loop</h3>
+    <p>This mistake is easy to miss — the code looks innocent. You load 20 orders, then loop and load the items of each order. That is 1 + 20 = 21 trips to the database. For a customer with 200 orders, it is 201 trips — for one page.</p>
+<div class="code-wrap bad">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag bad">Slow</span><span class="code-name">OrderHistory.cs</span></div>
+<pre><code><span class="t-key">var</span> orders = <span class="t-key">await</span> _db.Orders
+    .<span class="t-fn">Where</span>(o =&gt; o.CustomerId == customerId)
+    .<span class="t-fn">ToListAsync</span>(ct);
+
+<span class="t-key">foreach</span> (<span class="t-key">var</span> order <span class="t-key">in</span> orders)                        <span class="t-com">// 1 query + 1 per order</span>
+    order.Items = <span class="t-key">await</span> _db.OrderItems
+        .<span class="t-fn">Where</span>(i =&gt; i.OrderId == order.Id)
+        .<span class="t-fn">ToListAsync</span>(ct);</code></pre>
+    </div>
+<div class="code-wrap good">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag good">Better</span><span class="code-name">OrderHistory.cs</span></div>
+<pre><code><span class="t-com">// One query. Only the columns the screen shows. No change tracking.</span>
+<span class="t-key">var</span> orders = <span class="t-key">await</span> _db.Orders
+    .<span class="t-fn">AsNoTracking</span>()
+    .<span class="t-fn">Where</span>(o =&gt; o.CustomerId == customerId)
+    .<span class="t-fn">OrderByDescending</span>(o =&gt; o.CreatedAt)
+    .<span class="t-fn">Take</span>(<span class="t-num">20</span>)
+    .<span class="t-fn">Select</span>(o =&gt; <span class="t-key">new</span> <span class="t-type">OrderDto</span>(
+        o.Id, o.CreatedAt, o.Total,
+        o.Items.<span class="t-fn">Select</span>(i =&gt; <span class="t-key">new</span> <span class="t-type">OrderItemDto</span>(i.Sku, i.Name, i.Qty)).<span class="t-fn">ToList</span>()))
+    .<span class="t-fn">ToListAsync</span>(ct);</code></pre>
+    </div>
+    <p>The <code>Select</code> into a small DTO does two jobs. It brings back only the columns you need, and it lets EF Core build one SQL query with a join. Turn on EF Core's SQL logging in development and count the queries per request. If the number grows with the data, you have this problem.</p>
+    <h3>3. Page by "last seen", not by page number</h3>
+    <p><code>Skip</code> and <code>Take</code> look cheap, but the database still has to read and throw away every skipped row. Page 1 is fast. Page 1,000 reads 20,000 rows to return 20. Bots and scrapers love deep pages, so on sale night this hurts.</p>
+<div class="code-wrap bad">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag bad">Slow</span><span class="code-name">ProductList.cs</span></div>
+<pre><code><span class="t-key">var</span> page = <span class="t-key">await</span> _db.Products
+    .<span class="t-fn">OrderBy</span>(p =&gt; p.Id)
+    .<span class="t-fn">Skip</span>(pageNumber * <span class="t-num">20</span>)            <span class="t-com">// reads and discards all earlier rows</span>
+    .<span class="t-fn">Take</span>(<span class="t-num">20</span>)
+    .<span class="t-fn">ToListAsync</span>(ct);</code></pre>
+    </div>
+<div class="code-wrap good">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag good">Better</span><span class="code-name">ProductList.cs</span></div>
+<pre><code><span class="t-key">var</span> page = <span class="t-key">await</span> _db.Products
+    .<span class="t-fn">AsNoTracking</span>()
+    .<span class="t-fn">Where</span>(p =&gt; p.Id &gt; lastSeenId)    <span class="t-com">// jumps straight there using the index</span>
+    .<span class="t-fn">OrderBy</span>(p =&gt; p.Id)
+    .<span class="t-fn">Take</span>(<span class="t-num">20</span>)
+    .<span class="t-fn">ToListAsync</span>(ct);
+<span class="t-com">// Send lastSeenId back to the app as the "next page" token.</span></code></pre>
+    </div>
+    <h3>4. Reuse the DbContext and the query plan</h3>
+    <p>Creating a <code>DbContext</code> and turning LINQ into SQL both take time. For queries that run thousands of times a second, you can skip both steps. DbContext pooling keeps ready contexts in a pool. A compiled query converts LINQ to SQL once, at startup.</p>
+<div class="code-wrap good">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag good">Better</span><span class="code-name">Program.cs + ProductQueries.cs</span></div>
+<pre><code>builder.Services.<span class="t-fn">AddDbContextPool</span>&lt;<span class="t-type">ShopDb</span>&gt;(o =&gt; o.<span class="t-fn">UseSqlServer</span>(connectionString), poolSize: <span class="t-num">256</span>);
+
+<span class="t-key">public</span> <span class="t-key">static</span> <span class="t-key">class</span> ProductQueries
+{
+    <span class="t-com">// LINQ is translated once and reused for every call</span>
+    <span class="t-key">public</span> <span class="t-key">static</span> <span class="t-key">readonly</span> <span class="t-type">Func</span>&lt;<span class="t-type">ShopDb</span>, <span class="t-key">int</span>, <span class="t-type">Task</span>&lt;<span class="t-type">ProductDto</span>?&gt;&gt; GetById =
+        <span class="t-type">EF</span>.<span class="t-fn">CompileAsyncQuery</span>((<span class="t-type">ShopDb</span> db, <span class="t-key">int</span> id) =&gt;
+            db.Products.<span class="t-fn">AsNoTracking</span>()
+              .<span class="t-fn">Where</span>(p =&gt; p.Id == id)
+              .<span class="t-fn">Select</span>(p =&gt; <span class="t-key">new</span> <span class="t-type">ProductDto</span>(p.Id, p.Name, p.Price, p.Rating))
+              .<span class="t-fn">FirstOrDefault</span>());
+}
+
+<span class="t-com">// Usage</span>
+<span class="t-key">var</span> product = <span class="t-key">await</span> ProductQueries.<span class="t-fn">GetById</span>(_db, id);</code></pre>
+    </div>
+    <p>Use compiled queries only for the few queries that run most often. For everything else, EF Core's own query cache is good enough.</p>
+    <h3>5. Update many rows without loading them</h3>
+    <p>At 11 PM, the team applies the sale price to 5,000 products. Loading 5,000 entities, changing them in memory and saving them sends thousands of <code>UPDATE</code> statements. From EF Core 7, <code>ExecuteUpdateAsync</code> sends a single SQL statement.</p>
+<div class="code-wrap bad">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag bad">Slow</span><span class="code-name">SalePricing.cs</span></div>
+<pre><code><span class="t-key">var</span> items = <span class="t-key">await</span> _db.Products.<span class="t-fn">Where</span>(p =&gt; p.SaleId == saleId).<span class="t-fn">ToListAsync</span>(ct);
+<span class="t-key">foreach</span> (<span class="t-key">var</span> p <span class="t-key">in</span> items) p.Price = p.Mrp * <span class="t-num">0.6m</span>;
+<span class="t-key">await</span> _db.<span class="t-fn">SaveChangesAsync</span>(ct);                     <span class="t-com">// 5,000 rows loaded, 5,000 updates sent</span></code></pre>
+    </div>
+<div class="code-wrap good">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag good">Better</span><span class="code-name">SalePricing.cs</span></div>
+<pre><code><span class="t-key">await</span> _db.Products
+    .<span class="t-fn">Where</span>(p =&gt; p.SaleId == saleId)
+    .<span class="t-fn">ExecuteUpdateAsync</span>(s =&gt; s.<span class="t-fn">SetProperty</span>(p =&gt; p.Price, p =&gt; p.Mrp * <span class="t-num">0.6m</span>), ct);   <span class="t-com">// one UPDATE</span></code></pre>
+    </div>
+    <p><code>ExecuteDeleteAsync</code> does the same for deletes. Remember that these skip the change tracker, so clear the cache (or publish a <code>PriceChanged</code> event) after running them.</p>
+    <h3>6. Return cached answers without extra work</h3>
+    <p>When most calls are answered from memory, even creating a <code>Task</code> object on each call adds up. <code>ValueTask</code> lets a method return a ready value with no extra allocation, and fall back to real async work only on a cache miss.</p>
+<div class="code-wrap good">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag good">Better</span><span class="code-name">PriceLookup.cs</span></div>
+<pre><code><span class="t-key">public</span> <span class="t-type">ValueTask</span>&lt;<span class="t-key">decimal</span>&gt; <span class="t-fn">GetPriceAsync</span>(<span class="t-key">int</span> productId, <span class="t-type">CancellationToken</span> ct)
+{
+    <span class="t-key">if</span> (_memory.<span class="t-fn">TryGetValue</span>(productId, <span class="t-key">out</span> <span class="t-key">decimal</span> price))
+        <span class="t-key">return</span> <span class="t-type">ValueTask</span>.<span class="t-fn">FromResult</span>(price);                <span class="t-com">// cache hit: nothing allocated</span>
+
+    <span class="t-key">return</span> <span class="t-key">new</span> <span class="t-type">ValueTask</span>&lt;<span class="t-key">decimal</span>&gt;(<span class="t-fn">LoadAndCacheAsync</span>(productId, ct)); <span class="t-com">// cache miss: normal async</span>
+}</code></pre>
+    </div>
+    <p>A <code>ValueTask</code> must be awaited only once. If you are not sure, keep using <code>Task</code>. Use this only on hot paths where a profiler shows allocations as a problem.</p>
+    <h3>7. Read strings without cutting them into pieces</h3>
+    <p>The cart API receives items as <code>"88121:2"</code> (product ID and quantity). <code>Split</code> creates a new array and two new strings every time. At thousands of calls a second, this is garbage the GC has to clean up. <code>ReadOnlySpan&lt;char&gt;</code> reads the same text in place, with no new objects.</p>
+<div class="code-wrap bad">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag bad">Slow</span><span class="code-name">CartParser.cs</span></div>
+<pre><code><span class="t-key">var</span> parts = input.<span class="t-fn">Split</span>(':');                <span class="t-com">// new array + 2 new strings</span>
+<span class="t-key">int</span> productId = <span class="t-key">int</span>.<span class="t-fn">Parse</span>(parts[<span class="t-num">0</span>]);
+<span class="t-key">int</span> qty       = <span class="t-key">int</span>.<span class="t-fn">Parse</span>(parts[<span class="t-num">1</span>]);</code></pre>
+    </div>
+<div class="code-wrap good">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag good">Better</span><span class="code-name">CartParser.cs</span></div>
+<pre><code><span class="t-type">ReadOnlySpan</span>&lt;<span class="t-key">char</span>&gt; s = input;
+<span class="t-key">int</span> colon     = s.<span class="t-fn">IndexOf</span>(':');
+<span class="t-key">int</span> productId = <span class="t-key">int</span>.<span class="t-fn">Parse</span>(s[..colon]);       <span class="t-com">// no new strings created</span>
+<span class="t-key">int</span> qty       = <span class="t-key">int</span>.<span class="t-fn">Parse</span>(s[(colon + <span class="t-num">1</span>)..]);</code></pre>
+    </div>
+    <h3>8. Do not use exceptions for normal cases</h3>
+    <p>Throwing and catching an exception is expensive. It is meant for real errors, not for "the user typed a wrong number". A bad quantity in a URL is an everyday thing, so check it the cheap way.</p>
+<div class="code-wrap bad">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag bad">Slow</span><span class="code-name">CartEndpoint.cs</span></div>
+<pre><code><span class="t-key">int</span> qty;
+<span class="t-key">try</span> { qty = <span class="t-key">int</span>.<span class="t-fn">Parse</span>(qtyText); }
+<span class="t-key">catch</span> (FormatException) { qty = <span class="t-num">1</span>; }         <span class="t-com">// exception on every bad input</span></code></pre>
+    </div>
+<div class="code-wrap good">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag good">Better</span><span class="code-name">CartEndpoint.cs</span></div>
+<pre><code><span class="t-key">if</span> (!<span class="t-key">int</span>.<span class="t-fn">TryParse</span>(qtyText, <span class="t-key">out</span> <span class="t-key">int</span> qty) || qty &lt; <span class="t-num">1</span>)
+    qty = <span class="t-num">1</span>;                                 <span class="t-com">// no exception, same result</span></code></pre>
+    </div>
+    <p>The same idea applies to your own code. For "product not found" or "sold out", return a result (<code>Results.NotFound()</code>, a <code>bool</code>, or a result object) instead of throwing.</p>
+    <h3>9. Make fixed lookup tables faster</h3>
+    <p>Some data almost never changes while the app runs: delivery zones by PIN code prefix, GST slabs by category, feature settings. .NET 8 added <code>FrozenDictionary</code>. You build it once at startup, and after that it is read-only and faster to look up than a normal <code>Dictionary</code>.</p>
+<div class="code-wrap good">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag good">Better</span><span class="code-name">DeliveryZones.cs</span></div>
+<pre><code><span class="t-key">public</span> <span class="t-key">sealed</span> <span class="t-key">class</span> DeliveryZones
+{
+    <span class="t-key">private</span> <span class="t-key">readonly</span> <span class="t-type">FrozenDictionary</span>&lt;<span class="t-key">string</span>, <span class="t-key">int</span>&gt; _daysByPinPrefix;
+
+    <span class="t-key">public</span> <span class="t-fn">DeliveryZones</span>(<span class="t-type">Dictionary</span>&lt;<span class="t-key">string</span>, <span class="t-key">int</span>&gt; fromDatabase) =&gt;
+        _daysByPinPrefix = fromDatabase.<span class="t-fn">ToFrozenDictionary</span>();   <span class="t-com">// built once at startup</span>
+
+    <span class="t-key">public</span> <span class="t-key">int</span> <span class="t-fn">EstimateDays</span>(<span class="t-key">string</span> pin) =&gt;
+        _daysByPinPrefix.<span class="t-fn">TryGetValue</span>(pin[..<span class="t-num">3</span>], <span class="t-key">out</span> <span class="t-key">int</span> days) ? days : <span class="t-num">5</span>;
+}</code></pre>
+    </div>
+    <p>Register this class as a singleton. Loading the same table from the database on every request is one of the most common hidden costs in APIs.</p>
+    <h3>10. Make JSON cheaper</h3>
+    <p>Every response is turned into JSON, so small savings here repeat 10,000 times a second. Two changes help. First, <strong>System.Text.Json source generation</strong> creates the serialisation code at build time, instead of working it out with reflection at runtime. Second, for large results, <strong>stream the response</strong> with <code>IAsyncEnumerable</code>, so the server sends rows as they come instead of holding the whole list in memory.</p>
+<div class="code-wrap good">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag good">Better</span><span class="code-name">AppJsonContext.cs + Program.cs</span></div>
+<pre><code>[<span class="t-attr">JsonSerializable</span>(typeof(<span class="t-type">ProductDto</span>))]
+[<span class="t-attr">JsonSerializable</span>(typeof(<span class="t-type">List</span>&lt;<span class="t-type">ProductDto</span>&gt;))]
+<span class="t-key">internal</span> <span class="t-key">partial</span> <span class="t-key">class</span> <span class="t-type">AppJsonContext</span> : <span class="t-type">JsonSerializerContext</span> { }
+
+builder.Services.<span class="t-fn">ConfigureHttpJsonOptions</span>(o =&gt;
+    o.SerializerOptions.TypeInfoResolverChain.<span class="t-fn">Insert</span>(<span class="t-num">0</span>, <span class="t-type">AppJsonContext</span>.Default));
+
+<span class="t-com">// Stream a big export row by row instead of building one huge list</span>
+app.<span class="t-fn">MapGet</span>(<span class="t-str">"/api/orders/export"</span>, (<span class="t-type">ShopDb</span> db) =&gt;
+    db.Orders.<span class="t-fn">AsNoTracking</span>()
+      .<span class="t-fn">Select</span>(o =&gt; <span class="t-key">new</span> <span class="t-type">OrderDto</span>(o.Id, o.CreatedAt, o.Total, <span class="t-key">null</span>))
+      .<span class="t-fn">AsAsyncEnumerable</span>());</code></pre>
+    </div>
+    <p>Also send only what the screen needs. A product card with 8 fields instead of the full 60-field entity is smaller to build, smaller to send, and faster on a 4G phone.</p>
+    <h3>11. Give every call a deadline, and pass the token along</h3>
+    <p>When a user closes the app, ASP.NET Core cancels the request's <code>CancellationToken</code>. If you pass that token to EF Core and <code>HttpClient</code>, the work stops too. If you forget it, the server keeps working — for someone who has already left. You can also add your own short deadline for optional parts of the page.</p>
+<div class="code-wrap good">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag good">Better</span><span class="code-name">ProductPageService.cs</span></div>
+<pre><code><span class="t-com">// Reviews are nice to have. Give them 300 ms, then show the page without them.</span>
+<span class="t-key">using</span> <span class="t-key">var</span> cts = <span class="t-type">CancellationTokenSource</span>.<span class="t-fn">CreateLinkedTokenSource</span>(ct);
+cts.<span class="t-fn">CancelAfter</span>(<span class="t-type">TimeSpan</span>.<span class="t-fn">FromMilliseconds</span>(<span class="t-num">300</span>));
+
+<span class="t-type">ReviewSummary</span>? reviews = <span class="t-key">null</span>;
+<span class="t-key">try</span>
+{
+    reviews = <span class="t-key">await</span> _reviews.<span class="t-fn">GetSummaryAsync</span>(productId, cts.Token);
+}
+<span class="t-key">catch</span> (<span class="t-type">OperationCanceledException</span>) <span class="t-key">when</span> (!ct.IsCancellationRequested)
+{
+    <span class="t-com">// Took too long. Page still loads, just without reviews.</span>
+}</code></pre>
+    </div>
+    <h3>12. Collect small writes and save them in batches</h3>
+    <p>Every product view creates an analytics event. Writing each one to the database inside the request adds a database call to the busiest path in the system. Instead, put the event in an in-memory <code>Channel</code> and return at once. A background service reads the channel and saves 500 events at a time.</p>
+<div class="code-wrap good">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag good">Better</span><span class="code-name">ClickTracker.cs</span></div>
+<pre><code><span class="t-com">// Registered as a singleton. Holds at most 10,000 events; drops the oldest if full.</span>
+<span class="t-key">public</span> <span class="t-key">sealed</span> <span class="t-key">class</span> ClickTracker
+{
+    <span class="t-key">private</span> <span class="t-key">readonly</span> <span class="t-type">Channel</span>&lt;<span class="t-type">ClickEvent</span>&gt; _channel = <span class="t-type">Channel</span>.<span class="t-fn">CreateBounded</span>&lt;<span class="t-type">ClickEvent</span>&gt;(
+        <span class="t-key">new</span> <span class="t-type">BoundedChannelOptions</span>(<span class="t-num">10_000</span>) { FullMode = <span class="t-type">BoundedChannelFullMode</span>.DropOldest });
+
+    <span class="t-key">public</span> <span class="t-key">void</span> <span class="t-fn">Track</span>(<span class="t-type">ClickEvent</span> e) =&gt; _channel.Writer.<span class="t-fn">TryWrite</span>(e);   <span class="t-com">// takes microseconds</span>
+    <span class="t-key">public</span> <span class="t-fn">ChannelReader</span>&lt;<span class="t-type">ClickEvent</span>&gt; Reader =&gt; _channel.Reader;
+}
+
+<span class="t-key">public</span> <span class="t-key">sealed</span> <span class="t-key">class</span> <span class="t-fn">ClickWriter</span>(ClickTracker tracker, <span class="t-type">IDbContextFactory</span>&lt;<span class="t-type">ShopDb</span>&gt; dbFactory) : <span class="t-type">BackgroundService</span>
+{
+    <span class="t-key">protected</span> <span class="t-key">override</span> <span class="t-key">async</span> <span class="t-type">Task</span> <span class="t-fn">ExecuteAsync</span>(<span class="t-type">CancellationToken</span> ct)
+    {
+        <span class="t-key">var</span> batch = <span class="t-key">new</span> <span class="t-type">List</span>&lt;<span class="t-type">ClickEvent</span>&gt;(<span class="t-num">500</span>);
+        <span class="t-key">while</span> (<span class="t-key">await</span> tracker.Reader.<span class="t-fn">WaitToReadAsync</span>(ct))
+        {
+            <span class="t-key">while</span> (batch.Count &lt; <span class="t-num">500</span> &amp;&amp; tracker.Reader.<span class="t-fn">TryRead</span>(<span class="t-key">out</span> <span class="t-key">var</span> e)) batch.<span class="t-fn">Add</span>(e);
+
+            <span class="t-key">await</span> <span class="t-key">using</span> <span class="t-key">var</span> db = <span class="t-key">await</span> dbFactory.<span class="t-fn">CreateDbContextAsync</span>(ct);
+            db.Clicks.<span class="t-fn">AddRange</span>(batch);
+            <span class="t-key">await</span> db.<span class="t-fn">SaveChangesAsync</span>(ct);          <span class="t-com">// one round trip for up to 500 rows</span>
+            batch.<span class="t-fn">Clear</span>();
+        }
+    }
+}</code></pre>
+    </div>
+    <p>Use this only for data you can afford to lose if a pod crashes, like analytics. Orders and payments must go through the outbox and a durable queue, as shown in section 06.</p>
+    <h3>13. Log cheaply on busy paths</h3>
+    <p>Logging looks free — but string joining and boxing happen even when the log level is off. The <code>[LoggerMessage]</code> source generator creates logging code that checks the level first and does not allocate. Keep per-request logs at <code>Debug</code> and use metrics for counts.</p>
+<div class="code-wrap bad">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag bad">Slow</span><span class="code-name">Log.cs</span></div>
+<pre><code>_logger.<span class="t-fn">LogInformation</span>(<span class="t-str">"Served product "</span> + product.Id + <span class="t-str">" in "</span> + ms + <span class="t-str">" ms"</span>);   <span class="t-com">// builds a string every time</span></code></pre>
+    </div>
+<div class="code-wrap good">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag good">Better</span><span class="code-name">Log.cs</span></div>
+<pre><code><span class="t-key">public</span> <span class="t-key">static</span> <span class="t-key">partial</span> <span class="t-key">class</span> <span class="t-type">Log</span>
+{
+    [<span class="t-attr">LoggerMessage</span>(Level = <span class="t-type">LogLevel</span>.Debug, Message = <span class="t-str">"Served product {ProductId} in {Ms} ms"</span>)]
+    <span class="t-key">public</span> <span class="t-key">static</span> <span class="t-key">partial</span> <span class="t-key">void</span> <span class="t-fn">ProductServed</span>(this <span class="t-type">ILogger</span> logger, <span class="t-key">int</span> productId, <span class="t-key">long</span> ms);
+}
+
+_logger.<span class="t-fn">ProductServed</span>(product.Id, ms);      <span class="t-com">// no work at all when Debug is off</span></code></pre>
+    </div>
+    <h3>14. Prove it with a benchmark</h3>
+    <p>Do not trust a technique just because an article (including this one) says so. <strong>BenchmarkDotNet</strong> measures the time and memory of two versions of the same code side by side. Run it before you change a hot path, and keep the benchmark in the repo so the next person can run it too.</p>
+<div class="code-wrap good">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="verdict-tag good">Better</span><span class="code-name">ParseBench.cs</span></div>
+<pre><code>[<span class="t-attr">MemoryDiagnoser</span>]                               <span class="t-com">// also reports memory allocated per call</span>
+<span class="t-key">public</span> <span class="t-key">class</span> <span class="t-type">ParseBench</span>
+{
+    <span class="t-key">private</span> <span class="t-key">const</span> <span class="t-key">string</span> Input = <span class="t-str">"88121:2"</span>;
+
+    [<span class="t-attr">Benchmark</span>(Baseline = <span class="t-key">true</span>)]
+    <span class="t-key">public</span> <span class="t-key">int</span> <span class="t-fn">WithSplit</span>()
+    {
+        <span class="t-key">var</span> parts = Input.<span class="t-fn">Split</span>(':');
+        <span class="t-key">return</span> <span class="t-key">int</span>.<span class="t-fn">Parse</span>(parts[<span class="t-num">0</span>]) + <span class="t-key">int</span>.<span class="t-fn">Parse</span>(parts[<span class="t-num">1</span>]);
+    }
+
+    [<span class="t-attr">Benchmark</span>]
+    <span class="t-key">public</span> <span class="t-key">int</span> <span class="t-fn">WithSpan</span>()
+    {
+        <span class="t-type">ReadOnlySpan</span>&lt;<span class="t-key">char</span>&gt; s = Input;
+        <span class="t-key">int</span> i = s.<span class="t-fn">IndexOf</span>(':');
+        <span class="t-key">return</span> <span class="t-key">int</span>.<span class="t-fn">Parse</span>(s[..i]) + <span class="t-key">int</span>.<span class="t-fn">Parse</span>(s[(i + <span class="t-num">1</span>)..]);
+    }
+}
+<span class="t-com">// Run in Release mode: dotnet run -c Release</span></code></pre>
+    </div>
+    <p>The report shows mean time and bytes allocated for each method. In this case the span version allocates nothing, while <code>Split</code> allocates an array and two strings on every call. For real endpoints, pair this with <code>dotnet-counters</code> (live GC and thread numbers) and <code>dotnet-trace</code> during the practice load test.</p>
+    <h3>Quick reference</h3>
+    <p>Not every technique is worth it everywhere. Use this table to decide where to start:</p>
   </div>
 
-  <div class="radio"><span class="ts">00:00:41</span><span class="who">DBA:</span> SQL primary 38% CPU, 612 active sessions, longest wait PAGELATCH on Orders. Replica lag 1.2 s. Fine.</div>
+  <div class="matrix-wrap reveal">
+    <table class="matrix">
+      <thead><tr><th>Technique</th><th>Use it when</th><th>What you save</th></tr></thead>
+      <tbody>
+        <tr><td>Parallel calls</td><td>A page needs data from several independent services</td><td>Response time</td></tr>
+        <tr><td>No N+1, projections</td><td>Any list screen backed by EF Core</td><td>Database trips, memory</td></tr>
+        <tr><td>Keyset paging</td><td>Long lists, infinite scroll, public listings</td><td>Database CPU</td></tr>
+        <tr><td>DbContext pool, compiled queries</td><td>The top few queries by volume</td><td>CPU per request</td></tr>
+        <tr><td>ExecuteUpdate / ExecuteDelete</td><td>Changing many rows by a rule</td><td>Database round trips</td></tr>
+        <tr><td>ValueTask on cache hits</td><td>Hot methods that are mostly answered from memory</td><td>Allocations</td></tr>
+        <tr><td>Span instead of Split/Substring</td><td>Parsing input on busy endpoints</td><td>Allocations, GC pauses</td></tr>
+        <tr><td>TryParse, result objects</td><td>Expected "bad input" and "not found" cases</td><td>CPU</td></tr>
+        <tr><td>FrozenDictionary</td><td>Lookup tables loaded once at startup</td><td>Lookup time, database calls</td></tr>
+        <tr><td>JSON source gen, streaming, small DTOs</td><td>Every API; streaming for large exports</td><td>CPU, memory, bandwidth</td></tr>
+        <tr><td>CancellationToken and deadlines</td><td>Every I/O call; short deadlines for optional parts</td><td>Wasted work, stuck threads</td></tr>
+        <tr><td>Channel + batch writer</td><td>High-volume data you can afford to lose</td><td>Database calls on the hot path</td></tr>
+        <tr><td>[LoggerMessage]</td><td>Logs on busy paths</td><td>CPU, allocations, log bills</td></tr>
+        <tr><td>BenchmarkDotNet</td><td>Before and after any hot-path change</td><td>Guesswork</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section reveal">
+    <p>Taken together, these are the difference between an API that needs 22 pods and one that needs 4 for the same traffic. None of them is clever. They are small habits, applied on the paths that run 10,000 times a second.</p>
+  </div>
 
   <!-- 09 -->
   <div class="section reveal">
-    <h2><span class="num">09 · 23:50 · THE PLATFORM</span>Scale before the cliff, not during it</h2>
-    <p>Utsav Mart runs on AKS, two clusters in Central India and South India behind Front Door. Autoscaling looks like the easy part of this story. At midnight it is the part most likely to let you down, for a simple reason: the traffic arrives in four seconds and a new node takes three to five minutes.</p>
-    <h3>Pre-scale on the clock, autoscale on the signal</h3>
-    <p>The Horizontal Pod Autoscaler reacts to CPU averaged over time, so it starts scaling after the spike has already hurt. The cluster autoscaler adds nodes only after pods are stuck pending. For a known event, schedule the capacity. KEDA's cron scaler raises the floor before midnight, and a traffic-based trigger handles anything beyond the forecast:</p>
-    <div class="code-wrap">
+    <h2><span class="num">09 · 23:40 · THE DATABASE</span>The last bottleneck</h2>
+    <p>You can add pods in a minute. You cannot do that with a relational database. Everything before this section exists to keep the database's share of traffic small. What still reaches it needs care.</p>
+    <ul class="notes">
+      <li><strong>Indexes for the queries you actually run.</strong> After the practice test, take the top 20 queries by CPU from Query Store and check that each one has the right index. One missing index on <code>Orders(CustomerId, CreatedAt)</code> was using 40% of Utsav Mart's database CPU.</li>
+      <li><strong>Read replicas</strong> for queries that can be a little behind. Azure SQL Premium, Business Critical and Hyperscale support this. Connect with <code>ApplicationIntent=ReadOnly</code>.</li>
+      <li><strong>Count your connections.</strong> Forty pods across all services, each with a default connection pool of 100, can open 4,000 database connections. Check this against the limit of your database tier before sale night checks it for you. A small pool with fast queries is better than a big pool with slow ones.</li>
+      <li><strong>Keep transactions short.</strong> Never call an outside service inside a transaction. If you call the payment gateway inside one, the rows stay locked for as long as the gateway takes to reply.</li>
+      <li><strong>Write in batches</strong> where the business allows. Loyalty points and analytics can be saved 500 at a time by a background worker, instead of one insert per request.</li>
+      <li><strong>Split the data</strong> when one database is not enough. In Cosmos DB, the partition key decides everything. <code>/customerId</code> spreads order history evenly. <code>/saleId</code> would put every midnight order in one place and overload it. In SQL, split by region or by customer group before trying anything clever.</li>
+    </ul>
+  </div>
+
+  <div class="radio"><span class="ts">00:00:41</span><span class="who">DBA:</span> SQL primary at 38% CPU, 612 active sessions. Read copy is 1.2 seconds behind. All fine.</div>
+
+  <!-- 10 -->
+  <div class="section reveal">
+    <h2><span class="num">10 · 23:50 · THE PLATFORM</span>Add capacity before the rush, not during it</h2>
+    <p>Utsav Mart runs on AKS (Azure Kubernetes Service), with two clusters, one in Central India and one in South India, both behind Front Door. Autoscaling sounds like the easy part. At midnight, it is the part most likely to fail you. The reason is simple: traffic arrives in four seconds, but a new machine takes three to five minutes to start.</p>
+    <h3>Scale by the clock, then by the traffic</h3>
+    <p>The normal Kubernetes autoscaler watches CPU over a few minutes. So it starts adding pods only after the rush has already hurt you. New machines are added only after pods have nowhere to run. For an event whose time you already know, schedule the capacity in advance. KEDA's cron trigger raises the minimum number of pods before midnight, and a second trigger adds more if traffic goes beyond the forecast:</p>
+<div class="code-wrap">
       <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">catalog-api-scaledobject.yaml · KEDA</span></div>
 <pre><code><span class="t-key">apiVersion</span>: keda.sh/v1alpha1
 <span class="t-key">kind</span>: ScaledObject
@@ -984,96 +1310,96 @@ builder.Services.<span class="t-fn">AddHybridCache</span>(o =&gt;
         <span class="t-key">query</span>: sum(rate(http_server_request_duration_seconds_count{app="catalog-api"}[1m]))
         <span class="t-key">threshold</span>: <span class="t-str">"400"</span></code></pre>
     </div>
-    <p>The order consumers scale on queue depth with KEDA's <code>azure-servicebus</code> trigger, so they grow when orders pile up and shrink back to two when the queue drains. Nodes are pre-provisioned too: the user node pool's minimum count is raised at 10 PM so the extra pods have somewhere to land.</p>
-    <h3>Pods that are ready when they say they are</h3>
+    <p>The order workers scale on queue length using KEDA's <code>azure-servicebus</code> trigger. They grow when orders pile up and go back to two when the queue is empty. Machines are also added in advance: the node pool's minimum size is raised at 10 PM so the extra pods have somewhere to run.</p>
+    <h3>Pods that are really ready</h3>
     <ul class="notes">
-      <li><strong>Readiness that means ready.</strong> A pod that reports ready before its connection pools, JIT and caches are warm takes full traffic cold and serves its first thousand requests slowly. Use a startup probe for boot, and a readiness probe that passes only after a warm-up routine has run the hot paths once. ReadyToRun compilation shortens the cold start.</li>
-      <li><strong>CPU requests, careful limits.</strong> A CPU limit makes the kernel throttle the container in 100 ms windows, which appears as p99 spikes on a pod that looks idle on average. Many teams set CPU requests accurately and leave CPU limits off, or set them generously. Memory limits stay, and the .NET GC respects them.</li>
-      <li><strong>GC mode.</strong> ASP.NET Core uses Server GC by default, and since .NET 9 it adapts its heap count to load (DATAS), which suits pods with modest memory. Check GC pause time in <code>dotnet-counters</code> during the load test rather than tuning blind.</li>
-      <li><strong>Spread and survive.</strong> Topology spread across availability zones, a PodDisruptionBudget so a node upgrade cannot drain half the fleet at 11:58, and a change freeze from 8 PM.</li>
+      <li><strong>"Ready" must mean ready.</strong> If a pod says it is ready before its connections and caches are warmed up, it gets full traffic while still cold, and its first thousand requests are slow. Use a startup probe while the app boots, and let the readiness probe pass only after a warm-up step has run the main APIs once. ReadyToRun compilation also makes startup faster.</li>
+      <li><strong>Be careful with CPU limits.</strong> A CPU limit can make Kubernetes pause the container in short bursts. It shows up as sudden slow requests on a pod that looks idle on average. Many teams set CPU requests properly and leave CPU limits off, or set them high. Keep memory limits; .NET respects them.</li>
+      <li><strong>Check garbage collection.</strong> Look at GC pause times in <code>dotnet-counters</code> during the practice test, instead of changing GC settings blindly.</li>
+      <li><strong>Spread out and stay safe.</strong> Spread pods across availability zones, add a PodDisruptionBudget so a node upgrade cannot remove half the pods at 11:58 PM, and stop all deployments from 8 PM.</li>
     </ul>
-    <h3>The failure that was not about CPU</h3>
-    <p>Remember the first load test failing at 6,200 requests a second. Outbound calls from AKS to the payment gateway went out through the cluster's load balancer, which gives each node a fixed allocation of SNAT ports. Thousands of short-lived outbound connections used them up, and new connections simply waited until they timed out. The fix was two changes: a <strong>NAT Gateway</strong> on the node subnet (64,512 ports per public IP, and you can attach several IPs) and connection reuse through <code>IHttpClientFactory</code>, so the same ports carried many requests. If your pods call anything outside the VNet at volume, check this before sale night; the symptom is intermittent connect timeouts with healthy CPU everywhere.</p>
+    <h3>The problem that was not about CPU</h3>
+    <p>Remember the practice test that failed at 6,200 requests a second? Calls from AKS to the payment gateway were going out through the cluster's load balancer. That load balancer gives each machine only a fixed number of outgoing ports (Azure calls this SNAT). Thousands of short connections used them all up, and new connections just waited until they timed out. The team made two changes. They added a <strong>NAT Gateway</strong> on the subnet, which gives 64,512 ports per public IP, and you can attach more IPs. And they reused connections through <code>IHttpClientFactory</code>, so the same ports carried many requests. If your pods call anything outside Azure at high volume, check this before sale night. The sign is random connection timeouts while CPU looks healthy everywhere.</p>
     <h3>Two regions</h3>
-    <p>Front Door sends each user to the nearest healthy cluster. Reads are served from both regions (Redis and read models exist in each). Writes go to the primary region's database with a geo-replica ready in the other. Active-active writes across regions are possible, but they bring conflict resolution with them — and a festive sale is not the night to learn it. The second region earns its keep by carrying half the read traffic and by being there if a whole zone goes dark.</p>
-  </div>
-
-  <!-- 10 -->
-  <div class="section reveal">
-    <h2><span class="num">10 · 23:55 · DEGRADE</span>Decide how you will fail</h2>
-    <p>Something will break at midnight. The design question is what the customer sees when it does. Utsav Mart wrote a <strong>degradation ladder</strong> in advance, with a feature flag in Azure App Configuration for each rung, so the incident commander can flip a switch instead of asking for a deployment:</p>
-    <ul class="notes">
-      <li><strong>Rung 1:</strong> turn off personalised recommendations; show a static "Top deals" list from the CDN.</li>
-      <li><strong>Rung 2:</strong> hide review text and show only the rating summary from the read model.</li>
-      <li><strong>Rung 3:</strong> serve the category pages from a pre-rendered static snapshot generated at 11 PM.</li>
-      <li><strong>Rung 4:</strong> narrow the waiting room admit rate so checkout stays healthy for the people already in it.</li>
-    </ul>
-    <p>Circuit breakers do the automatic version of this. When the reviews service fails 20% of calls, its breaker opens and the product page renders without reviews instead of waiting on a dead dependency. A <strong>bulkhead</strong> (a separate, capped connection pool or concurrency limit per dependency) stops one slow dependency from using every thread and connection the pod has. The golden rule: checkout must never depend on anything that is not needed to take money and reserve stock.</p>
+    <p>Front Door sends each user to the nearest healthy cluster. Reads are served from both regions, because Redis and the read copies exist in both. Writes go to the main database in one region, with a copy ready in the other. Writing in both regions at once is possible, but then you have to handle conflicts — and sale night is not the time to learn that. The second region earns its cost by taking half the read traffic, and by being ready if a whole zone goes down.</p>
   </div>
 
   <!-- 11 -->
   <div class="section reveal">
-    <h2><span class="num">11 · 00:00 · MIDNIGHT</span>What the war room watches</h2>
-    <p>At midnight the dashboards matter more than the code. Utsav Mart's big screen shows, per service, the four golden signals from OpenTelemetry metrics in Azure Monitor and Grafana: request rate, error rate, p99 latency, and saturation (thread-pool queue length, Redis server load, SQL CPU, Service Bus queue depth). Distributed traces in Application Insights show which hop is slow when p99 moves; I wrote about following one of those traces in <a href="observability-detective.html">The Case of the Vanishing Request</a>.</p>
-    <p>Alerts fire on SLO burn rate, not raw thresholds. The checkout SLO is 99.9% of requests under 800 ms; if the error budget for the hour is burning ten times faster than normal, someone's phone rings. Everything else waits for the morning.</p>
+    <h2><span class="num">11 · 23:55 · PLAN B</span>Decide in advance how you will fail</h2>
+    <p>Something will break at midnight. The real question is what the customer sees when it does. Utsav Mart wrote down a <strong>step-by-step fallback plan</strong> in advance. Each step has a switch (a feature flag in Azure App Configuration), so the person in charge can turn things off in seconds, without a new deployment:</p>
+    <ul class="notes">
+      <li><strong>Step 1:</strong> switch off personal recommendations and show a fixed "Top deals" list from the CDN.</li>
+      <li><strong>Step 2:</strong> hide review text and show only the star rating.</li>
+      <li><strong>Step 3:</strong> serve category pages from a ready-made static copy created at 11 PM.</li>
+      <li><strong>Step 4:</strong> let fewer people into the waiting room, so checkout stays fast for those already inside.</li>
+    </ul>
+    <p>Circuit breakers do a similar job automatically. When the reviews service fails 20% of the time, its circuit breaker opens and the product page loads without reviews, instead of waiting for a dead service. Also give each outside service its own limited set of connections. Then one slow service cannot use up every thread and connection in the pod. The golden rule: checkout must never depend on anything that is not needed to take the money and reserve the stock.</p>
   </div>
-
-  <div class="radio calm"><span class="ts">00:04:12</span><span class="who">Incident commander:</span> Peak 11,900 req/s at 00:00:06. Checkout p99 410 ms. Sold out 00:03:51. Queue draining. Well done, everyone. Go home.</div>
 
   <!-- 12 -->
   <div class="section reveal">
-    <h2><span class="num">12 · THE MORNING AFTER</span>Which levers for which workload</h2>
-    <p>A festive sale uses almost every technique at once. Most real workloads need a subset, and picking the wrong subset costs money without buying throughput. Here is a map for the next time someone says "we need to handle 10K requests a second":</p>
+    <h2><span class="num">12 · 00:00 · MIDNIGHT</span>What the war room watches</h2>
+    <p>At midnight, the dashboards matter more than the code. Utsav Mart's big screen shows four things for every service: how many requests are coming in, how many are failing, how long the slowest requests take, and how close each part is to its limit (threads waiting, Redis load, SQL CPU, and how many messages are waiting in Service Bus). All of it comes from OpenTelemetry into Azure Monitor and Grafana. When requests slow down, traces in Application Insights show which service in the chain is slow. I wrote about following one such trace in <a href="observability-detective.html">The Case of the Vanishing Request</a>.</p>
+    <p>Alerts are set on what the customer feels. The checkout target is simple: 999 out of every 1,000 checkout requests must finish in under 800 ms. If checkout starts missing that target much faster than normal, someone's phone rings. Everything else can wait till morning.</p>
+  </div>
+
+  <div class="radio calm"><span class="ts">00:04:12</span><span class="who">Incident lead:</span> Peak 11,900 req/s at 00:00:06. Checkout under half a second for almost everyone. Sold out at 00:03:51. Queue emptying. Well done, team. Go home.</div>
+
+  <!-- 13 -->
+  <div class="section reveal">
+    <h2><span class="num">13 · THE NEXT MORNING</span>Which solution for which kind of traffic</h2>
+    <p>A festive sale uses almost every trick at once. Most real systems need only some of them, and picking the wrong ones costs money without adding capacity. Here is a simple guide for the next time someone says "we need to handle 10K requests a second":</p>
   </div>
 
   <div class="matrix-wrap reveal">
     <table class="matrix">
-      <thead><tr><th>Workload shape</th><th>Reach for first</th><th>Watch out for</th></tr></thead>
+      <thead><tr><th>Type of traffic</th><th>Try this first</th><th>Watch out for</th></tr></thead>
       <tbody>
-        <tr><td>Read-heavy, same for everyone<span class="ex">catalogue, news, live cricket score, config</span></td><td>CDN with <code>s-maxage</code>, output cache, short TTLs</td><td>Cache keys polluted by cookies and query strings</td></tr>
-        <tr><td>Read-heavy, personalised<span class="ex">cart, "my orders", dashboards</span></td><td>Split public shell from personal fragment; Redis per user; read replicas</td><td>Accidentally caching personal data at the edge</td></tr>
-        <tr><td>Search and filtering<span class="ex">faceted product search, log search</span></td><td>Dedicated search index as a CQRS read model</td><td>Complex <code>LIKE</code> queries against the OLTP database</td></tr>
-        <tr><td>Write burst<span class="ex">checkout, Tatkal booking, exam results upload</span></td><td>Waiting room, 202 + queue, idempotency keys, atomic counters</td><td>Retry storms and duplicate orders</td></tr>
-        <tr><td>One hot item<span class="ex">flash deal, celebrity post</span></td><td>L1 in-process cache, replicated keys, pre-allocated stock</td><td>A single Redis shard or DB row taking all load</td></tr>
-        <tr><td>Chatty fan-out<span class="ex">one page calls six services</span></td><td>BFF / aggregation layer, parallel calls, gRPC internally, fewer hops</td><td>Latencies adding up; one slow service stalls all</td></tr>
-        <tr><td>Predictable spike<span class="ex">sale at midnight, salary-day payments</span></td><td>Scheduled pre-scaling (KEDA cron), cache warming, change freeze</td><td>Trusting reactive autoscaling alone</td></tr>
-        <tr><td>Unpredictable spike<span class="ex">viral post, outage elsewhere</span></td><td>Autoscaling plus load shedding and a degradation ladder</td><td>Node provisioning time; cold pods</td></tr>
-        <tr><td>Slow third-party dependency<span class="ex">payment gateway, SMS, KYC</span></td><td>Async with callbacks, bulkheads, circuit breakers, timeouts</td><td>SNAT exhaustion; threads blocked on slow calls</td></tr>
-        <tr><td>Steady high throughput<span class="ex">internal APIs, telemetry ingestion</span></td><td>Code efficiency, pooling, batching, compression, async I/O</td><td>Allocation and GC pressure, logging volume</td></tr>
+        <tr><td>Mostly reads, same for everyone<span class="ex">product catalogue, news, live cricket score, settings</span></td><td>CDN with <code>s-maxage</code>, output cache, short expiry</td><td>Cookies and extra URL parameters breaking the cache</td></tr>
+        <tr><td>Mostly reads, different for each user<span class="ex">cart, "my orders", dashboards</span></td><td>Split common and personal parts; Redis per user; read replicas</td><td>Personal data getting into the shared CDN cache</td></tr>
+        <tr><td>Search and filters<span class="ex">product search, log search</span></td><td>A separate search index, filled by events (CQRS)</td><td>Heavy <code>LIKE</code> queries on the main database</td></tr>
+        <tr><td>Sudden burst of writes<span class="ex">checkout, Tatkal booking, exam result upload</span></td><td>Waiting room, 202 + queue, unique order keys (Idempotency-Key), Redis counters</td><td>Retry storms and duplicate orders</td></tr>
+        <tr><td>One very popular item<span class="ex">flash deal, celebrity post</span></td><td>In-pod cache, multiple copies of the key, stock kept ready in Redis</td><td>One Redis shard or one database row taking all the load</td></tr>
+        <tr><td>One page calling many services<span class="ex">a page that calls six APIs</span></td><td>One backend that combines the calls, parallel calls, gRPC inside, fewer hops</td><td>Delays adding up; one slow service slows everything</td></tr>
+        <tr><td>Rush at a known time<span class="ex">midnight sale, salary-day payments</span></td><td>Scale in advance by the clock (KEDA cron), warm the cache, stop deployments</td><td>Depending only on the normal autoscaler</td></tr>
+        <tr><td>Rush at an unknown time<span class="ex">viral post, another site going down</span></td><td>Autoscaling, plus dropping low-value load and a fallback plan</td><td>Time to start new machines; cold pods</td></tr>
+        <tr><td>Slow outside service<span class="ex">payment gateway, SMS, KYC</span></td><td>Queue and callback, separate connection limits, circuit breakers, timeouts</td><td>Running out of outgoing ports; threads stuck waiting</td></tr>
+        <tr><td>Steady heavy load<span class="ex">internal APIs, telemetry</span></td><td>Faster code, connection reuse, batching, compression, async calls</td><td>Too much memory use and too many logs</td></tr>
       </tbody>
     </table>
   </div>
 
   <div class="section reveal">
-    <p>Notice how often the answer is "do less work per request" or "do the work somewhere cheaper" rather than "add servers". Adding pods is the last lever because it multiplies everything below it: more pods means more database connections, more Redis connections and more outbound ports. Scale out only after the layers above have taken their share.</p>
+    <p>See how often the answer is "do less work per request" or "do the work somewhere cheaper", rather than "add more servers". Adding pods should be the last step, because every new pod also adds database connections, Redis connections and outgoing ports. Scale out only after the layers above have done their share.</p>
   </div>
 
-  <!-- 13 -->
+  <!-- 14 -->
   <div class="section reveal">
-    <h2><span class="num">13 · BEFORE YOUR OWN MIDNIGHT</span>The pre-sale checklist</h2>
-    <p>This is the list Utsav Mart's team walks through a week before any big event. Tick through it for your own system; it only lives in this browser tab.</p>
+    <h2><span class="num">14 · BEFORE YOUR OWN MIDNIGHT</span>The pre-sale checklist</h2>
+    <p>Utsav Mart's team goes through this list one week before every big event. Tick it off for your own system. Your ticks stay only in this browser tab.</p>
   </div>
 
   <div class="checklist reveal" id="checklist">
     <div class="cl-head"><span>Readiness</span><b id="clCount">0 / 16</b></div>
     <div class="cl-meter"><i id="clMeter"></i></div>
     <ol>
-      <li><label><input type="checkbox"><span><span class="layer">Plan</span>Traffic mix and peak forecast agreed, and load tested at 2× the forecast with a realistic ramp.</span></label></li>
-      <li><label><input type="checkbox"><span><span class="layer">Plan</span>Per-pod capacity measured for cache-hit and cache-miss paths.</span></label></li>
-      <li><label><input type="checkbox"><span><span class="layer">Edge</span>Static assets content-hashed with long cache lifetimes; public API responses send <code>s-maxage</code>.</span></label></li>
-      <li><label><input type="checkbox"><span><span class="layer">Edge</span>Cache keys ignore cookies and marketing parameters; WAF and bot rules on.</span></label></li>
-      <li><label><input type="checkbox"><span><span class="layer">Gate</span>Global and per-user rate limits in place; 429s carry <code>Retry-After</code>; clients back off with jitter.</span></label></li>
-      <li><label><input type="checkbox"><span><span class="layer">Gate</span>Waiting room ready for the write-heavy path.</span></label></li>
-      <li><label><input type="checkbox"><span><span class="layer">Cache</span>Hot keys warmed before the event; TTLs jittered; stampede protection on.</span></label></li>
-      <li><label><input type="checkbox"><span><span class="layer">Cache</span>Tested what happens when Redis is unavailable.</span></label></li>
-      <li><label><input type="checkbox"><span><span class="layer">Data</span>Reads split from writes; top queries covered by indexes; pool sizes checked against database limits.</span></label></li>
-      <li><label><input type="checkbox"><span><span class="layer">Async</span>Non-essential checkout steps moved behind a queue; consumers idempotent; duplicate detection on.</span></label></li>
-      <li><label><input type="checkbox"><span><span class="layer">Code</span>No sync-over-async, no per-call <code>HttpClient</code>, projections and <code>AsNoTracking</code> on reads.</span></label></li>
-      <li><label><input type="checkbox"><span><span class="layer">Code</span>Timeouts, retries with jitter and circuit breakers on every outbound call.</span></label></li>
-      <li><label><input type="checkbox"><span><span class="layer">Platform</span>Pods and nodes pre-scaled on a schedule; readiness probes wait for warm-up.</span></label></li>
-      <li><label><input type="checkbox"><span><span class="layer">Platform</span>Outbound SNAT capacity checked (NAT Gateway); PodDisruptionBudgets and zone spread set.</span></label></li>
-      <li><label><input type="checkbox"><span><span class="layer">Degrade</span>Degradation ladder written, with a feature flag per rung, and rehearsed.</span></label></li>
-      <li><label><input type="checkbox"><span><span class="layer">Observe</span>Golden-signal dashboards per service; SLO burn-rate alerts; change freeze agreed.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Plan</span>Traffic mix and peak agreed; practice test done at double the expected peak, with a sudden jump.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Plan</span>Measured how many requests one pod can handle, with and without cache.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Edge</span>Static files have a hash in the name and a long cache time; public APIs send <code>s-maxage</code>.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Edge</span>CDN ignores cookies and marketing tags on public pages; WAF and bot rules are on.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Gate</span>Overall and per-user rate limits set; 429 responses include <code>Retry-After</code>; the app waits before retrying.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Gate</span>Waiting room ready for checkout.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Cache</span>Popular items loaded before the sale; random expiry times; only one request refills an expired item.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Cache</span>Tested what happens when Redis goes down.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Data</span>Reads separated from writes; indexes checked for top queries; connection pool sizes checked against the database limit.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Async</span>Non-essential checkout steps moved to a queue; workers safe to repeat; duplicate detection on.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Code</span>No <code>.Result</code> or <code>.Wait()</code>, no <code>new HttpClient()</code> per call; read queries select only needed columns with <code>AsNoTracking</code>.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Code</span>Timeouts, retries and circuit breakers on every call to another service.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Platform</span>Pods and machines scaled up in advance by schedule; pods say "ready" only after warm-up.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Platform</span>Outgoing port limits checked (NAT Gateway); PodDisruptionBudgets and zone spread set.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Plan B</span>Fallback steps written down, each with its own switch, and practised once.</span></label></li>
+      <li><label><input type="checkbox"><span><span class="layer">Watch</span>Dashboards for each service; alerts based on what customers feel; deployment freeze agreed.</span></label></li>
     </ol>
   </div>
 
@@ -1081,9 +1407,9 @@ builder.Services.<span class="t-fn">AddHybridCache</span>(o =&gt;
 
   <div class="section reveal">
     <h2>The key takeaway</h2>
-    <p>Ten thousand requests a second is a problem of subtraction. The CDN removes the repeat reads. The gateway removes the abusive and the excessive. The cache removes most of what is left. CQRS keeps the remaining reads away from the writes, and queues turn the write spike into a steady stream. By the time a request reaches the database, it is one of a few hundred — and the database can give it full attention.</p>
-    <p>The code-level work decides how cheaply each layer does its job, and the platform work makes sure the capacity is already standing when the wave arrives. None of it is exotic. All of it has to be done before the countdown starts, because at 12:00:00 the war room can do only one thing — watch.</p>
-    <div class="note"><b>A note on the numbers.</b> Utsav Mart is invented, and so are the war-room messages. The throughput figures, ratios and failure modes are realistic for .NET services on Azure, but your per-pod capacity depends on your code, payload sizes and SKUs. Measure your own before you size anything. Library and Azure features are as documented for .NET 8 to .NET 10 in September 2026.</div>
+    <p>Handling 10,000 requests a second is mostly about taking work away. The CDN removes the repeat reads. The gateway removes bots and extra requests. The cache removes most of what is left. CQRS keeps the remaining reads away from the writes, and the queue turns a sudden rush of orders into a steady flow. By the time a request reaches the database, it is one of a few hundred — and the database can give it full attention.</p>
+    <p>Good code decides how cheaply each layer does its job. Good platform setup makes sure the capacity is already running when the rush comes. None of this is exotic. But all of it has to be done before the countdown starts, because at 12:00:00 the war room can do only one thing — watch.</p>
+    <div class="note"><b>A note on the numbers.</b> Utsav Mart is made up, and so are the war-room messages. The figures and failures are realistic for .NET services on Azure, but how much one pod can handle depends on your code, your data size and your Azure plan. Measure your own system before you size anything. Library and Azure features are as documented for .NET 8 to .NET 10 in September 2026.</div>
   </div>
 
 </article>
@@ -1216,10 +1542,10 @@ builder.Services.<span class="t-fn">AddHybridCache</span>(o =&gt;
     $('tDbr').classList.toggle('warn', dbReads > 800);
 
     var msg;
-    if (dbReads > 2000) msg = '<b>The database is the story here.</b> ' + fmt(dbReads) + ' reads a second on a store sized for a few hundred. Expect lock waits, connection pool exhaustion, then timeouts all the way up the stack.';
-    else if (pods > 60) msg = '<b>You are buying pods to make up for missing layers.</b> ' + fmt(pods) + ' pods also means that many connection pools pointing at one database. Raise the CDN or cache hit ratio before adding compute.';
-    else if (flight > 1500) msg = '<b>Latency is multiplying your concurrency.</b> ' + fmt(flight) + ' requests in flight at once (Little’s Law). Shave milliseconds off the hot path and this number falls with it.';
-    else msg = '<b>This holds.</b> ' + fmt(origin) + ' req/s reach your pods, ' + fmt(dbReads) + ' reads/s reach the database. The layers above are doing the heavy lifting, which is the point.';
+    if (dbReads > 2000) msg = '<b>The database is in trouble.</b> ' + fmt(dbReads) + ' reads a second, on a database built for a few hundred. First queries slow down, then connections run out, then every layer above starts timing out.';
+    else if (pods > 60) msg = '<b>You are adding pods to cover for missing layers.</b> ' + fmt(pods) + ' pods also means that many connection pools hitting one database. Answer more from the CDN or cache before adding servers.';
+    else if (flight > 1500) msg = '<b>Slow responses are piling up.</b> ' + fmt(flight) + ' requests are open at the same time. Make each request faster and this number comes down with it.';
+    else msg = '<b>This will hold.</b> ' + fmt(origin) + ' requests a second reach your pods and ' + fmt(dbReads) + ' reads a second reach the database. The layers above are doing most of the work, which is the whole idea.';
     $('verdict').innerHTML = msg;
   }
   ids.forEach(function(id){ k[id].addEventListener('input', update); });
@@ -1310,6 +1636,47 @@ builder.Services.<span class="t-fn">AddHybridCache</span>(o =&gt;
     es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
   }, { threshold: .08, rootMargin: '0px 0px -6% 0px' });
   els.forEach(function(e){ io.observe(e); });
+})();
+
+/* ---------- sequential vs parallel calls ---------- */
+(function(){
+  var box = document.getElementById('race');
+  if (!box) return;
+  var rows = document.getElementById('raceRows'), out = document.getElementById('raceOut');
+  var calls = [['catalogue',40],['price',60],['stock',35],['delivery',50]];
+  var total = 185, bars = [];
+  calls.forEach(function(c){
+    var r = document.createElement('div'); r.className = 'race-row';
+    r.innerHTML = '<span>' + c[0] + ' · ' + c[1] + 'ms</span><div class="race-track"><div class="race-bar"></div></div>';
+    rows.appendChild(r); bars.push(r.querySelector('.race-bar'));
+  });
+  var timers = [];
+  function run(mode){
+    timers.forEach(clearTimeout); timers = [];
+    var start = 0, SCALE = 12; // 1 ms of "call time" = 12 ms of animation
+    bars.forEach(function(b){ b.style.transition = 'none'; b.style.left = '0'; b.style.width = '0'; });
+    void rows.offsetWidth;
+    calls.forEach(function(c, i){
+      var s = mode === 'seq' ? start : 0;
+      timers.push(setTimeout(function(){
+        var b = bars[i];
+        b.style.left = (s / total * 100) + '%';
+        b.style.transition = 'width ' + (c[1] * SCALE) + 'ms linear';
+        b.style.width = (c[1] / total * 100) + '%';
+      }, s * SCALE));
+      start += c[1];
+    });
+    var end = mode === 'seq' ? 185 : 60;
+    out.innerHTML = 'Running…';
+    timers.push(setTimeout(function(){
+      out.innerHTML = mode === 'seq'
+        ? 'One after another: <b>185 ms</b>. The user waits for the sum of all four calls.'
+        : 'All together: <b>60 ms</b>. The user waits only for the slowest call.';
+    }, end * SCALE + 50));
+  }
+  box.querySelectorAll('[data-race]').forEach(function(b){
+    b.addEventListener('click', function(){ run(b.getAttribute('data-race')); });
+  });
 })();
 </script>
 <div class="wrap related-section" style="padding:44px 0 8px;border-top:1px solid var(--line);margin-top:8px">

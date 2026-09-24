@@ -596,8 +596,7 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   <div class="hero-in">
     <div class="kicker">Azure DevOps · Terraform · AKS</div>
     <h1>Project <em>Keystone</em></h1>
-    <p class="dek">Four services, six repositories, and one configuration that holds them all
-      together. An architect's walkthrough of the launch sequence, and an honest argument about where configuration belongs.</p>
+    <p class="dek">Four services, six repositories, and one configuration that holds them all together. An architect's walk through the launch sequence, and an honest discussion about where configuration should live.</p>
     <div class="meta">16 August 2026 &middot; 24 min read &middot; Nilesh Mohite</div>
   </div>
   <div class="scrollcue">SCROLL</div>
@@ -620,46 +619,32 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
 
   <div class="scene">
     <div class="slug">INT. RELEASE CHANNEL — THURSDAY, 14:50</div>
-    <p>Four names in a thread. The flight director asks the only question that matters, one desk
-      at a time.</p>
+    <p>Four names in a chat thread. The flight director asks the only question that matters, one desk at a time.</p>
     <p><span style="color:var(--go)">PILLAR — go.</span>
        <span style="color:var(--go)">GATEHOUSE — go.</span>
        <span style="color:var(--go)">FACADE — go.</span>
        <span style="color:var(--go)">KEYSTONE — go.</span></p>
-    <p>Nobody is nervous. Nobody has a rollback script open in another window. Nobody has said
-      the words "as long as nothing else changed." At 15:00 the release goes, and at 15:04 four
-      services are running a version of themselves that did not exist this morning.</p>
+    <p>Nobody is nervous. Nobody has a rollback script open in another window. Nobody has said "as long as nothing else changed". At 15:00 the release goes out, and at 15:04 four services are running a version that did not exist this morning.</p>
   </div>
 
-  <p class="lede">A room that can say <em>go</em> without flinching is not a room with better
-    people in it. It is a room where somebody, months earlier, made a series of unglamorous
-    architectural decisions about repositories, artifacts, gates and configuration, and where every one of those decisions was made so that on release day there is less to be
-    afraid of.</p>
+  <p class="lede">A team that can say <em>go</em> without fear does not have better people. It is a team where someone, months earlier, took a series of boring but important decisions about repositories, build outputs, approval gates and configuration. Every one of those decisions was taken so that on release day there is less to be afraid of.</p>
 
-  <p>This article builds that room. We're designing <strong>Project Keystone</strong>: a four-service
-    ecosystem on AKS, delivered by Azure DevOps, provisioned by Terraform, with Key Vault holding
-    the secrets and Application Insights watching the patient. We'll design it the way an architect works: brief first, then the decisions the brief didn't mention, then the one decision
-    everybody gets wrong.</p>
+  <p>This article builds that kind of team setup. We are designing <strong>Project Keystone</strong>: four services on AKS, delivered by Azure DevOps, created with Terraform, with Key Vault holding the secrets and Application Insights keeping watch. We will design it the way an architect works: the brief first, then the decisions the brief did not mention, then the one decision everybody gets wrong.</p>
 
   <h3>The brief</h3>
   <table>
     <tr><th>Service</th><th>Responsibility</th><th>Why it's separate</th></tr>
-    <tr><td><strong>Keystone</strong></td><td>Configuration for the whole ecosystem</td><td>The stone at the apex of an arch. Every other stone leans on it; remove it and the arch is rubble.</td></tr>
-    <tr><td><strong>Pillar</strong></td><td>Domain service — the business logic</td><td>Load-bearing. Owns the model, the rules, the database. Changes deliberately.</td></tr>
-    <tr><td><strong>Gatehouse</strong></td><td>Integration gateway — third parties</td><td>The fortified entrance. Everything foreign comes through here and is made safe before it goes further.</td></tr>
-    <tr><td><strong>Facade</strong></td><td>Backend-for-frontend</td><td>The visible face. Shaped entirely by what the UI needs, and changes as often as the UI does.</td></tr>
+    <tr><td><strong>Keystone</strong></td><td>Configuration for the whole ecosystem</td><td>The stone at the top of an arch. Every other stone leans on it; remove it and the arch falls.</td></tr>
+    <tr><td><strong>Pillar</strong></td><td>Domain service — the business logic</td><td>Carries the weight. Owns the model, the rules and the database. Changes carefully.</td></tr>
+    <tr><td><strong>Gatehouse</strong></td><td>Integration gateway — third parties</td><td>The guarded entrance. Everything from outside comes in here and is made safe before it goes further.</td></tr>
+    <tr><td><strong>Facade</strong></td><td>Backend-for-frontend</td><td>The face users see. Built entirely around what the UI needs, and changes as often as the UI does.</td></tr>
   </table>
 
-  <p>Four services, four repositories. That is the brief as handed over, and it is a perfectly
-    reasonable brief. It is also, as we'll see in Act III, two repositories short, and the two that are missing are the ones that decide whether this thing is still maintainable in
-    eighteen months.</p>
+  <p>Four services, four repositories. That is the brief as given, and it is a sensible brief. But, as we will see in Act III, it is two repositories short, and those two missing ones decide whether this system is still easy to maintain eighteen months from now.</p>
 
   <div class="note tl">
     <div class="t">How to read this</div>
-    <p>The main text is the design conversation — plain English, no prerequisites. Every
-      <strong>Under the hood</strong> panel opens onto the real YAML, HCL and C#. The
-      <strong>Decision</strong> blocks are architecture decision records: the call, the
-      alternatives, and what it costs. Read only the decisions and you still get the design.</p>
+    <p>The main text is the design discussion, in plain English, with no background needed. Every <strong>Under the hood</strong> panel opens the real YAML, HCL and C#. The <strong>Decision</strong> blocks are architecture decision records: what we chose, what else we considered, and what it costs. Read only the decisions and you still get the design.</p>
   </div>
 </div>
 </section>
@@ -670,29 +655,21 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   <div class="actmark">Act I · The vehicle</div>
   <h2>What we are launching</h2>
 
-  <p class="lede">Before you can design a pipeline you have to be honest about the shape of the
-    thing it delivers. Four services is not one system deployed four times; it's four systems with
-    four different change rates, four different blast radii, and four different answers to
-    "what happens if this is wrong at 3am."</p>
+  <p class="lede">Before you design a pipeline, you have to be honest about what it delivers. Four services is not one system deployed four times. It is four systems that change at four different speeds, cause four different sizes of damage when they break, and have four different answers to "what happens if this is wrong at 3 a.m."</p>
 
-  <p>Those differences are the whole design. A pipeline that treats Facade and Pillar identically
-    is either too slow for Facade or too reckless for Pillar. So we start by writing down how
-    they differ.</p>
+  <p>Those differences are the whole design. A pipeline that treats Facade and Pillar the same way is either too slow for Facade or too risky for Pillar. So we start by writing down how they differ.</p>
 
   <table>
     <tr><th>Service</th><th>Deploys</th><th>If it's wrong</th><th>Gate</th></tr>
-    <tr><td>Facade</td><td>Several times a day</td><td>A screen looks odd. Reversible in minutes.</td><td>Automated only</td></tr>
-    <tr><td>Gatehouse</td><td>Weekly</td><td>A partner integration breaks. Recoverable, embarrassing.</td><td>Automated + contract tests</td></tr>
-    <tr><td>Pillar</td><td>Weekly, carefully</td><td>Wrong data written. Possibly unrecoverable.</td><td>Human approval</td></tr>
-    <tr><td>Keystone</td><td>Hourly, in theory</td><td><strong style="color:var(--abort)">All three at once.</strong></td><td>Depends entirely on Act II</td></tr>
+    <tr><td>Facade</td><td>Several times a day</td><td>A screen looks odd. Can be undone in minutes.</td><td>Automated only</td></tr>
+    <tr><td>Gatehouse</td><td>Weekly</td><td>A partner integration breaks. Can be fixed, but embarrassing.</td><td>Automated + contract tests</td></tr>
+    <tr><td>Pillar</td><td>Weekly, carefully</td><td>Wrong data gets saved. Maybe impossible to undo.</td><td>Human approval</td></tr>
+    <tr><td>Keystone</td><td>Hourly, in theory</td><td><strong style="color:var(--abort)">All three at once.</strong></td><td>Depends completely on Act II</td></tr>
   </table>
 
-  <p>Look at that last row. Configuration has the highest change frequency <em>and</em> the widest
-    blast radius in the entire system. That combination is unusual and it is dangerous, and it is
-    why configuration — not the pipeline, not the cluster — is the real architectural problem here.</p>
+  <p>Look at that last row. Configuration changes the most often <em>and</em> causes the widest damage in the whole system. That combination is rare and dangerous, and it is why configuration, not the pipeline and not the cluster, is the real design problem here.</p>
 
-  <p>Click through the system. Every box is something you'll provision in Terraform, deploy from a
-    pipeline, or stare at during an incident.</p>
+  <p>Click through the system. Every box is something you will create in Terraform, deploy from a pipeline, or stare at during an incident.</p>
 </div>
 
 <div class="wide reveal">
@@ -803,9 +780,7 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
 <div class="wrap reveal">
   <div class="note st">
     <div class="t">Why "Keystone"</div>
-    <p>A keystone is the wedge at the apex of an arch. It carries almost no weight itself, but every other stone transfers its load through it, and until it is set the arch cannot stand
-      on its own. It is simultaneously the least substantial piece and the one you cannot remove.
-      That is configuration exactly: a few kilobytes of text that the whole structure leans on.</p>
+    <p>A keystone is the wedge at the top of an arch. It carries almost no weight itself, but every other stone passes its load through it, and until it is in place the arch cannot stand. It is the smallest piece and also the one you cannot remove. That is exactly what configuration is: a few kilobytes of text that the whole structure leans on.</p>
   </div>
 </div>
 </section>
@@ -815,23 +790,18 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
   <div class="actmark">Act II · The fuel problem</div>
   <h2>How does configuration reach a service?</h2>
 
-  <p class="lede">The brief says Keystone "serves configuration to the other three." That sentence
-    is doing an enormous amount of hidden work, and how you interpret it determines more about
-    this system's reliability than any other decision you will make. So let's not interpret it.
-    Let's interrogate it.</p>
+  <p class="lede">The brief says Keystone "serves configuration to the other three". That one sentence hides a lot of work, and how you read it will decide more about this system's reliability than any other choice you make. So let us not assume. Let us question it.</p>
 
-  <p>There are three honest answers, and the industry has shipped all three at scale. None of them is stupid.
-    They trade different things away, and the trade is what you are choosing between.</p>
+  <p>There are three honest answers, and big companies run all three at scale. None of them is stupid. Each one gives up something different, and that trade-off is what you are really choosing.</p>
 
   <table>
     <tr><th>Model</th><th>What it means</th><th>Config change takes</th></tr>
-    <tr><td>A · Runtime service</td><td>Keystone runs as a pod. The other three call it at startup and refresh periodically.</td><td>Seconds</td></tr>
-    <tr><td>B · Baked at deploy</td><td>The Keystone repo publishes versioned artifacts; pipelines render them into ConfigMaps and deploy them with the image.</td><td>A full deploy</td></tr>
-    <tr><td>C · Managed store</td><td>The Keystone repo is source of truth, synced into Azure App Configuration. Services read from there.</td><td>Seconds</td></tr>
+    <tr><td>A · Runtime service</td><td>Keystone runs as a pod. The other three call it when they start and check again from time to time.</td><td>Seconds</td></tr>
+    <tr><td>B · Baked at deploy</td><td>The Keystone repo publishes versioned files; pipelines turn them into ConfigMaps and deploy them along with the image.</td><td>A full deploy</td></tr>
+    <tr><td>C · Managed store</td><td>The Keystone repo is the source of truth, copied into Azure App Configuration. Services read from there.</td><td>Seconds</td></tr>
   </table>
 
-  <p>Everyone compares these on the happy path, where they look nearly identical. The only useful
-    comparison is on a bad night. Pick a model, then break it four different ways.</p>
+  <p>Everyone compares these when everything is working, and then they look almost the same. The only useful comparison is on a bad night. Pick a model, then break it in four different ways.</p>
 </div>
 
 <div class="wide reveal">
@@ -871,7 +841,7 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
         <p id="mxCost"></p>
         <div class="statrow" style="margin-top:6px">
           <div id="mxTtrW"><span>time to recover</span><b id="mxTtr">—</b></div>
-          <div id="mxBrW"><span>blast radius</span><b id="mxBr">—</b></div>
+          <div id="mxBrW"><span>how far it spreads</span><b id="mxBr">—</b></div>
         </div>
       </div>
     </div>
@@ -881,73 +851,44 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
 
 <div class="wrap reveal">
   <h3>The failure that decides it</h3>
-  <p>Work through the "cluster-wide restart" scenario on model A and you find the argument that
-    settles this. It is an ordinary Tuesday on AKS. A node pool upgrades. A zone blips. Somebody drains a node. Suddenly a large fraction of your pods restart
-    at once.</p>
+  <p>Work through the "whole cluster restarts" scenario on model A and you find the argument that decides it. It is a normal Tuesday on AKS. A node pool gets upgraded. A zone has a short outage. Someone drains a node. Suddenly a large number of your pods restart at the same time.</p>
 
   <div class="scene">
     <div class="slug">THE COLD START STAMPEDE</div>
-    <p>Every Pillar, Gatehouse and Facade pod comes up at the same moment and immediately asks
-      Keystone for its configuration.</p>
-    <p>Keystone is also restarting. It has one or two replicas. It is now receiving every
-      startup request in the cluster, simultaneously, from services that cannot proceed without
-      an answer.</p>
-    <p>You have made the availability of every service in the system conditional on one service,
-      at precisely the moment when everything is already degraded.</p>
+    <p>Every Pillar, Gatehouse and Facade pod comes up at the same moment and immediately asks Keystone for its configuration.</p>
+    <p>Keystone is also restarting. It has one or two copies. Now it is getting every start-up request in the cluster at once, from services that cannot continue without an answer.</p>
+    <p>You have made every service in the system depend on one service, exactly at the moment when everything is already struggling.</p>
   </div>
 
-  <p><strong>Be fair to model A here, because the sloppy version of this argument is wrong.</strong>
-    A configuration call that blocks startup should be gated by a <em>readiness</em> probe, not a
-    liveness probe, and a <code>startupProbe</code> exists precisely so that a slow-starting pod
-    isn't killed and restarted into a death spiral. Configure those correctly and the stampede
-    degrades into "everything starts slowly" rather than "nothing starts at all." Anyone who tells
-    you a runtime config service inevitably melts down is describing a probe misconfiguration.</p>
+  <p><strong>Be fair to model A, because the careless version of this argument is wrong.</strong> A configuration call that blocks start-up should be controlled by a <em>readiness</em> probe, not a liveness probe, and a <code>startupProbe</code> exists exactly so that a slow-starting pod is not killed and restarted again and again. Set those up properly and the rush becomes "everything starts slowly" instead of "nothing starts at all". Anyone who says a runtime config service will always collapse is really describing badly configured probes.</p>
 
-  <p>The real argument is quieter and harder to escape: <strong>you now own a tier</strong>. Cache
-    last-known-good on disk. Stagger startup. Size replicas for a cold-start thundering herd rather
-    than steady-state reads. Add a PodDisruptionBudget. Make reads non-blocking with sane defaults.
-    Keep all of it working as the system grows. Every one of those is real, permanent engineering, spent replicating what a managed configuration store does on its first day, for a service whose
-    entire job is to return a few kilobytes of text.</p>
+  <p>The real argument is simpler and harder to escape: <strong>you now own and run one more service</strong>. Save the last good configuration on disk. Spread out start-up times. Size the copies for the rush at cold start, not for normal reads. Add a PodDisruptionBudget. Make reads non-blocking with sensible defaults. Keep all of this working as the system grows. Each of these is real, permanent engineering work, spent copying what a managed configuration store gives you on day one, for a service whose only job is to return a few kilobytes of text.</p>
 
   <div class="adr">
     <div class="adrh">Decision 01</div>
     <h4>Keystone is a repository and a pipeline. It is not a pod.</h4>
     <dl>
       <dt>Decision</dt>
-      <dd>There is no Keystone service running in the cluster. <code>keystone-config</code> is the
-        git source of truth; its pipeline validates configuration and publishes it to two
-        destinations — versioned artifacts for deploy-time baking, and Azure App Configuration
-        snapshots for runtime reads.</dd>
+      <dd>No Keystone service runs in the cluster. <code>keystone-config</code> is the Git source of truth. Its pipeline checks the configuration and publishes it to two places: versioned files that are built into deployments, and Azure App Configuration snapshots for values read while running.</dd>
       <dt>Alternatives rejected</dt>
-      <dd><strong>Model A</strong> — a runtime config service. Rejected because it converts a
-        static asset into a runtime dependency and creates a correlated failure mode at cold start.
-        <strong>Model B alone</strong> — baking everything. Rejected because it makes it impossible
-        to change a rate limit during an incident without a deploy.</dd>
+      <dd><strong>Model A</strong>, a runtime config service. Rejected because it turns a static file into a live dependency, and makes everything fail together at cold start. <strong>Model B alone</strong>, building everything into the deployment. Rejected because you could not change a rate limit during an incident without a full deploy.</dd>
       <dt>Cost of this decision</dt>
-      <dd>Two mechanisms instead of one, so engineers must know which is which. We pay that down
-        with the classification rule below — and by making the wrong choice hard to express in code.</dd>
+      <dd>Two mechanisms instead of one, so engineers must know which is which. We handle that with the classification rule below, and by making the wrong choice hard to write in code.</dd>
       <dt>When we'd revisit</dt>
-      <dd>If configuration ever needs per-tenant resolution with inheritance and computed values —
-        genuine logic rather than lookup — a real service starts to earn its keep. Four services
-        and three environments is nowhere near that line.</dd>
+      <dd>If configuration ever needs per-customer values with inheritance and calculated values (real logic, not just lookup), a real service starts to make sense. Four services and three environments are nowhere near that point.</dd>
     </dl>
   </div>
 
   <h3>So which mechanism for which setting?</h3>
-  <p>Here is the rule that makes the two-mechanism design livable, and it is the single most useful
-    idea in this article:</p>
+  <p>Here is the rule that makes the two-mechanism design work. It is the single most useful idea in this article:</p>
 
   <div class="scene">
     <div class="slug">THE CLASSIFICATION RULE</div>
-    <p>Don't ask "where does config live?" Ask two questions about each setting:
-      <em>how fast might I need to change this</em>, and <em>what happens if it's wrong?</em></p>
-    <p>Anything you might need to change <strong>during</strong> an incident must not require a
-      deploy. Anything that must be <strong>reproducible</strong> must be immutable and versioned
-      with the code it configures. Anything that is a <strong>secret</strong> is neither — it is
-      referenced, never stored.</p>
+    <p>Do not ask "where does config live?". Ask two questions about each setting: <em>how quickly might I need to change this</em>, and <em>what happens if it is wrong?</em></p>
+    <p>Anything you might need to change <strong>during</strong> an incident must not need a deploy. Anything that must be <strong>repeatable</strong> must be fixed and versioned with the code it configures. Anything that is a <strong>secret</strong> is neither: it is referenced, never stored.</p>
   </div>
 
-  <p>That gives three classes, and every setting in the system belongs to exactly one. Try it; the boundaries are less obvious than they look.</p>
+  <p>That gives three classes, and every setting belongs to exactly one. Try it; the lines are less obvious than they look.</p>
 </div>
 
 <div class="wide reveal">
@@ -968,30 +909,18 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
 </div>
 
 <div class="wrap reveal">
-  <p>The two that catch almost everybody are the connection string and the log level. A connection string looks structural: it points at infrastructure Terraform provisioned and changes only
-    when that infrastructure changes. But the moment a credential appears anywhere in the value,
-    the <em>whole value</em> is promoted to secret, because a string is only as classifiable as its
-    most sensitive component. The server name is structural; the string containing the password is
-    not. A log level runs the other way: it feels trivial and permanent, but the entire reason it
-    exists is so you can turn it up at 02:00 while staring at a problem. That's operational, and
-    baking it makes it useless at exactly the moment you reach for it.</p>
+  <p>The two that trip up almost everyone are the connection string and the log level. A connection string looks structural: it points at infrastructure Terraform created and changes only when that infrastructure changes. But the moment a password appears anywhere in the value, the <em>whole value</em> becomes a secret, because a string is only as safe as its most sensitive part. The server name is structural; the string with the password is not. The log level goes the other way. It feels small and permanent, but the whole reason it exists is so you can turn it up at 02:00 while looking at a problem. That makes it operational, and building it into the deployment makes it useless exactly when you need it.</p>
 
   <div class="note ab">
     <div class="t">The one rule with no exceptions</div>
-    <p>Secrets go in Key Vault and are <strong>referenced</strong>, never copied. Not into a
-      ConfigMap, not into App Configuration as a literal, not into a pipeline variable marked
-      secret and then echoed into a manifest. App Configuration stores a <em>reference</em> to a
-      Key Vault secret; the pod resolves it at runtime using its own workload identity. If a
-      secret value ever appears in a git diff, a pipeline log or a <code>kubectl get configmap</code>,
-      the design has failed, however well everything else was built.</p>
+    <p>Secrets go in Key Vault and are <strong>referenced</strong>, never copied. Not into a ConfigMap, not into App Configuration as plain text, not into a pipeline variable marked secret and then printed into a manifest. App Configuration stores a <em>reference</em> to a Key Vault secret, and the pod reads it at runtime using its own workload identity. If a secret value ever shows up in a Git diff, a pipeline log or <code>kubectl get configmap</code>, the design has failed, however well everything else was built.</p>
   </div>
 
   <details class="hood">
     <summary>Under the hood · the three mechanisms, wired</summary>
     <div class="hoodbody">
       <h4>Structural — baked into a ConfigMap by the pipeline</h4>
-      <p>The Keystone repo holds plain YAML per service per environment. The deploy pipeline renders
-        it, hashes it, and names the ConfigMap after the hash, so a config change forces a new ConfigMap and therefore a genuine rollout, rather than mutating one in place with no rollout at all:</p>
+      <p>The Keystone repo holds plain YAML for each service in each environment. The deploy pipeline fills it in, takes a hash of it, and names the ConfigMap after that hash. So a config change creates a new ConfigMap and forces a real rollout, instead of changing the old one in place with no rollout at all:</p>
 <pre><code><span class="cm"># keystone-config/services/pillar/prod.yaml</span>
 <span class="nm">database</span>:
   <span class="nm">commandTimeoutSeconds</span>: <span class="nu">30</span>
@@ -1011,17 +940,11 @@ footer.sitefoot .foot-inner a{color:var(--chrome-accent);border-bottom:none}
 <span class="nm">data</span>:
   <span class="nm">appsettings.Production.json</span>: |
     { <span class="st">"Database"</span>: { <span class="st">"CommandTimeoutSeconds"</span>: 30, ... } }</code></pre>
-      <p><code>immutable: true</code> makes Kubernetes reject in-place updates to
-        <code>data</code>, so "somebody edited the ConfigMap at 3am" needs a delete-and-recreate
-        rather than a quiet <code>kubectl edit</code>, visible in an audit log instead of invisible. Not impossible; conspicuous, which is most of the value.</p>
-      <p>Two things the hash-naming trick needs before it works. The Deployment's pod spec must be
-        re-rendered to reference the new ConfigMap name, since a new ConfigMap nobody references changes nothing, and this is the step teams forget. And because old ConfigMaps accumulate forever,
-        you need a pruning job that skips any still referenced by a retained ReplicaSet, or you'll
-        eventually prune the thing a rollback needed.</p>
+      <p><code>immutable: true</code> makes Kubernetes refuse any in-place change to <code>data</code>. So "someone edited the ConfigMap at 3 a.m." now needs a delete and re-create, which shows up in the audit log, instead of a silent <code>kubectl edit</code>. It is not impossible, just very visible, and that is most of the value.</p>
+      <p>The hash-naming trick needs two more things to work. The Deployment's pod spec must be updated to point to the new ConfigMap name; a new ConfigMap that nothing points to changes nothing, and this is the step teams forget. And since old ConfigMaps pile up forever, you need a clean-up job that skips any ConfigMap still used by a kept ReplicaSet, or one day you will delete exactly what a rollback needed.</p>
 
       <h4>Operational — Azure App Configuration with refresh</h4>
-      <p>Read with a sentinel key so the app makes one cheap check rather than watching every
-        setting, and only reloads when the sentinel changes:</p>
+      <p>Read it using a sentinel key, so the app makes one cheap check instead of watching every setting, and reloads only when the sentinel changes:</p>
 <pre><code><span class="cm">// Program.cs — Pillar, Gatehouse and Facade all do this identically</span>
 <span class="kw">var</span> env = builder.Environment.EnvironmentName;
 
@@ -1047,57 +970,35 @@ optional: <span class="kw">true</span>);
 builder.Services.<span class="fn">AddAzureAppConfiguration</span>();
 <span class="kw">var</span> app = builder.<span class="fn">Build</span>();
 app.<span class="fn">UseAzureAppConfiguration</span>();   <span class="cm">// drives the refresh check per request</span></code></pre>
-      <p>Change ten related values, then bump <code>Pillar:Sentinel</code> once. Every pod picks up
-        all ten together within the refresh interval — no partial application, no deploy.</p>
+      <p>Change ten related values, then update <code>Pillar:Sentinel</code> once. Every pod picks up all ten together within the refresh interval. No half-applied changes, no deploy.</p>
 
       <h4>Secret — Key Vault, referenced</h4>
-      <p>The pod authenticates as itself via workload identity; no secret is ever written to the
-        cluster. In App Configuration the value is a reference, not a literal:</p>
+      <p>The pod signs in as itself using workload identity; no secret is ever written into the cluster. In App Configuration, the value is a reference, not the actual secret:</p>
 <pre><code><span class="cm"># stored in App Configuration as a Key Vault reference</span>
 key   : Pillar:ConnectionStrings:Sql
 label : Production
 value : {"uri":"https://kv-keystone-prod.vault.azure.net/secrets/pillar-sql-connection"}
 type  : application/vnd.microsoft.appconfig.keyvaultref+json</code></pre>
-      <p>The SDK sees the reference, calls Key Vault with the pod's managed identity, and hands the
-        application a resolved string it never persists. Rotating the secret in Key Vault changes
-        every consumer with no deploy and no config change at all.</p>
+      <p>The SDK sees the reference, calls Key Vault using the pod's managed identity, and gives the application the actual value without saving it anywhere. Change the secret in Key Vault and every user of it gets the new value, with no deploy and no config change at all.</p>
     </div>
   </details>
 
   <details class="hood">
     <summary>Under the hood · what makes App Configuration safe to depend on</summary>
     <div class="hoodbody">
-      <p>Model C still puts a network call on your startup path, so it deserves the same scrutiny
-        we gave model A. Three things make it a materially different risk:</p>
+      <p>Model C still puts a network call in your start-up path, so it deserves the same questions we asked about model A. Three things make its risk very different:</p>
       <ul>
-        <li><strong>Snapshots are immutable.</strong> A snapshot is a named, frozen subset of the
-          store. It can be created, archived and recovered — but never edited or deleted. Pin a
-          release to a snapshot and you get exactly the reproducibility of baked config, with a
-          managed service doing the serving.</li>
-        <li><strong>The provider caches.</strong> Configuration is loaded once at startup and then
-          only re-checked on the refresh interval. A blip in the store does not take running pods
-          down; it means they keep serving the values they already have.</li>
-        <li><strong>It isn't your uptime.</strong> The failure mode is a managed regional service
-          having a bad day, not a two-replica deployment you wrote being stampeded by its own
-          dependents. Those are not the same risk, even when the availability numbers look similar.</li>
+        <li><strong>Snapshots cannot be changed.</strong> A snapshot is a named, frozen copy of part of the store. It can be created, archived and recovered, but never edited or deleted. Link a release to a snapshot and you get the same repeatability as built-in config, with a managed service doing the serving.</li>
+        <li><strong>The provider caches.</strong> Configuration is loaded once at start-up and then checked again only at the refresh interval. A short problem in the store does not bring down running pods; they just keep using the values they already have.</li>
+        <li><strong>Keeping it running is not your job.</strong> The risk is a managed regional Azure service having a bad day, not a two-copy deployment you wrote being flooded by its own users. These are not the same risk, even if the uptime numbers look similar.</li>
       </ul>
-      <p>The honest caveat: a pod still needs the store on the startup path unless you say
-        otherwise. Layer the providers so structural values come from the baked ConfigMap first and
-        App Configuration improves on them when reachable, and mark it <code>optional</code>, which
-        is the single argument that turns "the store is down so nothing starts" into "the store is
-        down so we run on last-deployed values":</p>
+      <p>The honest warning: a pod still needs the store at start-up unless you say otherwise. Stack the providers so structural values come from the built-in ConfigMap first and App Configuration adds to them when it is reachable, and mark it <code>optional</code>. That one setting turns "the store is down, so nothing starts" into "the store is down, so we run on the last deployed values":</p>
 <pre><code>builder.Configuration
     .<span class="fn">AddJsonFile</span>(<span class="st">"appsettings.json"</span>, optional: <span class="kw">false</span>)
     .<span class="fn">AddJsonFile</span>($<span class="st">"/config/appsettings.{env}.json"</span>, optional: <span class="kw">true</span>)   <span class="cm">// baked ConfigMap</span>
     .<span class="fn">AddAzureAppConfiguration</span>(o =&gt; { ... }, optional: <span class="kw">true</span>);       <span class="cm">// wins if reachable</span></code></pre>
-      <p>Later providers win, so the cluster can always start. Note that
-        <code>WebApplicationBuilder</code> has already registered <code>appsettings.json</code> and
-        environment variables before you touch it; re-adding them moves them to the end of the
-        chain and changes precedence, which is worth knowing before you copy this into an app that
-        relies on the defaults.</p>
-      <p>One thing not to claim: an environment variable is a poor break-glass lever here.
-        Changing one means editing the Deployment, which is a rollout — the exact deploy that
-        model B was just criticised for needing.</p>
+      <p>Later providers win, so the cluster can always start. Note that <code>WebApplicationBuilder</code> has already added <code>appsettings.json</code> and environment variables before your code runs. Adding them again moves them to the end of the list and changes which value wins, which is worth knowing before you copy this into an app that depends on the defaults.</p>
+      <p>One thing not to claim: an environment variable is a poor emergency switch here. Changing one means editing the Deployment, which is a rollout — the exact deploy we just criticised model B for needing.</p>
     </div>
   </details>
 </div>
@@ -1108,52 +1009,29 @@ type  : application/vnd.microsoft.appconfig.keyvaultref+json</code></pre>
   <div class="actmark">Act III · The launch pad</div>
   <h2>Six repositories, not four</h2>
 
-  <p class="lede">The brief said four repositories. The brief was describing the product, not the
-    system, and there are two more things here that change on their own schedule, carry their own
-    blast radius, and need their own reviewers. Giving them a home is the difference between a platform and a pile.</p>
+  <p class="lede">The brief said four repositories. The brief was describing the product, not the whole system, and there are two more things here that change on their own schedule, can cause their own damage, and need their own reviewers. Giving them their own home is the difference between a platform and a pile of stuff.</p>
 
-  <p><strong>Terraform needs a repository.</strong> The cluster, the registry, the vault, the
-    configuration store and the Application Insights workspace are not features of any one service.
-    They change weekly rather than hourly, a mistake takes down all four services rather than one,
-    and the person who should approve "resize the node pool" is not the person who should approve
-    "change a button label." Putting infrastructure in a service repo means every routine deploy
-    carries the latent risk of recreating a node pool.</p>
+  <p><strong>Terraform needs a repository.</strong> The cluster, the container registry, the Key Vault, the configuration store and the Application Insights workspace do not belong to any one service. They change weekly, not hourly. A mistake there takes down all four services, not one. And the person who should approve "resize the node pool" is not the person who should approve "change a button label". If infrastructure sits inside a service repo, every normal deploy carries a hidden risk of re-creating a node pool.</p>
 
-  <p><strong>Pipeline templates need a repository.</strong> Four services means four pipelines, and
-    without a shared template that means four copies of the build steps, the security scan, the
-    image tagging convention and the deployment logic. Fix a vulnerability in the scan step and you
-    fix it four times, badly, at four different times. Worse, a service team can drop the
-    scan step from their own pipeline and nobody notices.</p>
+  <p><strong>Pipeline templates need a repository.</strong> Four services means four pipelines, and without a shared template that means four copies of the build steps, the security scan, the image naming rules and the deployment logic. Fix a security issue in the scan step and you have to fix it four times, badly, at four different times. Worse, a service team can remove the scan step from its own pipeline and nobody will notice.</p>
 
   <div class="adr">
     <div class="adrh">Decision 02</div>
     <h4>Six repositories, with the platform and the templates separated from the services.</h4>
     <dl>
       <dt>Decision</dt>
-      <dd><code>keystone-config</code>, <code>pillar-domain</code>, <code>gatehouse-integration</code>,
-        <code>facade-bff</code>, plus <code>keystone-platform</code> (Terraform) and
-        <code>keystone-pipelines</code> (shared YAML templates, tagged and versioned).</dd>
+      <dd><code>keystone-config</code>, <code>pillar-domain</code>, <code>gatehouse-integration</code>, <code>facade-bff</code>, plus <code>keystone-platform</code> (Terraform) and <code>keystone-pipelines</code> (shared YAML templates, tagged and versioned).</dd>
       <dt>Alternatives rejected</dt>
-      <dd><strong>A monorepo</strong> — genuinely defensible, and if the four services shipped
-        together as one unit I would choose it. They don't: Facade ships daily and Pillar weekly,
-        and a monorepo makes that difference harder to express, not easier.
-        <strong>Terraform inside each service repo</strong> — rejected outright; shared
-        infrastructure with four owners has no owner.</dd>
+      <dd><strong>A monorepo</strong> — a fair choice, and if the four services were always released together as one unit, I would pick it. They are not: Facade releases daily and Pillar weekly, and a monorepo makes that difference harder to handle, not easier. <strong>Terraform inside each service repo</strong> — rejected outright; shared infrastructure with four owners really has no owner.</dd>
       <dt>Cost of this decision</dt>
-      <dd>Cross-repo changes need coordination, and a developer touching config and code together
-        opens two pull requests. We accept that; the alternative couples release cadences that
-        should stay independent.</dd>
+      <dd>Changes across repos need coordination, and a developer changing config and code together opens two pull requests. We accept that; the alternative ties together release schedules that should stay separate.</dd>
     </dl>
   </div>
 
   <h3>Which pipeline runs when you change a file?</h3>
-  <p>This is where the folder layout stops being cosmetic. Inside <code>keystone-config</code>,
-    configuration is layered, and <strong>the layout is the blast-radius model</strong>. A change
-    under <code>services/facade/</code> can only ever affect Facade. A change under
-    <code>global/</code> affects everything, so it should be rare, obvious in a diff, and gated
-    harder.</p>
+  <p>This is where the folder layout starts to matter. Inside <code>keystone-config</code>, configuration is layered, and <strong>the folder layout decides how far a change can spread</strong>. A change under <code>services/facade/</code> can only ever affect Facade. A change under <code>global/</code> affects everything, so it should be rare, obvious in a diff and harder to approve.</p>
 
-  <p>Change a file and watch what fires.</p>
+  <p>Change a file and see what runs.</p>
 </div>
 
 <div class="wide reveal">
@@ -1172,7 +1050,7 @@ type  : application/vnd.microsoft.appconfig.keyvaultref+json</code></pre>
         </div>
         <div class="pipelist" id="pipeList"></div>
         <div class="statrow">
-          <div id="brWrap"><span>blast radius</span><b id="brVal">—</b></div>
+          <div id="brWrap"><span>how far it spreads</span><b id="brVal">—</b></div>
           <div><span>gate required</span><b id="gateVal">—</b></div>
         </div>
       </div>
@@ -1183,30 +1061,16 @@ type  : application/vnd.microsoft.appconfig.keyvaultref+json</code></pre>
 </div>
 
 <div class="wrap reveal">
-  <p>Two things worth noticing. First, a change to <code>global/</code> fans out to three pipelines and therefore three deploys, which is exactly why it deserves an approval that a
-    service-scoped change does not. Second, editing the README triggers nothing at all. That sounds
-    trivial; on a busy repo, path filters are the difference between a CI system people trust and
-    one they've learned to ignore.</p>
+  <p>Two things to notice. First, a change to <code>global/</code> starts three pipelines and so three deploys, which is exactly why it needs an approval that a single-service change does not. Second, editing the README starts nothing at all. That sounds minor, but on a busy repo, path filters are the difference between a CI system people trust and one they have learnt to ignore.</p>
 
   <div class="note tl">
     <div class="t">Everything shown here triggers on main — and that's only half a CI story</div>
-    <p>Every trigger in this design fires after a merge, which is the moment a mistake becomes
-      production's problem. The cheapest gate in the whole system is the one that runs
-      <em>before</em> the merge: a build validation policy on each repository so pull requests must
-      build and pass tests; JSON-schema validation of every changed config file; and
-      <code>terraform plan</code> posted as a comment on the platform repo's pull requests. For a
-      change under <code>global/</code> that would otherwise fan out to three production deploys,
-      catching it at review time costs minutes and catches most of what the later gates exist to
-      survive.</p>
+    <p>Every trigger in this design runs after a merge, which is the moment a mistake becomes production's problem. The cheapest check in the whole system is the one that runs <em>before</em> the merge: a build validation policy on each repo, so pull requests must build and pass tests; JSON schema checks on every changed config file; and <code>terraform plan</code> posted as a comment on the platform repo's pull requests. For a change under <code>global/</code> that would otherwise go to three production deploys, catching it during review costs minutes and stops most of the problems the later checks exist for.</p>
   </div>
 
   <div class="note ca">
     <div class="t">The trap in shared templates</div>
-    <p>Referencing a template repository without pinning a version means every service rebuilds,
-      unasked, on whatever <code>main</code> happens to be at that moment. One bad commit to the
-      template repo breaks all four pipelines simultaneously, including the pipeline you'd use to
-      fix it. Pin to a tag — <code>ref: refs/tags/v3.2.0</code> — and bump it deliberately, service
-      by service.</p>
+    <p>If you use a template repo without fixing a version, every service rebuilds on whatever <code>main</code> happens to be at that moment, without asking. One bad commit to the template repo breaks all four pipelines at once, including the pipeline you would use to fix it. Pin to a tag, <code>ref: refs/tags/v3.2.0</code>, and upgrade it on purpose, one service at a time.</p>
   </div>
 
   <details class="hood">
@@ -1228,7 +1092,7 @@ type  : application/vnd.microsoft.appconfig.keyvaultref+json</code></pre>
 schema/
 └── config.schema.json           <span class="cm"># every file validated against this</span></code></pre>
 
-      <p>A service pipeline is deliberately tiny. It declares what it is and hands everything else to the template; note <code>extends</code> rather than <code>template</code>:</p>
+      <p>A service pipeline is kept very small on purpose. It says what it is and leaves everything else to the template. Note that it uses <code>extends</code>, not <code>template</code>:</p>
       <div class="filetag">pillar-domain/azure-pipelines.yml</div>
 <pre><code><span class="nm">trigger</span>:
   <span class="nm">branches</span>: { <span class="nm">include</span>: [main] }
@@ -1260,7 +1124,7 @@ schema/
     <span class="nm">riskTier</span>: <span class="nu">1</span>
     <span class="nm">runContractTests</span>: <span class="kw">true</span></code></pre>
 
-      <p>And the template that defines what a pipeline is <em>allowed</em> to be:</p>
+      <p>And here is the template that defines what a pipeline is <em>allowed</em> to be:</p>
       <div class="filetag">keystone-pipelines/service-pipeline.yml</div>
 <pre><code><span class="nm">parameters</span>:
   - { <span class="nm">name</span>: serviceName,  <span class="nm">type</span>: string }
@@ -1290,21 +1154,14 @@ schema/
     <span class="nm">parameters</span>: { <span class="nm">env</span>: test, <span class="nm">serviceName</span>: ${{ parameters.serviceName }} }
   - <span class="nm">template</span>: stages/deploy.yml
     <span class="nm">parameters</span>: { <span class="nm">env</span>: prod, <span class="nm">serviceName</span>: ${{ parameters.serviceName }} }</code></pre>
-      <p><strong>Why <code>extends</code> and not a plain template include.</strong> An include is a convenience: the calling pipeline can still do whatever else it likes alongside it. An
-        <code>extends</code> template defines the <em>schema</em> of the pipeline: the service repo
-        can only supply the parameters the template accepts. Combine that with a
-        <strong>required template check</strong> on the production environment and a pipeline that
-        does not extend this template cannot deploy to production. The security scan stops
-        being a step people are trusted to include and becomes a property of the system.</p>
+      <p><strong>Why <code>extends</code> and not a normal template include.</strong> An include is just a convenience: the calling pipeline can still do anything else it wants alongside it. An <code>extends</code> template defines the <em>structure</em> of the pipeline, and the service repo can only fill in the parameters the template accepts. Add a <strong>required template check</strong> on the production environment, and a pipeline that does not extend this template simply cannot deploy to production. The security scan stops being a step people are trusted to include, and becomes a rule of the system.</p>
     </div>
   </details>
 
   <details class="hood">
     <summary>Under the hood · Terraform, and the identity that has no password</summary>
     <div class="hoodbody">
-      <p>The platform repo provisions everything shared. The detail worth copying is the service
-        connection: <strong>workload identity federation</strong>, so Azure DevOps authenticates to
-        Azure with a short-lived federated token instead of a client secret somebody has to rotate.</p>
+      <p>The platform repo creates everything shared. The detail worth copying is the service connection: <strong>workload identity federation</strong>, so Azure DevOps signs in to Azure with a short-lived token instead of a client secret someone has to change regularly.</p>
 <pre><code><span class="cm"># keystone-platform — the pieces the pipelines depend on</span>
 <span class="kw">resource</span> <span class="st">"azurerm_container_registry"</span> <span class="st">"main"</span> {
   <span class="nm">name</span>                = <span class="st">"acrkeystone"</span>
@@ -1382,7 +1239,7 @@ schema/
   <span class="nm">principal_id</span>         = azurerm_kubernetes_cluster.main.kubelet_identity[<span class="nu">0</span>].object_id
 }</code></pre>
 
-      <p>The Kubernetes half is easy to forget and fails silently without it: the ServiceAccount must be annotated with the client id, and the pod labelled to opt in:</p>
+      <p>The Kubernetes part is easy to forget, and without it things fail with no clear error: the ServiceAccount must be annotated with the client ID, and the pod must be labelled to use it:</p>
 <pre><code><span class="nm">apiVersion</span>: v1
 <span class="nm">kind</span>: ServiceAccount
 <span class="nm">metadata</span>:
@@ -1395,16 +1252,8 @@ schema/
 <span class="nm">metadata</span>:
   <span class="nm">labels</span>:
     <span class="nm">azure.workload.identity/use</span>: <span class="st">"true"</span></code></pre>
-      <p>Every credential in this system is federated or managed. There is no client secret in a
-        variable group, no connection string in a pipeline, and nothing to rotate at 2am because
-        somebody left. That is not a security nicety — it removes an entire category of incident.</p>
-      <p>Two things this snippet still leaves open, because they are decisions rather than
-        oversights. Key Vault and App Configuration are shown with default public network access;
-        in a regulated environment you'd put private endpoints in front of both and pay for the
-        DNS complexity. And the platform pipeline itself needs the discipline the
-        <a href="terraform-kubernetes-theatre.html">Terraform piece</a> argues for: remote state
-        with locking, plan on the pull request, and apply the <em>saved</em> plan rather than a
-        fresh one.</p>
+      <p>Every credential in this system is federated or managed. There is no client secret in a variable group, no connection string in a pipeline, and nothing to change at 2 a.m. because someone left the company. This is more than a nice security touch; it removes a whole category of incidents.</p>
+      <p>This snippet still leaves two things open, because they are decisions, not mistakes. Key Vault and App Configuration are shown with default public network access; in a regulated environment you would put private endpoints in front of both and accept the extra DNS work. And the platform pipeline itself needs the discipline the <a href="terraform-kubernetes-theatre.html">Terraform article</a> talks about: remote state with locking, plan on the pull request, and apply the <em>saved</em> plan, not a fresh one.</p>
     </div>
   </details>
 </div>
@@ -1416,24 +1265,16 @@ schema/
   <div class="actmark">Act IV · The countdown</div>
   <h2>Build once, fly three times</h2>
 
-  <p class="lede">Here is the principle that separates a delivery pipeline from a build script, and
-    it is violated constantly: <strong>the artifact that reaches production must be the exact
-    artifact you tested.</strong> Not an equivalent one. Not one rebuilt from the same commit with
-    the same Dockerfile. The same bytes.</p>
+  <p class="lede">Here is the rule that separates a real delivery pipeline from a build script, and it is broken all the time: <strong>what reaches production must be exactly what you tested.</strong> Not something similar. Not something rebuilt from the same commit with the same Dockerfile. The same bytes.</p>
 
-  <p>Rebuilding per environment feels harmless — same source, same steps, surely the same result.
-    It isn't. Base images move. Transitive dependencies resolve differently an hour later. A
-    scanner that passed at 14:00 passes on an image that no longer exists at 15:00. The thing you
-    approved and the thing you shipped are two different artifacts that look alike.</p>
+  <p>Rebuilding for each environment feels harmless: same code, same steps, so surely the same result. It is not. Base images change. Indirect dependencies resolve differently an hour later. A scan that passed at 14:00 passed an image that no longer exists at 15:00. What you approved and what you shipped are two different things that just look alike.</p>
 
   <div class="scene">
     <div class="slug">THE RULE</div>
-    <p>Build produces one immutable image, identified by its digest. Every environment after that
-      is a <em>deployment</em>, not a build. The digest is the flight number, and it does not
-      change between the pad and orbit.</p>
+    <p>The build creates one image that never changes, identified by its digest. Every environment after that is a <em>deployment</em>, not a build. The digest is like a flight number, and it does not change between the launch pad and orbit.</p>
   </div>
 
-  <p>Run the sequence. Watch the digest, and notice what stays constant.</p>
+  <p>Run the sequence. Watch the digest, and notice what stays the same.</p>
 </div>
 
 <div class="wide reveal">
@@ -1464,78 +1305,43 @@ schema/
 </div>
 
 <div class="wrap reveal">
-  <p>Two gates in that sequence deserve a closer look, because they're the ones that make the
-    go/no-go poll from the cold open possible.</p>
+  <p>Two checks in that sequence need a closer look, because they are what make the go/no-go call at the start possible.</p>
 
-  <p>The <strong>approval</strong> is not in the YAML. It's configured on the <em>environment</em>
-    by the platform team, and the pipeline author cannot modify it — which is the entire point.
-    A gate that the person being gated can edit is not a gate. The same mechanism gives you
-    branch control, business-hours windows, and an exclusive lock so two releases can't deploy to
-    production concurrently.</p>
+  <p>The <strong>approval</strong> is not in the YAML. It is set on the <em>environment</em> by the platform team, and the pipeline author cannot change it — which is the whole point. A check that the person being checked can edit is not a check. The same feature gives you branch control, business-hours windows, and an exclusive lock so two releases cannot deploy to production at the same time.</p>
 
-  <p>The <strong>Azure Monitor check</strong> is the one most teams never wire up, and it's the one
-    that turns Application Insights from a dashboard into a participant. It queries your alert
-    rules and refuses to let a stage start while the service is firing alerts.</p>
+  <p>The <strong>Azure Monitor check</strong> is the one most teams never set up, and it turns Application Insights from a dashboard into an active part of the release. It looks at your alert rules and will not let a stage start while that service has alerts firing.</p>
 
-  <p>There is a detail here that trips up almost everyone, including plenty of published examples.
-    <strong>Every environment check in Azure Pipelines is a pre-deployment gate.</strong> There is
-    no post-deployment check in YAML pipelines; that existed in classic release pipelines and did
-    not survive the move. So an Azure Monitor check on your production environment does not watch
-    the deployment you just did; it stops you deploying <em>onto</em> a service that is already
-    unhealthy, which is valuable but different.</p>
+  <p>There is a detail here that catches almost everyone, including many published examples. <strong>Every environment check in Azure Pipelines runs before deployment.</strong> YAML pipelines have no after-deployment check; that existed in classic release pipelines and did not survive the move. So an Azure Monitor check on production does not watch the deployment you just did. It stops you from deploying <em>onto</em> a service that is already unhealthy, which is useful, but different.</p>
 
-  <p>To verify after a rollout, add a second stage that targets its own environment and
-    depends on the deploy stage. That stage's <em>pre-deployment</em> check then evaluates once the rollout has landed and had time to soak, which is post-deploy verification built out of the
-    only primitive the platform gives you. It's a small trick and it is the difference between
-    "the pods started" and "the service is still healthy."</p>
+  <p>To check health after a rollout, add a second stage that points to its own environment and depends on the deploy stage. That stage's <em>before-deployment</em> check then runs after the rollout has finished and had some time to settle. That is after-deploy checking, built from the only tool the platform gives you. It is a small trick, and it is the difference between "the pods started" and "the service is still healthy".</p>
 
   <div class="adr">
     <div class="adrh">Decision 03</div>
     <h4>The deployable unit is a pair: image digest plus config snapshot.</h4>
     <dl>
       <dt>Decision</dt>
-      <dd>Every release <em>records</em> the pair <code>(image@sha256:…, appconfig-snapshot-id)</code>.
-        The digest is what runs; the snapshot is an immutable record of the configuration that ran
-        beside it. Rolling back means restoring both — the digest by redeploying it, the
-        configuration by a point-in-time restore to that snapshot's moment.</dd>
+      <dd>Every release <em>records</em> the pair <code>(image@sha256:…, appconfig-snapshot-id)</code>. The digest is what runs; the snapshot is a permanent record of the configuration that ran with it. Rolling back means restoring both: the digest by redeploying it, and the configuration by restoring the store to that snapshot's point in time.</dd>
       <dt>Why</dt>
-      <dd>Rolling back code while leaving configuration forward — or vice versa — produces a
-        combination that has never been tested anywhere. Most "the rollback made it worse"
-        stories are this.</dd>
+      <dd>Rolling back the code but leaving the configuration on the new version (or the other way round) creates a combination that was never tested anywhere. Most stories of "the rollback made it worse" are exactly this.</dd>
       <dt>Important nuance</dt>
-      <dd>Pods read <em>live</em> key-values with sentinel refresh, not the pinned snapshot — if
-        they read the snapshot directly it would be frozen and refresh could never fire, which
-        would defeat the whole operational tier. The snapshot is the record, not the source.
-        Choosing otherwise is defensible, but you cannot have both.</dd>
+      <dd>Pods read the <em>live</em> values with sentinel refresh, not the pinned snapshot. If they read the snapshot directly, it would be frozen and refresh could never work, which would defeat the whole operational layer. The snapshot is the record, not the source. Choosing otherwise can be justified, but you cannot have both.</dd>
       <dt>Cost</dt>
-      <dd>Snapshots accumulate and consume quota, so archive them on a schedule. And the 30-day
-        revision-history window is a real limit: it is a rollback lever, not an archive.</dd>
+      <dd>Snapshots pile up and use quota, so archive them on a schedule. And the 30-day revision history is a real limit: it is for rollback, not for long-term storage.</dd>
     </dl>
   </div>
 
   <h3>The thing that does not roll back</h3>
-  <p>Everything above assumes rollback is possible. For Pillar it frequently isn't, and any design
-    for a domain service that owns its database has to say so out loud.</p>
+  <p>Everything above assumes rollback is possible. For Pillar it often is not, and any design for a service that owns its database has to say this clearly.</p>
 
-  <p>Once a migration has run, "restore the previous digest" restores code that may not understand
-    the schema now in front of it. The pair from Decision 03 becomes a triple —
-    image, config, and schema version — and the third one is the only one that refuses to go
-    backwards. A dropped column does not come back because you redeployed yesterday's container.</p>
+  <p>Once a database migration has run, "restore the previous digest" brings back code that may not understand the new schema. The pair from Decision 03 becomes a triple: image, config and schema version. And the third one is the only one that will not go backwards. A dropped column does not come back just because you redeployed yesterday's container.</p>
 
   <div class="scene">
     <div class="slug">THE ONLY SAFE SHAPE</div>
-    <p><strong>Expand, migrate, contract</strong> — and never in one release. Add the new column
-      nullable and deploy code that writes both. Backfill. Deploy code that reads the new one.
-      Only in a <em>later</em> release, once you are certain you will not roll back past it, drop
-      the old column.</p>
-    <p>Every step is independently reversible. The release that removes your ability to roll back
-      happens on a calm afternoon, deliberately, and not on the same day as the feature.</p>
+    <p><strong>Expand, migrate, contract</strong>, and never in one release. Add the new column as nullable and deploy code that writes to both. Fill in the old data. Deploy code that reads the new column. Only in a <em>later</em> release, once you are sure you will not roll back before that point, drop the old column.</p>
+    <p>Each step can be undone on its own. The release that removes your ability to roll back happens on a calm afternoon, on purpose, and not on the same day as the feature.</p>
   </div>
 
-  <p>Practically: migrations run as a separate step before the rollout, they are forward-only and
-    additive within a release, and the pipeline records the schema version alongside the digest and
-    the snapshot. And the deployment gate for Pillar should be honest about what it approves: not "ship this code" but "accept that from this point, rollback is a restore from
-    backup rather than a redeploy."</p>
+  <p>In practice: migrations run as a separate step before the rollout, they only move forward and only add things within a release, and the pipeline records the schema version along with the digest and the snapshot. And Pillar's approval should be honest about what it approves. It is not "ship this code" but "accept that from now on, rollback means restoring from backup, not redeploying".</p>
 
   <details class="hood">
     <summary>Under the hood · the deploy stage, and the gates that live outside it</summary>
@@ -1599,39 +1405,23 @@ schema/
         <span class="nm">deploy</span>:
           <span class="nm">steps</span>:
           - <span class="nm">script</span>: echo "Alert rules were quiet for the soak window."</code></pre>
-      <p>Checks configured on the <code>keystone-prod</code> environment, in the UI, by the platform
-        team:</p>
+      <p>Checks set on the <code>keystone-prod</code> environment, in the UI, by the platform team:</p>
       <table>
         <tr><th>Check</th><th>Configuration</th><th>Stops</th></tr>
-        <tr><td>Approval</td><td>2 reviewers from Platform; requester may not approve</td><td>Shipping unreviewed</td></tr>
+        <tr><td>Approval</td><td>2 reviewers from Platform; the person who asked cannot approve</td><td>Shipping unreviewed</td></tr>
         <tr><td>Branch control</td><td><code>refs/heads/main</code> only, protection required</td><td>Shipping from a feature branch</td></tr>
         <tr><td>Business hours</td><td>09:00–16:00 Mon–Thu</td><td>Friday-evening heroics</td></tr>
         <tr><td>Required template</td><td>Must extend <code>service-pipeline.yml</code></td><td>Skipping the security scan</td></tr>
         <tr><td>Exclusive lock</td><td>On; ordering set by <code>lockBehavior</code> in YAML</td><td>Two releases colliding</td></tr>
         <tr><td>Azure Monitor</td><td>No firing alerts on the service's App Insights rules</td><td>Deploying onto an already-unhealthy service</td></tr>
       </table>
-      <p>Notice that none of these appear in any YAML file a service developer can edit. That
-        separation — pipeline logic in code, deployment permission in the platform — is what turns
-        automation into governance. (The one honest exception is the exclusive
-        lock, where the check turns locking on but the <code>runLatest</code>-versus-sequential
-        behaviour is chosen in YAML.)</p>
+      <p>Notice that none of these appear in any YAML file a service developer can edit. That separation — pipeline logic in code, deployment permission in the platform — is what turns automation into governance. (The one exception is the exclusive lock, where the check turns locking on but the <code>runLatest</code> or sequential behaviour is chosen in YAML.)</p>
 
       <h4>Risk tiers, and how not to let a service grade its own homework</h4>
-      <p>Because checks bind to environments rather than to pipelines, a single shared
-        <code>keystone-prod</code> would apply Pillar's two-approver gate to Facade's daily
-        deploys. So each service gets its own environment — <code>keystone-prod-facade</code>,
-        <code>keystone-prod-pillar</code> — pre-configured by the platform team with the checks
-        that tier deserves. The <code>riskTier</code> parameter in a service pipeline selects
-        <em>which</em> environment it lands on; it does not define what that environment demands.
-        A team can change their tier and find themselves in a stricter room, but they cannot
-        weaken the room they are standing in.</p>
+      <p>Because checks are tied to environments, not pipelines, one shared <code>keystone-prod</code> would apply Pillar's two-approver check to Facade's daily deploys. So each service gets its own environment, <code>keystone-prod-facade</code> and <code>keystone-prod-pillar</code>, set up in advance by the platform team with the checks that level of risk needs. The <code>riskTier</code> parameter in a service pipeline chooses <em>which</em> environment it goes to; it does not decide what that environment demands. A team can change its tier and land in a stricter room, but it cannot weaken the room it is standing in.</p>
 
       <h4>The break-glass path</h4>
-      <p>A business-hours check that runs 09:00–16:00 is exactly right for planned work and exactly
-        wrong at 02:14, so the design needs a documented way through. Give the on-call rota a
-        dedicated emergency environment with a single-approver check and no business-hours
-        restriction, reachable only from a pipeline run with an explicit reason parameter, and alert on every use. A gate system with no emergency path doesn't get respected; it gets
-        bypassed by someone with permissions nobody remembered they had.</p>
+      <p>A business-hours check from 09:00 to 16:00 is perfect for planned work and useless at 02:14, so the design needs a written-down way through. Give the on-call team a separate emergency environment with a single-approver check and no business-hours limit, which can only be reached by a pipeline run with a clear reason entered, and send an alert every time it is used. A set of checks with no emergency path does not get respected. It gets bypassed by someone with permissions nobody remembered they had.</p>
     </div>
   </details>
 </div>
@@ -1643,15 +1433,11 @@ schema/
   <div class="actmark">Act V · 02:14</div>
   <h2>Abort</h2>
 
-  <p class="lede">A configuration value is wrong in production. Not catastrophically wrong —
-    a retry budget set to 0 instead of 3 — but Gatehouse is now failing every transient partner
-    timeout instead of retrying it, and the error rate is climbing through the alert threshold.</p>
+  <p class="lede">A configuration value is wrong in production. Not disastrously wrong — a retry count set to 0 instead of 3 — but Gatehouse now fails every short partner timeout instead of retrying it, and the error rate is climbing past the alert limit.</p>
 
-  <p>Everything about the previous four acts was rehearsal for the next four minutes. And the only
-    question that matters now is the one we designed for in Act II: <strong>how fast can this be
-    made right?</strong></p>
+  <p>Everything in the last four acts was practice for the next four minutes. And now the only question that matters is the one we designed for in Act II: <strong>how quickly can this be put right?</strong></p>
 
-  <p>Same incident, three architectures. Start the clock.</p>
+  <p>Same incident, three designs. Start the clock.</p>
 </div>
 
 <div class="wide reveal">
@@ -1688,60 +1474,30 @@ schema/
 </div>
 
 <div class="wrap reveal">
-  <p>The interesting result is that the two self-managed options land in roughly the same band.
-    The baked model spends eleven minutes because configuration has to travel through a build and a
-    rolling deployment to reach a pod — safe, fully audited, and slow. The runtime service is
-    theoretically instant and takes thirteen, because <strong>the clock is dominated by diagnosis,
-    not by delivery</strong>: without a revision history, "put it back to how it was at 20:00" is
-    not an operation you can perform. You have to work out which values changed and reverse them by
-    hand, correctly, at 02:14.</p>
+  <p>The interesting result is that the two self-managed options end up at about the same time. The built-in model takes eleven minutes, because configuration has to go through a build and a rolling deployment to reach a pod: safe, fully audited, and slow. The runtime service could in theory be instant, yet takes thirteen, because <strong>most of the time goes into finding the problem, not delivering the fix</strong>. Without a revision history, "put it back to how it was at 20:00" is not something you can do. You have to work out which values changed and reverse them by hand, correctly, at 02:14.</p>
 
-  <p>That is the part worth internalising. The speed at which a system can <em>apply</em> a
-    configuration change is the number everyone compares. The speed at which it can <em>undo</em>
-    one is the number that matters at 02:14, and they are not related.</p>
+  <p>This is the part worth remembering. Everyone compares how fast a system can <em>apply</em> a configuration change. What matters at 02:14 is how fast it can <em>undo</em> one, and the two have nothing to do with each other.</p>
 
   <div class="note gr" style="border-color:rgba(95,227,161,.3)">
     <div class="t">What made model C fast</div>
-    <p>Not the technology — the <strong>point-in-time restore</strong>. App Configuration keeps a
-      revision history of every key-value (30 days on Standard and Premium), and
-      <code>az appconfig kv restore --datetime</code> reverts the store to how it looked at a chosen
-      moment. Recovery was not "work out which value is wrong and edit it under pressure at 02:14."
-      It was "put it back to 20:00 yesterday" — one command, no diagnosis. Being able to return to a
-      known-good state <em>before</em> understanding what broke is the single most valuable property
-      an operational system can have.</p>
-    <p>Note what this is <em>not</em>. A snapshot cannot be restored over the store: snapshots support create, archive and recover, where "recover" means un-archiving the snapshot itself.
-      Snapshots are the immutable <strong>record</strong> you pin a release to and hand an auditor;
-      revision history is the <strong>lever</strong> you pull at 02:14. Conflating the two is a
-      common and expensive misreading of the feature.</p>
+    <p>Not the technology, but the <strong>point-in-time restore</strong>. App Configuration keeps a history of every value (30 days on Standard and Premium), and <code>az appconfig kv restore --datetime</code> puts the store back to how it looked at a chosen moment. The fix was not "find which value is wrong and edit it under pressure at 02:14". It was "put it back to 20:00 yesterday": one command, no investigation. Being able to go back to a known good state <em>before</em> understanding what broke is the most valuable thing an operational system can offer.</p>
+    <p>Note what this is <em>not</em>. A snapshot cannot be restored over the store. Snapshots support create, archive and recover, where "recover" only means un-archiving the snapshot itself. Snapshots are the permanent <strong>record</strong> you link a release to and show an auditor; revision history is the <strong>lever</strong> you pull at 02:14. Mixing up the two is a common and costly mistake.</p>
   </div>
 
   <h3>The morning after: the drift you just created</h3>
-  <p>That emergency restore was made directly against the store, which means the store and
-    <code>keystone-config</code> now disagree. The next time anybody merges to that repository, the
-    publish pipeline will overwrite the fix and reopen the incident, at some unpredictable later moment, with nobody watching.</p>
+  <p>That emergency restore was done directly on the store, so now the store and <code>keystone-config</code> disagree. The next time anyone merges to that repo, the publish pipeline will overwrite the fix and bring the incident back, at some random later time, with nobody watching.</p>
 
-  <p>This is the standard failure of every "git is the source of truth, synced to a managed store"
-    design, and it is worth building for rather than remembering. Two mechanisms, both cheap: a CI
-    job that diffs the store against the repository on a schedule and alerts on divergence, and a
-    hard rule that an emergency change is not finished until the back-port pull request is merged.
-    The incident is closed when the repository agrees with production, not when the graph recovers.</p>
+  <p>This is the standard failure of every "Git is the source of truth, copied to a managed store" design, and it is better to build for it than to rely on memory. Two cheap mechanisms: a CI job that compares the store with the repo on a schedule and alerts if they differ, and a strict rule that an emergency change is not finished until the pull request copying it back into the repo is merged. The incident is closed when the repo matches production, not when the graph looks fine again.</p>
 
   <h3>The bit no architecture gives you</h3>
-  <p>All three models assume somebody knew within a minute that something was wrong. That did not
-    come from the configuration design; it came from an alert rule on an Application Insights
-    metric, wired to a rota, plus a release annotation on the latency chart that made the cause
-    obvious the moment somebody looked at it.</p>
+  <p>All three designs assume someone knew within a minute that something was wrong. That did not come from the configuration design. It came from an alert rule on an Application Insights metric, connected to an on-call team, plus a release marker on the response-time chart that made the cause obvious the moment someone looked.</p>
 
-  <p>Build the fastest rollback in the world and it is worth nothing if the mean time to
-    <em>noticing</em> is forty minutes. Instrument first. The pipeline can only be as good as the
-    signal that tells it something went wrong.</p>
+  <p>Build the fastest rollback in the world and it is worth nothing if it takes forty minutes for anyone to <em>notice</em> the problem. Set up monitoring first. The pipeline can only be as good as the signal that tells it something went wrong.</p>
 
   <details class="hood">
     <summary>Under the hood · tracing four services as one request</summary>
     <div class="hoodbody">
-      <p>One workspace, four cloud role names, and the trace context flowing across every hop.
-        Distributed tracing is the difference between "the system is slow" and "Gatehouse's call to
-        the payments partner is slow, and here is the exact request":</p>
+      <p>One workspace, four service names, and the trace ID travelling across every hop. Distributed tracing is the difference between "the system is slow" and "Gatehouse's call to the payments partner is slow, and here is the exact request":</p>
 <pre><code><span class="cm">// identical in all four services; only the role name differs</span>
 builder.Services.<span class="fn">AddApplicationInsightsTelemetry</span>();
 builder.Services.<span class="fn">AddSingleton</span>&lt;ITelemetryInitializer&gt;(
@@ -1751,18 +1507,16 @@ builder.Services.<span class="fn">AddSingleton</span>&lt;ITelemetryInitializer&g
 builder.Services.<span class="fn">Configure</span>&lt;TelemetryConfiguration&gt;(c =&gt;
     c.TelemetryInitializers.<span class="fn">Add</span>(<span class="kw">new</span> <span class="fn">VersionInitializer</span>(
         Environment.<span class="fn">GetEnvironmentVariable</span>(<span class="st">"IMAGE_DIGEST"</span>))));</code></pre>
-      <p>The alert rules that gate the deployment, and that woke somebody at 02:14:</p>
+      <p>The alert rules that block deployments, and that woke someone up at 02:14:</p>
       <table>
         <tr><th>Signal</th><th>Threshold</th><th>Wired to</th></tr>
         <tr><td>Failed request rate</td><td>&gt; 2% over 5 min, per role</td><td>Pager + the Azure Monitor deployment check</td></tr>
-        <tr><td>p95 server duration</td><td>&gt; 2× the 7-day baseline</td><td>Pager</td></tr>
+        <tr><td>Response time of the slowest 5% of requests</td><td>&gt; 2× the usual value over the last 7 days</td><td>Pager</td></tr>
         <tr><td>Dependency failures</td><td>&gt; 5% to any single partner</td><td>Gatehouse team channel</td></tr>
         <tr><td>Config refresh failures</td><td>Any, sustained 10 min</td><td>Platform team — the store is unreachable</td></tr>
         <tr><td>Config drift</td><td>Store differs from <code>keystone-config</code> main</td><td>Platform team — an emergency edit was never back-ported</td></tr>
       </table>
-      <p>That last row is the one people forget. If pods stop refreshing configuration,
-        nothing breaks immediately; they drift out of date until the day somebody
-        changes a value and half the fleet doesn't get it.</p>
+      <p>That last row is the one people forget. If pods stop refreshing configuration, nothing breaks straight away. They just fall behind, until the day someone changes a value and half the pods never get it.</p>
     </div>
   </details>
 </div>
@@ -1774,33 +1528,23 @@ builder.Services.<span class="fn">Configure</span>&lt;TelemetryConfiguration&gt;
   <div class="actmark">Credits · Flight readiness review</div>
   <h2>The whole design, on one page</h2>
 
-  <p class="lede">Six repositories, because things that change at different rates and break at
-    different scales should not share a release. One shared pipeline template that services extend
-    rather than copy, enforced by a required-template check so the security scan cannot be skipped.
-    One build per commit, promoted by digest through three environments, gated by approvals the
-    pipeline author cannot edit. And configuration split three ways by two questions — how fast
-    might I need to change this, and what happens if it's wrong — plus one rule that overrides both:
-    if it's a credential, it's a secret, wherever else it might have belonged.</p>
+  <p class="lede">Six repositories, because things that change at different speeds and break at different scales should not share a release. One shared pipeline template that services extend instead of copy, enforced by a required-template check so the security scan cannot be skipped. One build per commit, promoted by digest through three environments, controlled by approvals the pipeline author cannot edit. And configuration split three ways by two questions — how quickly might I need to change this, and what happens if it is wrong — plus one rule above both: if it contains a credential, it is a secret, wherever else it might have belonged.</p>
 
   <div class="scene">
     <div class="slug">THE THROUGH-LINE</div>
-    <p>Every decision in this design is the same decision wearing different clothes:
-      <em>separate the things that change at different rates.</em></p>
-    <p>Infrastructure from application. Structural config from operational config. Secrets from
-      both. Pipeline logic from deployment permission. Build from deploy. Get that separation
-      right and the go/no-go poll is boring, which is the highest compliment a release process
-      can be paid.</p>
+    <p>Every decision in this design is really the same decision in different clothes: <em>keep apart the things that change at different speeds.</em></p>
+    <p>Infrastructure from application. Structural config from operational config. Secrets from both. Pipeline logic from deployment permission. Build from deploy. Get that separation right and the go/no-go call becomes boring, which is the best compliment a release process can get.</p>
   </div>
 
   <h3>The decisions, collected</h3>
   <table>
     <tr><th>#</th><th>Decision</th><th>The reason in one line</th></tr>
-    <tr><td>01</td><td>Keystone is a repo and a pipeline, not a pod</td><td>Don't make everyone's availability depend on one service at cold start</td></tr>
-    <tr><td>02</td><td>Six repositories, not four</td><td>Terraform and shared templates have their own cadence, blast radius and reviewers</td></tr>
-    <tr><td>03</td><td>Deployable unit is (digest, snapshot)</td><td>Rolling back half a release produces a combination nobody tested</td></tr>
-    <tr><td>04</td><td>Config classified by change speed</td><td>Incident-time changes must not require a deploy; reproducible things must be immutable</td></tr>
-    <tr><td>05</td><td>Gates live on environments, not in YAML</td><td>A gate the gated person can edit is not a gate</td></tr>
-    <tr><td>06</td><td>Federated identity everywhere</td><td>Removes an entire category of incident rather than managing it</td></tr>
+    <tr><td>01</td><td>Keystone is a repo and a pipeline, not a pod</td><td>Do not make every service's uptime depend on one service at cold start</td></tr>
+    <tr><td>02</td><td>Six repositories, not four</td><td>Terraform and shared templates have their own schedule, their own risk and their own reviewers</td></tr>
+    <tr><td>03</td><td>Deployable unit is (digest, snapshot)</td><td>Rolling back half a release creates a combination nobody tested</td></tr>
+    <tr><td>04</td><td>Config classified by how quickly it may need to change</td><td>Changes during an incident must not need a deploy; things that must be repeatable must never change</td></tr>
+    <tr><td>05</td><td>Gates live on environments, not in YAML</td><td>A check that the person being checked can edit is not a check</td></tr>
+    <tr><td>06</td><td>Federated identity everywhere</td><td>Removes a whole category of incidents instead of managing it</td></tr>
   </table>
 
   <h3>If you're starting on Monday</h3>
@@ -1817,26 +1561,12 @@ builder.Services.<span class="fn">Configure</span>&lt;TelemetryConfiguration&gt;
 
   <div class="note ca">
     <div class="t">The honest caveat</div>
-    <p>This design is sized for four services, three environments and one team that owns the
-      platform. At twelve services you'll want to look hard at whether pipeline-per-service still
-      scales or whether you're ready for a pull-based GitOps controller in the cluster. At one
-      service, most of this is ceremony; a single repo and a single pipeline would serve you better and you should not feel bad about that. Architecture is a response to a specific
-      scale, and quoting a design back at a problem it wasn't sized for is how most of it goes
-      wrong.</p>
+    <p>This design is sized for four services, three environments and one team that owns the platform. At twelve services, think hard about whether one pipeline per service still works, or whether you are ready for a pull-based GitOps controller inside the cluster. For one service, most of this is unnecessary ceremony; a single repo and a single pipeline will serve you better, and you should not feel bad about that. Architecture is an answer to a specific scale, and applying a design to a problem of a different size is how most architecture goes wrong.</p>
   </div>
 
   <div class="note">
     <div class="t">Colophon</div>
-    <p>Every diagram on this page is a live simulation, not a screenshot. Diagram 6's timings are illustrative, modelled on realistic build, rollout, refresh and diagnosis durations, not
-      measured from a specific system. Behaviour described reflects Azure DevOps and Azure App
-      Configuration as of August 2026: snapshots are immutable and support create, archive and
-      recover only (recovering un-archives the snapshot; it does not revert the store; that is what the 30-day revision history and <code>az appconfig kv restore</code> are for); App
-      Configuration data-plane RBAC is store-scoped with no key or label granularity; all
-      environment checks are evaluated as pre-deployment gates and are configured by resource
-      owners rather than in YAML; workload identity federation for Azure service connections is
-      generally available. This piece was reviewed against those docs after drafting and a dozen claims were corrected, including, embarrassingly, its own original description of snapshot
-      rollback. The service names — Keystone, Pillar, Gatehouse, Facade — are this article's, not
-      a product's.</p>
+    <p>Every diagram on this page is a live simulation, not a screenshot. The timings in Diagram 6 are examples, based on realistic build, rollout, refresh and investigation times, not measured from a real system. What is described here is Azure DevOps and Azure App Configuration as of August 2026: snapshots cannot be changed and support only create, archive and recover (recover un-archives the snapshot; it does not put the store back; that is what the 30-day revision history and <code>az appconfig kv restore</code> are for); App Configuration access control works on the whole store, not on individual keys or labels; all environment checks run before deployment and are set by resource owners, not in YAML; and workload identity federation for Azure service connections is generally available. This article was checked against those docs after writing, and a dozen statements were corrected, including, embarrassingly, its own first description of snapshot rollback. The service names Keystone, Pillar, Gatehouse and Facade belong to this article, not to any product.</p>
   </div>
 </div>
 </section>

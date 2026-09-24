@@ -580,7 +580,7 @@
   <div class="hero-inner">
     <span class="eyebrow">Object-Oriented Design &middot; Factory Floor</span>
     <h1>Design Patterns<br>on the Assembly Line<em>nine patterns, one production line</em></h1>
-    <p class="dek">Twenty-three names in a catalogue is a memory problem. One car you can walk around is something else. Nine patterns, six interactive diagrams, and C# you can read in a sitting.</p>
+    <p class="dek">Twenty-three pattern names in a list are hard to remember. One car you can walk around is much easier. Nine patterns, six interactive diagrams, and C# you can read in one sitting.</p>
     <p class="byline"><span class="hot">13 min read</span><span>C# &middot; .NET</span><span>Creational &middot; Structural &middot; Behavioural</span></p>
   </div>
 </header>
@@ -589,13 +589,13 @@
 <article>
 
   <div class="section">
-    <p class="lead">Early on, design patterns felt like twenty-three names memorised into three groups. In daily work, I just wrote what made sense—like a <code>Dictionary&lt;string, Func&lt;IExporter&gt;&gt;</code> —until a reviewer pointed out I had just built a factory without realising it."</p>
+    <p class="lead">When I started, design patterns felt like twenty-three names to memorise in three groups. In daily work I just wrote whatever made sense, like a <code>Dictionary&lt;string, Func&lt;IExporter&gt;&gt;</code>, until a reviewer told me I had built a factory without knowing it.</p>
 
-    <p>The catalogue was never the difficult part. The difficult part is knowing which shelf to reach for, and that is a question about <strong>what changes in your system</strong> rather than what the pattern is called. So put the catalogue down and walk the line instead.</p>
+    <p>The list was never the hard part. The hard part is knowing which pattern to use, and that depends on <strong>what keeps changing in your system</strong>, not on what the pattern is called. So keep the list aside and walk along the production line instead.</p>
 
-    <p>A car has three stories running through it. How it gets built: which plant supplies which part, what order the stations run in, which components one vehicle is only ever allowed one of. How the parts fit together: the dongle that lets a wireless phone talk to a USB-only head unit, the four safety modules between your foot and the calliper. And what happens once somebody drives it out of the showroom: the fob that wakes four systems at once, the selector that changes what every other control does.</p>
+    <p>A car has three stories inside it. First, how it gets built: which plant makes which part, in what order the stations work, and which parts a car can have only one of. Second, how the parts fit together: the dongle that lets a wireless phone talk to a USB-only music system, and the four safety modules between your foot and the brake. Third, what happens once someone drives it out of the showroom: the key fob that wakes four systems at once, and the gear lever that changes what every other control does.</p>
 
-    <p>Those are the three families. <strong>Creational</strong> patterns build the car, <strong>structural</strong> patterns fit it together, <strong>behavioural</strong> patterns decide how it behaves on the road. Every pin below is a pattern, coloured by family. Click one.</p>
+    <p>These are the three families. <strong>Creational</strong> patterns build the car, <strong>structural</strong> patterns fit it together, and <strong>behavioural</strong> patterns decide how it behaves on the road. Every pin below is one pattern, coloured by its family. Click one.</p>
   </div>
 
   <div class="figure wide reveal">
@@ -662,19 +662,19 @@
     <div class="map-card" id="mapCard">
       <div class="mc-fam" style="color:var(--fog)">SELECT A PIN</div>
       <h4>Nine patterns, one vehicle</h4>
-      <p>Pins 1&ndash;3 are about how the car gets built. Pins 4&ndash;6 are about how its parts connect. Pins 7&ndash;9 are about how it behaves once somebody drives it.</p>
+      <p>Pins 1–3 are about how the car is built. Pins 4–6 are about how its parts connect. Pins 7–9 are about how it behaves once someone drives it.</p>
     </div>
   </div>
 
   <h2 class="reveal"><span class="num">01 &mdash; CREATIONAL</span>How the car gets built</h2>
 
   <div class="section reveal">
-    <p>Creational patterns all manage the same moment: <code>new</code>. Every <code>new Thing()</code> freezes a decision at that spot &mdash; the caller has named a concrete class and is now bound to its constructor, its lifetime, and to its identity &mdash; that class and no other. The binding stays invisible until the day you need a second variant. A car has that moment a few thousand times over.</p>
+    <p>Creational patterns all deal with one moment: <code>new</code>. Every <code>new Thing()</code> locks in a decision at that line. The caller has named one exact class, and is now tied to its constructor, its lifetime and that class alone. You do not notice this until the day you need a second version. A car has that moment a few thousand times.</p>
 
     <h3 class="fam-c"><span class="tag">01</span>Factory Method &mdash; the seat plant</h3>
-    <p class="scene">Nobody on the trim line phones a supplier when a shell needs a seat. The station asks for "a seat for this body," and the plant decides: a cloth bench for the base car, heated leather for the top trim, a fixed-back bucket on the track edition. The line takes the seat and bolts it down.</p>
+    <p class="scene">Nobody on the assembly line phones a supplier when a car body needs a seat. The station asks for "a seat for this body", and the seat plant decides: a cloth bench for the base model, heated leather for the top model, a fixed bucket seat for the track edition. The line takes the seat and bolts it in.</p>
 
-    <p>The base class owns <em>when</em> a seat is made and what happens to it. A subclass decides <em>which</em> seat arrives.</p>
+    <p>The base class decides <em>when</em> a seat is made and what happens to it. A subclass decides <em>which</em> seat arrives.</p>
 
     <div class="code-wrap">
       <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">TrimLine.cs &mdash; the plant decides</span></div>
@@ -700,10 +700,10 @@
 }</code></pre>
     </div>
 
-    <p>You meet this shape constantly in .NET without the ceremony: <code>IHttpClientFactory</code> is one, and so is any DI registration where the caller asks for <code>IPaymentGateway</code> and gets <code>StripeGateway</code>. It earns its place when there is a family of things, more than one variant, and a selection rule the caller has no business knowing.</p>
+    <p>You see this shape all the time in .NET, without the formal name. <code>IHttpClientFactory</code> is one. So is any DI registration where the caller asks for <code>IPaymentGateway</code> and gets <code>StripeGateway</code>. Use it when there is a family of things, more than one version, and a rule for choosing that the caller should not need to know.</p>
 
     <h3 class="fam-c"><span class="tag">02</span>Builder &mdash; same stations, different vehicle</h3>
-    <p class="scene">The line runs the same five stations on every shell: platform, powertrain, body, interior, electronics. The order never changes; what goes into each station does. A 1.2-litre petrol and cloth seats on this shell, a diesel and an empty load bay on the next.</p>
+    <p class="scene">The line runs the same five stations for every car: platform, engine, body, interior and electronics. The order never changes; only what goes in at each station changes. A 1.2-litre petrol engine and cloth seats on this car, a diesel and an empty cargo area on the next.</p>
 
     <div class="figure reveal">
       <div class="fig-head"><span>Figure 02 &mdash; <b>one line, three vehicles</b></span><span>pick a build</span></div>
@@ -717,7 +717,7 @@
       <div class="figcap">The five stations and their order belong to the builder. The <b>values</b> at each station belong to the caller.</div>
     </div>
 
-    <p>The case for a builder is made against a constructor that has grown too many parameters, half of them booleans. <code>new Vehicle(true, false, 5, null, "steel", true)</code> is a puzzle at every call site, and a seventh option means touching every caller. A builder names each argument and gives you one place &mdash; <code>Build()</code> &mdash; to validate before an invalid object exists.</p>
+    <p>You need a builder when a constructor has too many parameters, half of them true/false flags. <code>new Vehicle(true, false, 5, null, "steel", true)</code> is a puzzle every time you read it, and adding a seventh option means changing every caller. A builder gives each value a name, and gives you one place, <code>Build()</code>, to check everything before a broken object is ever created.</p>
 
     <div class="code-wrap">
       <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">VehicleBuilder.cs &mdash; named stations, one validation point</span></div>
@@ -730,10 +730,10 @@
     .<span class="t-fn">Build</span>();                                  <span class="t-com">// throws if the powertrain is missing</span></code></pre>
     </div>
 
-    <p>If you have written an ASP.NET Core <code>Program.cs</code> you have used one: <code>WebApplication.CreateBuilder(args)</code> holds a half-configured application until <code>Build()</code> turns it into something you can run.</p>
+    <p>If you have written an ASP.NET Core <code>Program.cs</code>, you have already used one. <code>WebApplication.CreateBuilder(args)</code> holds a half-set-up application until <code>Build()</code> turns it into something you can run.</p>
 
     <h3 class="fam-c"><span class="tag">03</span>Singleton &mdash; one ECU</h3>
-    <p class="scene">A car has exactly one engine control unit deciding fuelling and ignition timing. A second board is a hazard rather than a redundancy, because now two things disagree about how much fuel reaches the injectors.</p>
+    <p class="scene">A car has exactly one engine control unit (ECU) deciding fuel and ignition timing. A second board would be dangerous, not a backup, because now two units disagree about how much fuel goes to the engine.</p>
 
     <div class="code-wrap">
       <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">EngineControlUnit.cs &mdash; one board, created once</span></div>
@@ -747,7 +747,7 @@
 }</code></pre>
     </div>
 
-    <p>The trouble is not the single instance. It is <code>EngineControlUnit.Instance</code> appearing mid-method, because that call is a dependency nobody declared: a test cannot substitute it, and the class signature does not admit it exists. Modern .NET gives the guarantee without the hard wiring.</p>
+    <p>Having only one instance is not the problem. The problem is <code>EngineControlUnit.Instance</code> showing up in the middle of a method. That is a hidden dependency: a test cannot replace it, and the class signature does not even mention it. Modern .NET gives you the same "only one" promise without the hard-coding.</p>
 
     <div class="code-wrap">
       <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">Program.cs &mdash; one instance, still injectable</span></div>
@@ -757,19 +757,19 @@
 <span class="t-key">public sealed class</span> <span class="t-type">FuelTrim</span>(<span class="t-type">IEngineControlUnit</span> ecu) { }</code></pre>
     </div>
 
-    <p>Same guarantee, visible in the constructor, replaceable in a test. Reach for the static form only when there is no container to reach for.</p>
+    <p>The same promise, now visible in the constructor and easy to replace in a test. Use the static version only when you have no DI container at all.</p>
   </div>
 
-  <p class="pull reveal">Creational patterns are about the <em>moment of new</em> &mdash; and who is allowed on the floor when it happens.</p>
+  <p class="pull reveal">Creational patterns are about the <em>moment of new</em> — and who is allowed on the factory floor when it happens.</p>
   <h2 class="reveal"><span class="num">02 &mdash; STRUCTURAL</span>How the parts fit together</h2>
 
   <div class="section reveal">
-    <p>Once the shell is on its wheels, the problems change shape. Nothing needs building any more; things need <em>connecting</em>. A wireless phone to a head unit that only understands a cable. Four safety modules between a pedal and a calliper. Six systems onto one button. You have parts that work, and you need the assembled result to present an interface somebody can live with.</p>
+    <p>Once the car body is on its wheels, the problems change. Nothing needs to be built now; things need to be <em>connected</em>. A wireless phone to a music system that only knows cables. Four safety modules between a pedal and a brake. Six systems behind one button. Each part works on its own, and now the whole thing must offer a simple way for someone to use it.</p>
 
     <h3 class="fam-s"><span class="tag">04</span>Adapter &mdash; the dongle in the USB port</h3>
-    <p class="scene">Your phone gave up on cables two upgrades ago: it pairs over Bluetooth and streams CarPlay across its own Wi-Fi. The car has no idea. Its head unit was built in 2019 and speaks one dialect &mdash; a phone on the end of a USB cable. You are not replacing the car and you are not replacing the phone. You buy a dongle the size of a matchbox, push it into the USB port, and it pretends to be the cable.</p>
+    <p class="scene">Your phone stopped using cables two upgrades ago. It pairs over Bluetooth and runs CarPlay over its own Wi-Fi. The car does not know any of this. Its music system was built in 2019 and understands only one thing: a phone at the end of a USB cable. You are not changing the car, and you are not changing the phone. So you buy a dongle the size of a matchbox, plug it into the USB port, and it pretends to be the cable.</p>
 
-    <p>An adapter exists because you own one side of the conversation and not the other. The vendor SDK is not yours to change, nor the partner's SOAP endpoint, nor the internal service three teams depend on. So you write the piece in the middle: wireless on one face, wired on the other, and both ends carry on believing they got what they asked for.</p>
+    <p>You need an adapter when you control one side of the conversation but not the other. You cannot change the vendor's SDK, the partner's old SOAP service, or the internal service that three teams depend on. So you write the piece in the middle: wireless on one side, wired on the other, and both sides keep believing they got what they asked for.</p>
 
     <div class="code-wrap">
       <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">WirelessDongle.cs &mdash; wired on one side, wireless on the other</span></div>
@@ -796,10 +796,10 @@
 }</code></pre>
     </div>
 
-    <p>This is the pattern you will write most often in enterprise work, so be deliberate about where adapters live: at the edge of the solution, in one project, named for what they wrap. The moment an adapter starts making business decisions rather than translating shapes, it has become a service you forgot to name.</p>
+    <p>In enterprise work, this is the pattern you will write most often, so decide carefully where adapters live: at the edge of the solution, in one project, named after what they wrap. The moment an adapter starts taking business decisions instead of just converting formats, it has become a service you forgot to name.</p>
 
     <h3 class="fam-s"><span class="tag">05</span>Decorator &mdash; the brake stack</h3>
-    <p class="scene">A brake is a brake: your foot moves fluid, fluid squeezes a calliper. Then ABS goes in between and starts releasing pressure fifteen times a second. Then EBD rebalances front to rear. Then traction control brakes a wheel you never asked it to. Then emergency braking presses the pedal for you. Every module takes the same command, adds its own behaviour, and passes it inward. The calliper never learns any of them exist.</p>
+    <p class="scene">A brake is simple: your foot pushes fluid, the fluid squeezes the brake calliper. Then ABS sits in between and releases pressure fifteen times a second. Then EBD balances braking between the front and back wheels. Then traction control brakes a wheel you never asked it to. Then emergency braking presses the pedal for you. Each module takes the same command, adds its own behaviour and passes it on. The calliper never knows any of them exist.</p>
 
     <div class="figure reveal">
       <div class="fig-head"><span>Figure 03 &mdash; <b>the brake stack</b></span><span>toggle modules</span></div>
@@ -815,7 +815,7 @@
       <div class="figcap">Every module implements <b>IBrake</b> and holds an <b>IBrake</b>. The calliper at the centre is unchanged in all sixteen combinations.</div>
     </div>
 
-    <p>One rule makes it work: the wrapper implements the same interface as the thing it wraps, and holds a reference to it. That constraint lets you stack modules in any order, at runtime, without a combinatorial explosion &mdash; four options would otherwise be sixteen classes.</p>
+    <p>One rule makes this work: the wrapper implements the same interface as the thing it wraps, and keeps a reference to it. Because of this, you can stack modules in any order, at runtime, without writing a class for every combination. Four options would otherwise need sixteen classes.</p>
 
     <div class="code-wrap">
       <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">BrakeModule.cs &mdash; wrap, delegate, add</span></div>
@@ -839,10 +839,10 @@
 <span class="t-type">IBrake</span> pedal = <span class="t-key">new</span> <span class="t-type">Aeb</span>(<span class="t-key">new</span> <span class="t-type">TractionControl</span>(<span class="t-key">new</span> <span class="t-type">Abs</span>(<span class="t-key">new</span> <span class="t-type">Calliper</span>())));</code></pre>
     </div>
 
-    <p>You already use decorators daily in .NET under other names: ASP.NET Core middleware around a request delegate, a <code>DelegatingHandler</code> around a message handler, a Polly retry policy wrapping a timeout. Each adds behaviour on the way in, on the way out, or both, and the innermost call has no idea.</p>
+    <p>You already use decorators every day in .NET under other names: ASP.NET Core middleware around a request, a <code>DelegatingHandler</code> around an HTTP handler, a Polly retry policy wrapped around a timeout. Each one adds something on the way in, on the way out, or both, and the innermost call knows nothing about it.</p>
 
     <h3 class="fam-s"><span class="tag">06</span>Facade &mdash; the start button</h3>
-    <p class="scene">Pressing START is not one action. The car wakes the body bus, checks the immobiliser against the key, primes the fuel pump, cranks the starter, waits for the alternator field, then runs the cluster self-test. Six systems in an order that matters &mdash; crank before the immobiliser clears and you get a very expensive click.</p>
+    <p class="scene">Pressing START is not one action. The car wakes up the body electronics, checks the key with the immobiliser, starts the fuel pump, cranks the starter, waits for the alternator, and then runs the dashboard self-test. Six systems, in an order that matters. Crank the engine before the immobiliser clears, and all you get is a very expensive click.</p>
 
     <div class="code-wrap">
       <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">StartButton.cs &mdash; six systems, one press</span></div>
@@ -862,17 +862,17 @@
 }</code></pre>
     </div>
 
-    <p>A facade hides nothing and forbids nothing; a technician still drives each module from a diagnostic laptop. It gives the common path a name so the ordering stops being copied into every caller. The signal that you need one is duplication with a sequence in it: the same four calls, same order, in three controllers, and the third is missing a step. That missing step is the bug the facade would have prevented.</p>
+    <p>A facade does not hide or block anything. A mechanic can still control each module from a diagnostic laptop. It just gives the common path a name, so the order of steps is not copied into every caller. You know you need one when you see the same steps repeated in the same order: the same four calls in three controllers, and the third one is missing a step. That missing step is the bug the facade would have prevented.</p>
   </div>
 
-  <p class="pull reveal">Adapter changes the shape. Decorator adds to the behaviour. Facade shortens the sentence. All three leave the original part <em>exactly</em> as it was.</p>
+  <p class="pull reveal">Adapter changes the shape. Decorator adds behaviour. Facade makes the long sentence short. All three leave the original part <em>exactly</em> as it was.</p>
   <h2 class="reveal"><span class="num">03 &mdash; BEHAVIOURAL</span>How it acts once it leaves the gate</h2>
 
   <div class="section reveal">
-    <p>The last family is about what happens between objects while the program runs: who tells whom, who decides, and what changes when the situation changes. A car on a transporter has no behaviour. Hand somebody the key and a button twenty metres away needs to reach four systems, and one lever needs to change what every other control means.</p>
+    <p>The last family is about what happens between objects while the program runs: who tells whom, who decides, and what changes when the situation changes. A car on a transport truck has no behaviour. Give someone the key, and suddenly a button twenty metres away must reach four systems, and one lever must change what every other control means.</p>
 
     <h3 class="fam-b"><span class="tag">07</span>Observer &mdash; the key fob</h3>
-    <p class="scene">Somebody presses unlock from across a car park. Four things happen without the fob knowing about any of them: the doors unlatch, the mirrors fold out, the puddle lights come on, and the driver's seat slides to a saved position. Add a fifth next model year and the button does not change.</p>
+    <p class="scene">Someone presses unlock from the other side of a car park. Four things happen, and the key fob knows about none of them: the doors unlock, the mirrors fold out, the ground lights come on, and the driver's seat moves to a saved position. Add a fifth feature in next year's model, and the button stays the same.</p>
 
     <div class="figure reveal">
       <div class="fig-head"><span>Figure 04 &mdash; <b>one press, many listeners</b></span><span>click a card to unsubscribe</span></div>
@@ -882,7 +882,7 @@
       <div class="figcap">The publisher holds a list, not a set of instructions. <b>KeyFob.PressUnlock()</b> is the same two lines whether one system is listening or five.</div>
     </div>
 
-    <p>C# has this one in the language, which is why most .NET developers use it for years before learning its name.</p>
+    <p>C# has this pattern built into the language (events), which is why most .NET developers use it for years before learning its name.</p>
 
     <div class="code-wrap">
       <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">KeyFob.cs &mdash; the publisher stays ignorant</span></div>
@@ -900,12 +900,12 @@ fob.Unlocked += (_, e) =&gt; _lights.<span class="t-fn">Welcome</span>(seconds: 
 fob.Unlocked += <span class="t-key">async</span> (_, e) =&gt; <span class="t-key">await</span> _seats.<span class="t-fn">RecallAsync</span>(e.Profile);</code></pre>
     </div>
 
-    <p>Two things will bite you. A subscription that is never removed keeps the subscriber alive as long as the publisher lives &mdash; in a long-running service that is a leak you first meet in a production memory graph, so unsubscribe or use <code>IObservable&lt;T&gt;</code> and dispose. And that <code>async</code> handler is fire-and-forget: an exception inside it goes nowhere. Once listeners do real work, move them onto a queue.</p>
+    <p>Two things can hurt you. A subscription that is never removed keeps the subscriber alive as long as the publisher lives. In a long-running service, that is a memory leak you first notice in a production memory graph, so always unsubscribe, or use <code>IObservable&lt;T&gt;</code> and dispose it. Also, that <code>async</code> handler is fire-and-forget: if it throws an exception, nobody hears about it. Once listeners do real work, move them to a queue.</p>
 
     <h3 class="fam-b"><span class="tag">08</span>Strategy &mdash; the drive modes</h3>
-    <p class="scene">The accelerator has one job: ask for torque. What arrives depends on the mode. Eco stretches the first half of the travel and shifts early. Sport sharpens it and holds gears to the limiter. Snow softens the opening third so you do not spin a wheel leaving a driveway. The pedal has no opinion; every map takes the same request.</p>
+    <p class="scene">The accelerator has one job: ask for power. What you actually get depends on the drive mode. Eco softens the first half of the pedal and changes gear early. Sport makes it sharp and holds each gear longer. Snow softens the first third, so the wheels do not spin when you leave the driveway. The pedal does not care; every mode takes the same request.</p>
 
-    <p>Strategy is what removes long <code>switch</code> blocks over an enum. The branches become classes, the enum becomes a lookup, and a ninth option no longer means editing a method eight others depend on.</p>
+    <p>Strategy is how you get rid of long <code>switch</code> blocks over an enum. Each branch becomes a class, the enum becomes a lookup, and adding a ninth option no longer means editing a method that eight others depend on.</p>
 
     <div class="code-wrap">
       <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">Accelerator.cs &mdash; one request, several pedal maps</span></div>
@@ -927,12 +927,12 @@ accelerator.<span class="t-fn">SwitchTo</span>(surface.IsSlippery ? _snow
                    : _eco);</code></pre>
     </div>
 
-    <p>In .NET the practical version is keyed DI: register each strategy against a key and resolve the one you need. The container becomes the lookup table, and every strategy stays testable on its own.</p>
+    <p>In .NET, the practical way is keyed DI: register each strategy with a key and ask for the one you need. The container becomes the lookup table, and each strategy can be tested on its own.</p>
 
     <h3 class="fam-b"><span class="tag">09</span>State &mdash; the gear selector</h3>
-    <p class="scene">One accelerator, four meanings. Park: the pedal does nothing and the transmission is locked. Reverse: it backs up and the camera comes on. Neutral: the engine revs and the car goes nowhere. Drive: it goes. And the selector refuses to hand you Reverse at fifty kilometres an hour, whatever you do with the lever.</p>
+    <p class="scene">One accelerator, four meanings. In Park, the pedal does nothing and the gearbox is locked. In Reverse, the car moves back and the camera comes on. In Neutral, the engine revs but the car does not move. In Drive, it goes. And the gear lever will not let you select Reverse at fifty kilometres an hour, whatever you do.</p>
 
-    <p>Work the selector. The same action produces different outcomes, and the interlock refuses anything that would cost you a gearbox:</p>
+    <p>Try the gear lever. The same action gives different results, and the safety lock refuses anything that would damage the gearbox:</p>
 
     <div class="figure reveal">
       <div class="fig-head"><span>Figure 05 &mdash; <b>the selector as a state machine</b></span><span>try any action</span></div>
@@ -975,15 +975,15 @@ accelerator.<span class="t-fn">SwitchTo</span>(surface.IsSlippery ? _snow
 }</code></pre>
     </div>
 
-    <p>Strategy and State share almost the same class diagram, which is why they get confused. The difference is who holds the wheel: a strategy is chosen from outside and stays until someone outside changes it; a state replaces itself from inside as events arrive.</p>
+    <p>Strategy and State have almost the same class diagram, which is why people mix them up. The difference is who is in control. A strategy is chosen from outside and stays until someone outside changes it. A state replaces itself from inside, as events happen.</p>
 
-    <p>Reach for State when you have an order status, a claim workflow, a device lifecycle &mdash; anything where <code>switch (status)</code> has appeared in four methods and each is missing a different case. Once each status is a class, the compiler helps: a new state that forgets an action will not build.</p>
+    <p>Use State when you have an order status, a claim workflow, a device lifecycle, anything where <code>switch (status)</code> appears in four methods and each one is missing a different case. Once each status is its own class, the compiler helps you: a new state that forgets to handle an action will not build.</p>
   </div>
 
   <h2 class="reveal"><span class="num">04 &mdash; CHOOSING</span>Which shelf to reach for</h2>
 
   <div class="section reveal">
-    <p>Patterns are names for shapes that solutions converge on, not shapes you start from. Writing the straightforward version first is the right move almost every time. The pressure that turns straightforward code into a pattern arrives later, as a specific complaint. Match the complaint, not the diagram.</p>
+    <p>Patterns are names for shapes that good solutions end up taking. They are not where you start. Writing the simple version first is the right choice almost every time. The need for a pattern comes later, as a specific complaint about the code. Match the complaint, not the diagram.</p>
 
     <div class="figure reveal">
       <div class="fig-head"><span>Figure 06 &mdash; <b>the complaint index</b></span><span>filter by family</span></div>
@@ -994,23 +994,23 @@ accelerator.<span class="t-fn">SwitchTo</span>(surface.IsSlippery ? _snow
         <button class="btn b" data-f="b" type="button">Behavioural</button>
       </div>
       <table class="chooser">
-        <thead><tr><th>What you catch yourself saying</th><th>Shelf</th></tr></thead>
+        <thead><tr><th>What you hear yourself saying</th><th>Shelf</th></tr></thead>
         <tbody id="chBody">
-          <tr data-f="c"><td>"This class names a concrete type it has no business knowing about."</td><td class="pn c">Factory Method</td></tr>
+          <tr data-f="c"><td>"This class uses an exact type it should not even know about."</td><td class="pn c">Factory Method</td></tr>
           <tr data-f="c"><td>"The constructor has eleven parameters and six of them are optional."</td><td class="pn c">Builder</td></tr>
-          <tr data-f="c"><td>"Two of these existing at once would be a bug."</td><td class="pn c">Singleton <span style="color:var(--fog)">(via DI)</span></td></tr>
-          <tr data-f="s"><td>"The interface is wrong and the code behind it is not mine to change."</td><td class="pn s">Adapter</td></tr>
-          <tr data-f="s"><td>"I need to add logging, retries and caching without editing this class."</td><td class="pn s">Decorator</td></tr>
+          <tr data-f="c"><td>"Having two of these at the same time would be a bug."</td><td class="pn c">Singleton <span style="color:var(--fog)">(via DI)</span></td></tr>
+          <tr data-f="s"><td>"The interface is wrong, and the code behind it is not mine to change."</td><td class="pn s">Adapter</td></tr>
+          <tr data-f="s"><td>"I need to add logging, retries and caching without touching this class."</td><td class="pn s">Decorator</td></tr>
           <tr data-f="s"><td>"These five calls always happen together, in this order, in four places."</td><td class="pn s">Facade</td></tr>
-          <tr data-f="b"><td>"One event, several unrelated reactions, and the list keeps growing."</td><td class="pn b">Observer</td></tr>
-          <tr data-f="b"><td>"A switch that picks between interchangeable algorithms."</td><td class="pn b">Strategy</td></tr>
+          <tr data-f="b"><td>"One event, many unrelated reactions, and the list keeps growing."</td><td class="pn b">Observer</td></tr>
+          <tr data-f="b"><td>"A switch that picks between algorithms that do the same job."</td><td class="pn b">Strategy</td></tr>
           <tr data-f="b"><td>"A switch on a status field that changes what every other method does."</td><td class="pn b">State</td></tr>
         </tbody>
       </table>
       <div class="figcap">Nine shelves cover the complaints that come up weekly. The other fourteen come up when they come up.</div>
     </div>
 
-    <p>The rest of the catalogue lives in the same workshop, and most of it maps just as cleanly:</p>
+    <p>The rest of the list lives in the same workshop, and most of it maps just as neatly:</p>
 
     <div class="rest">
       <div><b>Prototype</b><span>Cloning an approved build sheet for the next unit instead of speccing it again.</span></div>
@@ -1022,10 +1022,10 @@ accelerator.<span class="t-fn">SwitchTo</span>(surface.IsSlippery ? _snow
     </div>
   </div>
 
-  <p class="pull reveal">The value of a pattern name is that when you say "make that a decorator" in a review, four people see the <em>same brake pedal</em> with four modules behind it.</p>
+  <p class="pull reveal">The value of a pattern name is this: when you say "make that a decorator" in a review, four people picture the <em>same brake pedal</em> with four modules behind it.</p>
 
   <div class="section reveal">
-    <p>You will not need all twenty-three; very little software does. What the catalogue buys you is shared vocabulary and a set of shapes your eye learns to recognise before the code gets bad &mdash; the constructor that keeps growing, the switch that has appeared in a fourth method, the class naming a concrete type it should never have heard of. Learn the nine on this line, and the other fourteen are a twenty-minute read on the day you need one.</p>
+    <p>You will not need all twenty-three; very little software does. What the list gives you is a shared vocabulary, and an eye that spots trouble before the code gets bad: the constructor that keeps growing, the switch that has now appeared in a fourth method, the class that uses an exact type it should never have known about. Learn the nine on this line, and the other fourteen are a twenty-minute read on the day you need one.</p>
   </div>
 
   <div class="endmark">&mdash; &mdash; &mdash;</div>

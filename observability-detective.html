@@ -467,8 +467,8 @@
   <div class="hero-inner">
     <span class="case-no">Case File №&nbsp;500 · Status: OPEN</span>
     <h1>The Case of the<br><span class="lit">Vanishing Request</span></h1>
-    <p class="logline">It entered the system healthy. Forty services later, it was dead — no body, no note, no witness willing to talk. Somebody has to put on the hat.</p>
-    <p class="credits">A Noir Field Guide to Observability &amp; Distributed Tracing</p>
+    <p class="logline">It entered the system healthy. Forty services later, it was dead — no body, no note, no witness ready to talk. Somebody has to put on the detective's hat.</p>
+    <p class="credits">A Detective's Guide to Observability and Distributed Tracing</p>
   </div>
   <div class="scrollcue"><span>open the file</span><span class="l"></span></div>
 </header>
@@ -477,55 +477,55 @@
 <article>
 
   <div class="section reveal">
-    <p class="lead">It always starts the same way. A pager buzzes at 2:14 a.m. The checkout service is returning 500 errors for "some" users, but nobody can say exactly which ones. The dashboard is almost entirely green, except for one graph that turned red an hour ago. The request entered the system looking perfectly healthy, passed through forty microservices, and never came out the other side. There is no stack trace long enough to follow, and no single log entry that explains what happened.</p>
-    <p>You pour a cup of coffee and get ready to focus. Tonight, you are not just a developer — you are a <strong>detective</strong>, and the system is a suspect that has learned to stay silent.</p>
+    <p class="lead">It always starts the same way. The pager buzzes at 2:14 a.m. The checkout service is giving 500 errors to "some" users, but nobody can say which ones. The dashboard is almost fully green, except one graph that turned red an hour ago. The request came into the system looking perfectly fine, passed through forty microservices, and never came out. There is no stack trace long enough to follow, and no single log line that explains what happened.</p>
+    <p>You make a cup of coffee and sit up straight. Tonight you are not only a developer. You are a <strong>detective</strong>, and the system is a suspect that has learnt to keep quiet.</p>
   </div>
 
   <div class="casefile reveal">
     <div class="fh">The nature of the crime</div>
-    <p>In a monolith, everything happens in one place — one process, one stack trace, and one log file to read from start to finish. In microservices, the request is passed from one service to another across the network. The service that <em>reports</em> the failure is almost never the one that <em>caused</em> it. Without observability, you are left questioning forty different services, each of which claims it only saw the request for four milliseconds before passing it along.</p>
+    <p>In a monolith, everything happens in one place: one process, one stack trace, one log file to read from top to bottom. In microservices, the request is passed from one service to the next over the network. The service that <em>reports</em> the failure is almost never the one that <em>caused</em> it. Without observability, you end up questioning forty services, and each one says it saw the request for only four milliseconds before passing it on.</p>
   </div>
 
   <div class="section reveal">
     <h2><span class="tag">MOTIVE — WHY THIS MATTERS</span>You cannot fix what you cannot see</h2>
-    <p>Here is an uncomfortable truth that every on-call engineer eventually learns: <strong>in a distributed system, failures are normal, not an exception.</strong> Networks have brief interruptions. Pods get evicted. A downstream dependency adds 200 milliseconds, and a retry storm turns that into a full cascade. The real question is never <em>whether</em> something will break. It is whether you can <em>identify the cause</em> before your users identify it for you, on social media.</p>
-    <p>Observability is the difference between saying "checkout is slow, we are looking into it" for six hours, and saying "the payment gateway's p99 latency tripled at 02:03, here is the trace, and we are deploying a timeout fix now." The first is a guess. The second is real detective work. The gap between them is measured in lost revenue, lost sleep, and lost trust.</p>
+    <p>Every on-call engineer learns this sooner or later: <strong>in a distributed system, failures are normal, not rare.</strong> The network drops for a moment. Pods get restarted. One service adds 200 milliseconds, retries pile up, and soon everything is slow. The real question is never <em>whether</em> something will break. It is whether you can <em>find the cause</em> before your users find it and post about it on social media.</p>
+    <p>Observability is the difference between saying "checkout is slow, we are looking into it" for six hours, and saying "at 02:03 the payment gateway's slowest calls became three times slower, here is the trace, and we are deploying a timeout fix now." The first is a guess. The second is real detective work. The gap between them costs you money, sleep and your users' trust.</p>
   </div>
 
   <p class="pull">Monitoring tells you the <span class="lit">house is on fire.</span><br>Observability tells you <span class="lit">who lit the match.</span></p>
 
   <div class="section reveal">
     <h2><span class="tag">THE WITNESSES — THREE PILLARS</span>Everyone saw something different</h2>
-    <p>Every case has witnesses, and a good detective knows that each one only tells part of the story. Observability has three main witnesses, and you need all of them working together.</p>
+    <p>Every case has witnesses, and a good detective knows each one tells only part of the story. Observability has three main witnesses, and you need all three working together.</p>
 
     <div class="witnesses">
       <div class="witness w-logs">
         <div class="wname">Logs</div>
         <div class="wrole">The diary keeper</div>
-        <p>This is the most detailed witness. It remembers exact words, timestamps, and the occasional exception. But its notes are scattered across forty notebooks in forty different services, and it often writes pages that nobody asked for. It is not very useful until you can line up every entry that belongs to the same request.</p>
+        <p>This witness remembers the most detail: exact words, times and the odd exception. But its notes are scattered across forty notebooks in forty services, and it often writes pages nobody asked for. It is not much use until you can line up every note that belongs to the same request.</p>
       </div>
       <div class="witness w-metrics">
         <div class="wname">Metrics</div>
         <div class="wrole">The bird's-eye watcher</div>
-        <p>This witness saw the whole street from the rooftop. It can tell you that error rates rose, latency doubled, and the queue backed up — the <em>overall shape</em> of the problem. But it never remembers a single face. It is very good at telling you that "something is wrong," but it cannot tell you "which request, and why."</p>
+        <p>This witness watched the whole street from the rooftop. It can tell you that errors went up, responses became twice as slow, and the queue got backed up. It sees the <em>overall shape</em> of the problem. But it never remembers a single face. It is very good at saying "something is wrong", but it cannot say "which request, and why".</p>
       </div>
       <div class="witness w-traces">
         <div class="wname">Traces</div>
         <div class="wrole">The eyewitness who followed him</div>
-        <p>This is the star witness. It followed the request from the front door through every service it touched, timing each stop, and noting exactly where it stumbled. This witness is the one who breaks the case — the connecting thread the other two can only point toward.</p>
+        <p>This is the star witness. It followed the request from the front door through every service, timed each stop, and noted exactly where it tripped. This is the witness who cracks the case, the thread the other two can only point towards.</p>
       </div>
     </div>
 
     <div class="casefile reveal">
       <div class="fh">Detective's note</div>
-      <p>None of the three witnesses can solve the case alone. Metrics tell you <em>when</em> to start looking, traces tell you <em>where</em> the request died, and logs tell you <em>why</em> — the exact exception at that exact point. The skill lies in connecting all three with one shared thread: an identifier that every witness is forced to write down.</p>
+      <p>None of the three can solve the case alone. Metrics tell you <em>when</em> to start looking, traces tell you <em>where</em> the request died, and logs tell you <em>why</em>: the exact exception at that exact point. The skill is in tying all three together with one shared thread, an ID that every witness must write down.</p>
     </div>
   </div>
 
   <div class="section reveal">
-    <h2><span class="tag">THE THREAD — CORRELATION</span>One ID to connect their testimonies</h2>
-    <p>This is one of the oldest tricks in detective work: give every witness the same case number, and require them to cite it. In distributed tracing, that number is called the <strong>trace ID</strong>. It is created the instant a request enters the system, and it is then carried across every network hop in the request headers. Each service that touches the request opens a <strong>span</strong> — its own record of "I received it at T, did this work, and handed it off at T+Δ" — and every span is stamped with the same trace ID.</p>
-    <p>The modern standard for this is <a href="https://opentelemetry.io/" target="_blank" rel="noopener">OpenTelemetry</a> (OTel). It is vendor-neutral, and it is the reason your traces, metrics, and logs can finally work together. In .NET, it is built on <code>System.Diagnostics.Activity</code> and the W3C <code>traceparent</code> header, so context rides along on HTTP calls without you passing IDs around by hand. Queues are the exception: a message carries no headers unless you put them there, which is the one place the trail breaks by default.</p>
+    <h2><span class="tag">THE THREAD — CORRELATION</span>One ID to connect every statement</h2>
+    <p>This is one of the oldest tricks in detective work: give every witness the same case number and make them quote it. In distributed tracing, that number is called the <strong>trace ID</strong>. It is created the moment a request enters the system, and it travels in the request headers across every network hop. Each service that handles the request opens a <strong>span</strong>, its own note saying "I got it at this time, did this work, and passed it on at that time". Every span carries the same trace ID.</p>
+    <p>The standard way to do this today is <a href="https://opentelemetry.io/" target="_blank" rel="noopener">OpenTelemetry</a> (OTel). It works with any vendor, and it is the reason your traces, metrics and logs can finally work together. In .NET it is built on <code>System.Diagnostics.Activity</code> and the W3C <code>traceparent</code> header, so the trace ID travels with every HTTP call without you passing it by hand. Queues are different: a message carries no headers unless you add them. That is the one place where the trail breaks by default.</p>
 
     <div class="code-wrap">
       <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-name">Program.cs — deputising OpenTelemetry (.NET / Azure)</span></div>
@@ -548,12 +548,12 @@ activity?.<span class="t-fn">SetTag</span>(<span class="t-str">"customer.tier"</
 <span class="t-com">// ...on failure, record who did it:</span>
 activity?.<span class="t-fn">SetStatus</span>(<span class="t-type">ActivityStatusCode</span>.Error, <span class="t-str">"gateway timeout"</span>);</code></pre>
     </div>
-    <p>That is the whole trick: with one round of setup, every request now leaves a trail of breadcrumbs, each one stamped with the same case number. The different services can no longer tell inconsistent stories, because they are all writing down the same ID.</p>
+    <p>That is the whole trick. After one round of setup, every request leaves a trail of breadcrumbs, each stamped with the same case number. The services can no longer tell different stories, because they are all writing down the same ID.</p>
   </div>
 
   <div class="section reveal">
-    <h2><span class="tag">EXHIBIT A — THE TRACE</span>Reading the eyewitness testimony</h2>
-    <p>Here is what the star witness gives you: a <strong>waterfall</strong> chart. Every bar represents one span — one service's part of the request — laid out on a timeline. Reading it from left to right, you can watch the request move through the system. The moment one bar stretches out while the rest stay idle, you have found where the time was lost.</p>
+    <h2><span class="tag">EXHIBIT A — THE TRACE</span>Reading the star witness's statement</h2>
+    <p>This is what the star witness gives you: a <strong>waterfall</strong> chart. Each bar is one span, one service's part of the request, placed on a timeline. Read it from left to right and you can watch the request move through the system. The moment one bar stretches out while the others sit idle, you have found where the time went.</p>
 
     <div class="exhibit reveal">
       <div class="exhibit-h"><span>Exhibit A · Trace Waterfall</span><span class="rid">trace_id: 4c1f…a903 · 1,842 ms · ERROR</span></div>
@@ -585,29 +585,29 @@ activity?.<span class="t-fn">SetStatus</span>(<span class="t-type">ActivityStatu
       <div class="exhibit-note">Reading the exhibit: the gateways at the top look fine. <b>payment-svc → gateway-api</b> held the request for 1,180 ms and then returned a timeout — the entire 500 error traces back to this one downstream call. The case is solved on one screen, instead of after six hours of searching logs.</div>
     </div>
 
-    <p>This is the real payoff. Without the trace, you would have to log into six different services and read through logs, guessing at the order of events. With the trace, the guilty span is <em>the longest red bar on the screen</em>. The detective's job becomes much simpler: instead of searching the whole city, you just read the one testimony that followed the request all the way to the end.</p>
+    <p>This is the real reward. Without the trace, you would log in to six services, read their logs and guess the order of events. With the trace, the culprit is simply <em>the longest red bar on the screen</em>. Instead of searching the whole city, you read the one statement that followed the request all the way to the end.</p>
   </div>
 
   <div class="section reveal">
     <h2><span class="tag">THE METHOD — SOLVING THE CASE</span>How to work the scene</h2>
-    <p>Every experienced investigator follows a procedure. Here is the one that closes distributed-systems cases quickly:</p>
+    <p>Every experienced detective follows a routine. Here is the one that closes distributed-system cases quickly:</p>
     <ol class="steps">
-      <li><b>Start from the alarm, not the code.</b> A metric — error rate, p99 latency, or saturation — tells you <em>when</em> and roughly <em>where</em> the trouble began. Let the RED (Rate, Errors, Duration) or USE signals point you toward the right area before you start investigating in detail.</li>
-      <li><b>Get the trace for a failing request.</b> Filter your traces to the errors in that time window, and open one. The waterfall chart shows the guilty span, without you having to guess the order of services.</li>
-      <li><b>Zoom in from span to log.</b> Every span carries the trace ID, and every log line should too. Jump from the red span straight to <em>its</em> logs — the exact exception and the exact input — instead of searching through forty different files.</li>
-      <li><b>Confirm the pattern, not just one example.</b> One slow trace is only a lead; the metric confirms whether the problem is systemic. Check whether the p99 latency on that dependency changed for everyone, or just for this one request.</li>
-      <li><b>Name it, fix it, and leave a better witness behind.</b> Add the missing span attribute, the timeout, or the retry budget — so that the <em>next</em> detective (probably you, next month) can solve it in one screen instead of six.</li>
+      <li><b>Start from the alarm, not the code.</b> A metric, such as the error rate, how long the slowest requests take, or how close a service is to its limit, tells you <em>when</em> and roughly <em>where</em> the trouble started. Let request rate, errors and response time point you to the right area before you dig in.</li>
+      <li><b>Pull the trace of a failed request.</b> Filter your traces to the errors in that time window and open one. The waterfall shows the culprit span, so you do not have to guess the order of services.</li>
+      <li><b>Jump from the span to its logs.</b> Every span carries the trace ID, and every log line should carry it too. Go from the red span straight to <em>its</em> logs, with the exact exception and input, instead of searching forty files.</li>
+      <li><b>Check the pattern, not just one example.</b> One slow trace is only a clue. The metric tells you if the problem is widespread. Check whether that dependency became slow for everyone, or only for this one request.</li>
+      <li><b>Name it, fix it, and leave a better witness behind.</b> Add the missing span detail, the timeout or the retry limit, so the <em>next</em> detective (probably you, next month) can solve it on one screen instead of six.</li>
     </ol>
   </div>
 
   <div class="section reveal">
-    <h2><span class="tag">FIELD KIT — ON AZURE &amp; KUBERNETES</span>The detective's toolbelt</h2>
+    <h2><span class="tag">FIELD KIT — ON AZURE &amp; KUBERNETES</span>The detective's toolkit</h2>
     <ul class="notes">
-      <li><strong>Instrument with OpenTelemetry, and export anywhere.</strong> OTel provides the vendor-neutral wiring. Point the OTLP exporter at <strong>Azure Monitor / Application Insights</strong> in production, or at Jaeger / Grafana Tempo locally — the instrumentation stays the same, only the destination changes.</li>
-      <li><strong>Carry context across the message bus, not just over HTTP.</strong> The trail breaks the moment an event reaches a queue without its <code>traceparent</code>. Carry the trace context into Service Bus or Kafka messages, so that asynchronous hops remain part of the same story. This is exactly where an <em>outbox</em> row should also record the trace ID.</li>
-      <li><strong>Sample your traces intentionally.</strong> You cannot keep every single trace at scale, but tail-based sampling lets you keep the <em>interesting</em> ones — the slow requests and the failed ones. Never accidentally sample away the important cases.</li>
-      <li><strong>Make your logs structured and correlated.</strong> JSON logs with the trace ID as a proper field turn a slow, hopeful search into a one-click jump from a span straight to the evidence.</li>
-      <li><strong>Watch the golden signals, and alert on symptoms.</strong> Page your team for user-facing problems, such as errors and latency, not for small CPU fluctuations. An alarm should mean something is genuinely wrong, not just a minor, harmless change.</li>
+      <li><strong>Add OpenTelemetry once, send the data anywhere.</strong> OTel gives you wiring that works with any vendor. Point the OTLP exporter at <strong>Azure Monitor / Application Insights</strong> in production, or at Jaeger or Grafana Tempo on your laptop. The code stays the same; only the destination changes.</li>
+      <li><strong>Carry the trace ID through queues too, not only HTTP.</strong> The trail breaks the moment an event goes into a queue without its <code>traceparent</code>. Put the trace details into your Service Bus or Kafka messages, so background steps stay part of the same story. This is also exactly why an <em>outbox</em> row should store the trace ID.</li>
+      <li><strong>Choose which traces to keep, on purpose.</strong> At scale you cannot keep every trace. Tail-based sampling lets you keep the <em>interesting</em> ones: the slow requests and the failed ones. Make sure you never throw away the important cases by mistake.</li>
+      <li><strong>Write structured logs with the trace ID.</strong> JSON logs with the trace ID as a proper field turn a slow, hopeful search into a single click from a span straight to the evidence.</li>
+      <li><strong>Watch what users feel, and alert on that.</strong> Wake your team for problems users can see, like errors and slow pages, not for small CPU changes. An alarm should mean something is really wrong, not a harmless blip.</li>
     </ul>
   </div>
 
@@ -615,9 +615,9 @@ activity?.<span class="t-fn">SetStatus</span>(<span class="t-type">ActivityStatu
 
   <div class="section reveal">
     <h2>The closing statement</h2>
-    <p>The request that vanished at 2:14 a.m. was never gone. It left a trail the whole way through the system, waiting for someone with the right tools to read it. That trail is what observability buys you: a system that can <em>explain itself</em> when something goes wrong, rather than a wall of dashboards that can only tell you it did.</p>
-    <p>Do the work up front: set up OpenTelemetry once, put a trace ID on every hop, and make your logs aware of their case number. After that, the next 2 a.m. page stops being a long manhunt. It becomes what good detective work always is: a quiet, methodical reading of the evidence, with a clear answer written down before the coffee even goes cold.</p>
-    <p>Put on the hat. The system is talking. All you have to do is make it impossible for it to stay silent.</p>
+    <p>The request that vanished at 2:14 a.m. was never really gone. It left a trail all the way through the system, waiting for someone with the right tools to read it. That trail is what observability gives you: a system that can <em>explain itself</em> when something breaks, instead of a wall of dashboards that can only tell you that it broke.</p>
+    <p>Do the work early. Set up OpenTelemetry once, put a trace ID on every hop, and make every log line carry its case number. After that, the next 2 a.m. call is no longer a long manhunt. It becomes what good detective work always is: a calm, step-by-step reading of the evidence, with the answer written down before your coffee goes cold.</p>
+    <p>Put on the hat. The system is talking. Your job is to make sure it can never stay silent.</p>
   </div>
 
 </article>
